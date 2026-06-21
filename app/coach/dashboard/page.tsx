@@ -32,11 +32,19 @@ export default async function CoachDashboardPage() {
           <h1 className="text-2xl font-semibold tracking-tight">{coach.name}</h1>
           <p className="text-sm text-muted-foreground">{coach.title}</p>
         </div>
-        <form action="/api/auth/logout" method="post">
-          <Button variant="outline" size="lg" type="submit">
-            Sign out
-          </Button>
-        </form>
+        <div className="flex items-center gap-2">
+          <a
+            href="/coach/onboarding"
+            className="inline-flex h-9 items-center justify-center rounded-lg border border-border bg-background px-2.5 text-sm font-medium hover:bg-muted"
+          >
+            Edit profile
+          </a>
+          <form action="/api/auth/logout" method="post">
+            <Button variant="outline" size="lg" type="submit">
+              Sign out
+            </Button>
+          </form>
+        </div>
       </div>
 
       <section className="mt-10 rounded-xl border border-border bg-card p-6">
