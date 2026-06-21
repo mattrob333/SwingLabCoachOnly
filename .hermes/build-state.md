@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** In Progress (Phase 6 AI lesson pack complete — Lesson delivery next)
+**Status:** In Progress (Phase 7 lesson delivery + approval + follow-up complete — Phase 8 Stripe next)
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 5 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub.
@@ -20,8 +20,8 @@
 7. [x] Phase 5: Review Studio (Rounds 9–11 — video player, scrubber, mic recording, annotation canvas, event capture)
 8. [x] Phase 6: Render pipeline (Round 13 — manifest composition, render API, status transitions)
 9. [x] Phase 6: AI lesson pack (Round 14 — lesson draft generator, drill library, lesson-draft API)
-10. [~] Phase 7: Lesson delivery + follow-up (next)
-11. [ ] Phase 8: Stripe Connect + earnings
+10. [x] Phase 7: Lesson delivery + coach approval + follow-up (Rounds 15–16)
+11. [ ] Phase 8: Stripe Connect + earnings (next)
 12. [ ] Phase 9: PWA enhancements
 13. [ ] Phase 10: Comparison mode
 
@@ -37,16 +37,21 @@
 - Phase 6 AI lesson pack (complete): lib/drills.ts (drill catalog: baseball/softball/golf/generic + getDrillsForSwingType), lib/ai/lesson-draft.ts (generateLessonDraft pure fn — title, summary, key points from annotations, drills from swing type, LessonDraft/KeyPoint types), lib/ai/lesson-draft-store.ts (LESSON_DRAFTS in-memory store + getDraftForSubmission/saveDraft), app/api/submissions/[id]/lesson-draft/route.ts (POST generate + PATCH edit/approve/reject), 20 new tests
 - 194 tests across 21 test files — all green (Round 14)
 - Phase 7 lesson delivery (in progress): app/lesson/[id]/page.tsx (parent-facing, no auth — title, summary, key moments with timecodes, drills, coach notes), GET /api/submissions/[id]/lesson-draft (no auth fetch for parent access), 4 new tests — 198 total
+- Phase 7 coach approval screen (complete): app/coach/submission/[id]/lesson/page.tsx (server component, auth-gated, coach-ownership verified), components/coach/lesson-approval-form.tsx (client — editable coachNotes textarea, Save notes / Approve / Reject buttons → PATCH API, status banner, draft preview with key moments + drills), submission detail page link to approval screen when completed, rendering status section + label added
+- Phase 7 follow-up swing submission (complete): lib/submissions.ts (optional followUpFor field on Submission + SubmissionInput, getFollowUpsForSubmission helper with deterministic newest-first sort), POST /api/submissions accepts followUpFor, upload-form accepts followUpFor prop + forwards to API, upload page reads ?followUpFor= query param (verifies original exists, shows follow-up banner + heading), lesson page shows "Submit a follow-up swing" CTA when draft is approved
+- 204 tests across 22 test files — all green (Round 16)
 - Quality gate: typecheck ✓ lint ✓ test ✓ build ✓
 
 ## Next Action (Inner Loop)
-Phase 7 — Coach approval screen + follow-up submission (PRD §31 build order #15-17).
-- Coach approval screen: /coach/submission/[id]/lesson — coach reviews the generated draft, edits notes, approves/rejects. Client component with form for coachNotes + approve/reject buttons calling PATCH API. Links from submission detail page when status is "completed".
-- Follow-up swing submission (build order #17): parent can submit a new swing referencing the original lesson. lib/submissions.ts: add optional "followUpFor" field linking submissions. Upload form variant for follow-ups.
+Phase 8 — Stripe Connect + earnings (PRD §31 build order #18).
+- Stripe Connect integration: coach onboarding to Stripe Connect (onboarding form extension), payout configuration.
+- Earnings model: lib/earnings.ts — track coach earnings per completed submission, earnings dashboard.
+- Mock Stripe for MVP (no real API keys): lib/stripe-mock.ts with createPaymentIntent / confirmPayment stubs that the existing /api/submissions/[id]/pay route can use.
+- Coach earnings view: /coach/earnings page showing total + per-submission breakdown.
 
 ## Open Issues
 - All stores in-memory — MVP-acceptable.
 - Video URL is a sample placeholder; real video storage comes with render pipeline (Phase 6).
 - No blockers
 
-**Last Updated:** 2026-06-21 (Round 15 — Phase 7 lesson delivery page + GET API, 198 tests)
+**Last Updated:** 2026-06-21 (Round 16 — Phase 7 coach approval screen + follow-up submission, 204 tests)
