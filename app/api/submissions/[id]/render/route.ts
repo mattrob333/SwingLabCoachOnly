@@ -4,6 +4,8 @@ import {
   markSubmissionRendering,
   markSubmissionCompleted,
 } from "@/lib/submissions";
+import { getCoachBySlug } from "@/lib/coaches";
+import { recordEarning } from "@/lib/earnings";
 import { verifySession, SESSION_COOKIE } from "@/lib/auth/session";
 import {
   buildRenderManifest,
@@ -87,6 +89,19 @@ export async function POST(
 
     // Transition to completed (MVP: immediate)
     markSubmissionCompleted(id);
+
+    // Phase 8: record a coach earning for the completed submission. Idempotent
+    // per submission, so a retry doesn't double-count. The amount is the
+    // coach's listed price (PRD §31 build order #18).
+    const coach = getCoachBySlug(submission.coachSlug);
+    if (coach) {
+      recordEarning({
+        submissionId: id,
+        coachSlug: coach.slug,
+        amountUsd: coach.priceUsd,
+        parentEmail: submission.parentEmail,
+      });
+    }
 
     return NextResponse.json(manifest);
   } catch (err) {

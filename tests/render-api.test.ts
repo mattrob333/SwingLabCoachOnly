@@ -9,6 +9,7 @@ import {
   type SubmissionInput,
 } from "@/lib/submissions";
 import { RENDER_MANIFESTS } from "@/lib/render/store";
+import { EARNINGS } from "@/lib/earnings";
 import {
   signSession,
   createSessionPayload,
@@ -75,6 +76,7 @@ describe("POST /api/submissions/[id]/render", () => {
   beforeEach(() => {
     SUBMISSIONS.length = 0;
     RENDER_MANIFESTS.length = 0;
+    EARNINGS.length = 0;
   });
 
   it("builds a manifest, stores it, and transitions submission to completed", async () => {
@@ -99,6 +101,31 @@ describe("POST /api/submissions/[id]/render", () => {
     expect(RENDER_MANIFESTS[0].videoUrl).toBe(
       "https://example.com/swing.mp4",
     );
+    // Phase 8: an earning is recorded for the completed submission
+    expect(EARNINGS).toHaveLength(1);
+    expect(EARNINGS[0].submissionId).toBe(sub.id);
+    expect(EARNINGS[0].coachSlug).toBe("marcus-reed");
+    expect(EARNINGS[0].amountUsd).toBe(49);
+  });
+
+  it("does not double-record an earning on a second render of the same submission", async () => {
+    const sub = createSubmission(validInput());
+    markSubmissionPaid(sub.id);
+    markSubmissionInReview(sub.id);
+    const token = signSession(createSessionPayload("marcus-reed"));
+
+    await POST(
+      makeRequest({ [SESSION_COOKIE]: token }, validRenderInput()),
+      makeParams(sub.id),
+    );
+    // The submission is now completed, so a second render returns 409 and
+    // does not create a second earning.
+    const res2 = await POST(
+      makeRequest({ [SESSION_COOKIE]: token }, validRenderInput()),
+      makeParams(sub.id),
+    );
+    expect(res2.status).toBe(409);
+    expect(EARNINGS).toHaveLength(1);
   });
 
   it("returns 401 when not authenticated", async () => {

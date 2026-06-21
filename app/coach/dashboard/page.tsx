@@ -45,6 +45,12 @@ export default async function CoachDashboardPage() {
         </div>
         <div className="flex items-center gap-2">
           <a
+            href="/coach/earnings"
+            className="inline-flex h-9 items-center justify-center rounded-lg border border-border bg-background px-2.5 text-sm font-medium hover:bg-muted"
+          >
+            Earnings
+          </a>
+          <a
             href="/coach/onboarding"
             className="inline-flex h-9 items-center justify-center rounded-lg border border-border bg-background px-2.5 text-sm font-medium hover:bg-muted"
           >
