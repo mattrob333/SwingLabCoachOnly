@@ -95,3 +95,22 @@ export function getSubmissionsForCoach(coachSlug: string): Submission[] {
     (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
   );
 }
+
+/**
+ * Mark a submission as paid. Only transitions from `pending_payment` → `paid`.
+ * Returns the updated submission or throws if the submission doesn't exist
+ * or is not in a payable state.
+ */
+export function markSubmissionPaid(id: string): Submission {
+  const submission = getSubmissionById(id);
+  if (!submission) {
+    throw new Error(`Submission not found: ${id}`);
+  }
+  if (submission.status !== "pending_payment") {
+    throw new Error(
+      `Submission ${id} is not pending payment (current: ${submission.status})`,
+    );
+  }
+  submission.status = "paid";
+  return submission;
+}

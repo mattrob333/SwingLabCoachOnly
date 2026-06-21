@@ -4,6 +4,7 @@ import {
   getSubmissionById,
   getSubmissionsForCoach,
   validateSubmissionInput,
+  markSubmissionPaid,
   type SubmissionInput,
   SUBMISSIONS,
 } from "@/lib/submissions";
@@ -135,5 +136,47 @@ describe("getSubmissionsForCoach", () => {
 
   it("returns an empty array when no submissions exist for a coach", () => {
     expect(getSubmissionsForCoach("marcus-reed")).toEqual([]);
+  });
+});
+
+describe("markSubmissionPaid", () => {
+  beforeEach(() => {
+    SUBMISSIONS.length = 0;
+  });
+
+  it("transitions a pending_payment submission to paid", () => {
+    const input: SubmissionInput = {
+      coachSlug: "marcus-reed",
+      parentEmail: "parent@example.com",
+      playerAge: 12,
+      swingType: "baseball",
+      notes: "",
+    };
+    const sub = createSubmission(input);
+    expect(sub.status).toBe("pending_payment");
+
+    const updated = markSubmissionPaid(sub.id);
+    expect(updated.status).toBe("paid");
+    expect(getSubmissionById(sub.id)?.status).toBe("paid");
+  });
+
+  it("throws when the submission does not exist", () => {
+    expect(() => markSubmissionPaid("nonexistent-id")).toThrow(
+      "Submission not found",
+    );
+  });
+
+  it("throws when the submission is already paid", () => {
+    const input: SubmissionInput = {
+      coachSlug: "marcus-reed",
+      parentEmail: "parent@example.com",
+      playerAge: 12,
+      swingType: "baseball",
+      notes: "",
+    };
+    const sub = createSubmission(input);
+    markSubmissionPaid(sub.id);
+
+    expect(() => markSubmissionPaid(sub.id)).toThrow("not pending payment");
   });
 });
