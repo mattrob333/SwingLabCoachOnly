@@ -12,6 +12,8 @@ import {
 type VideoPlayerProps = {
   /** Video URL to play. For MVP this is a sample swing video. */
   src: string;
+  /** Optional callback fired on each timeupdate with the current playback time. */
+  onTimeUpdate?: (currentTime: number) => void;
 };
 
 /**
@@ -26,12 +28,19 @@ type VideoPlayerProps = {
  * The player is the foundation for the Review Studio: annotation canvas,
  * microphone recording, and review event capture will layer on top of it.
  */
-export function VideoPlayer({ src }: VideoPlayerProps) {
+export function VideoPlayer({ src, onTimeUpdate }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  // Keep latest onTimeUpdate in a ref so the listener binding (set up once)
+  // always calls the freshest callback without re-subscribing.
+  const onTimeUpdateRef = useRef(onTimeUpdate);
+  useEffect(() => {
+    onTimeUpdateRef.current = onTimeUpdate;
+  }, [onTimeUpdate]);
 
   // Sync state from the video element
   useEffect(() => {
@@ -39,7 +48,9 @@ export function VideoPlayer({ src }: VideoPlayerProps) {
     if (!video) return;
 
     function onTimeUpdate(this: HTMLVideoElement) {
-      setCurrentTime(this.currentTime);
+      const t = this.currentTime;
+      setCurrentTime(t);
+      onTimeUpdateRef.current?.(t);
     }
     function onLoadedMetadata(this: HTMLVideoElement) {
       setDuration(this.duration);

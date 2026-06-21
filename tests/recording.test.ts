@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   createSegment,
   finalizeSegment,
+  sortSegmentsByStartTime,
   type RecordingSegment,
 } from "@/lib/review/recording";
 
@@ -47,6 +48,29 @@ describe("finalizeSegment", () => {
     const segment = createSegment(5);
     const finalized = finalizeSegment(segment, 5, "blob:abc");
     expect(finalized.duration).toBe(0);
+  });
+});
+
+describe("sortSegmentsByStartTime", () => {
+  it("returns segments sorted ascending by startTime", () => {
+    const a = createSegment(10);
+    const b = createSegment(2);
+    const c = createSegment(7);
+    const sorted = sortSegmentsByStartTime([a, b, c]);
+    expect(sorted.map((s) => s.startTime)).toEqual([2, 7, 10]);
+  });
+
+  it("does not mutate the input array", () => {
+    const a = createSegment(5);
+    const b = createSegment(1);
+    const input = [a, b];
+    sortSegmentsByStartTime(input);
+    expect(input[0].startTime).toBe(5);
+    expect(input[1].startTime).toBe(1);
+  });
+
+  it("returns an empty array for empty input", () => {
+    expect(sortSegmentsByStartTime([])).toEqual([]);
   });
 });
 

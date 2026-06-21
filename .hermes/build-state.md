@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** In Progress (Phase 5 in progress — video player done; mic recording next)
+**Status:** In Progress (Phase 5 in progress — video player + recording model done; mic recording UI next)
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 5 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub.
@@ -17,7 +17,7 @@
 4. [x] Phase 2: Coach auth + onboarding (Rounds 5–6)
 5. [x] Phase 3: Parent upload + payment (Round 7)
 6. [x] Phase 4: Coach inbox + submission detail (Round 8)
-7. [~] Phase 5: Review Studio (Round 9 — video player + scrubber done; mic recording next)
+7. [~] Phase 5: Review Studio (Round 9 — video player + scrubber + recording model done; mic recording UI next)
 8. [ ] Phase 6: Render pipeline
 9. [ ] Phase 6: AI lesson pack
 10. [ ] Phase 7: Lesson delivery + follow-up
@@ -32,17 +32,18 @@
 - Phase 2: auth (scrypt + HMAC sessions), login/logout API, middleware, login + dashboard pages, onboarding form + API
 - Phase 3: lib/submissions.ts, lib/invite-codes.ts, submissions/pay/redeem-code APIs, upload form, payment page
 - Phase 4: Coach inbox (dashboard with stat cards + submission cards), submission detail page (/coach/submission/[id]), markSubmissionInReview, POST /api/submissions/[id]/review, StartReviewButton
-- Phase 5 (partial): lib/review/timecode.ts (formatTimecode, parseTimecode, stepFrames, clampTime — frame-accurate at 30fps), VideoPlayer component (play/pause, frame step, click-to-seek scrubber, keyboard shortcuts), /coach/review/[id] Review Studio page (auth + ownership guarded)
-- 124 tests across 13 test files — all green
+- Phase 5 (partial): lib/review/timecode.ts (formatTimecode, parseTimecode, stepFrames, clampTime), lib/review/recording.ts (RecordingSegment, createSegment, finalizeSegment), VideoPlayer component (play/pause, frame step, click-to-seek scrubber, keyboard shortcuts), /coach/review/[id] Review Studio page (auth + ownership guarded)
+- 131 tests across 14 test files — all green
 - Quality gate: typecheck ✓ lint ✓ test ✓ build ✓
 
 ## Next Action (Inner Loop)
-Phase 5 continued — Microphone recording (PRD §31 build order #8). Build the coach's voice recording component:
-- MediaRecorder API wrapper to capture coach voiceover during review
-- Record / stop / playback controls integrated alongside the video player
-- Store recorded audio as a blob URL for MVP (render pipeline in Phase 6 handles persistence)
-- Tie recording start/stop to video timestamps for review event capture (#10)
-- Add to the Review Studio page below the video player
+Phase 5 continued — Microphone recording UI (PRD §31 build order #8). Build the MediaRecorder component:
+- VoiceRecorder client component using MediaRecorder API to capture coach voiceover
+- Record / stop / playback controls integrated alongside VideoPlayer in Review Studio
+- Uses lib/review/recording.ts (createSegment/finalizeSegment) to tie recordings to video timestamps
+- Store recorded audio as blob URLs for MVP (render pipeline in Phase 6 handles persistence)
+- Add to /coach/review/[id] page below the video player
+- Note: MediaRecorder is browser-only — component is not unit-testable in jsdom; test the segment logic (already done) and verify via build
 
 After mic recording: annotation canvas (#9), then review event capture (#10).
 
@@ -51,4 +52,4 @@ After mic recording: annotation canvas (#9), then review event capture (#10).
 - Video URL is a sample placeholder; real video storage comes with render pipeline (Phase 6).
 - No blockers
 
-**Last Updated:** 2026-06-21 (Round 9 — Phase 5 video player + scrubber complete)
+**Last Updated:** 2026-06-21 (Round 9 — Phase 5 video player + recording model complete)

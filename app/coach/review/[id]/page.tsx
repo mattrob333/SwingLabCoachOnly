@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/site/container";
-import { VideoPlayer } from "@/components/review/video-player";
+import { ReviewStudioClient } from "@/components/review/review-studio-client";
 import { verifySession, SESSION_COOKIE } from "@/lib/auth/session";
 import { getCoachBySlug } from "@/lib/coaches";
 import { getSubmissionById } from "@/lib/submissions";
@@ -72,16 +72,13 @@ export default async function ReviewStudioPage({
         </div>
       </div>
 
-      {/* Video player */}
-      <div className="mt-6">
-        <VideoPlayer src={SAMPLE_VIDEO_URL} />
-      </div>
+      {/* Video player + voiceover recording */}
+      <ReviewStudioClient videoUrl={SAMPLE_VIDEO_URL} />
 
-      {/* Coming next: annotation canvas, microphone recording, review event capture */}
-      <div className="mt-6 rounded-xl border border-dashed border-border bg-muted/30 p-6 text-center">
+      {/* Coming next: annotation canvas + review event capture */}
+      <div className="rounded-xl border border-dashed border-border bg-muted/30 p-6 text-center">
         <p className="text-sm text-muted-foreground">
-          Annotation canvas, voice recording, and review event capture arrive
-          in the next phase.
+          Annotation canvas and review event capture arrive in the next phase.
         </p>
       </div>
     </Container>

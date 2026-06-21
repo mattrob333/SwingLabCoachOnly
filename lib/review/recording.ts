@@ -36,6 +36,16 @@ export function createSegment(startTime: number): RecordingSegment {
 }
 
 /**
+ * Sort recording segments ascending by their start time.
+ * Returns a new array; does not mutate the input.
+ */
+export function sortSegmentsByStartTime(
+  segments: RecordingSegment[],
+): RecordingSegment[] {
+  return [...segments].sort((a, b) => a.startTime - b.startTime);
+}
+
+/**
  * Finalize a recording segment with the end time and audio blob URL.
  * Throws if the end time is before the start time.
  */
