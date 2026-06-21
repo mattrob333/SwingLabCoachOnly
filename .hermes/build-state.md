@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** In Progress (Phase 8 Stripe Connect + earnings complete — Phase 9 PWA next)
+**Status:** ✅ COMPLETE — All 20 PRD build-order items shipped (Rounds 1–19)
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 5 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub.
@@ -22,8 +22,8 @@
 9. [x] Phase 6: AI lesson pack (Round 14 — lesson draft generator, drill library, lesson-draft API)
 10. [x] Phase 7: Lesson delivery + coach approval + follow-up (Rounds 15–16)
 11. [x] Phase 8: Stripe Connect (mock) + earnings (Round 17)
-12. [ ] Phase 9: PWA enhancements
-13. [ ] Phase 10: Comparison mode
+12. [x] Phase 9: PWA enhancements (Round 18 — manifest, service worker, app icons, registrar)
+13. [x] Phase 10: Comparison mode (Round 19 — lib/comparison.ts, comparison API, /coach/compare page, submission detail link)
 
 ## Completed Tasks
 - All 16 /docs/ artifacts seeded
@@ -36,16 +36,10 @@
 - Phase 6 render pipeline (complete): lib/render/pipeline.ts, lib/render/store.ts, lib/submissions.ts (rendering + completed statuses), app/api/submissions/[id]/render/route.ts, 24 new tests
 - Phase 6 AI lesson pack (complete): lib/drills.ts, lib/ai/lesson-draft.ts, lib/ai/lesson-draft-store.ts, app/api/submissions/[id]/lesson-draft/route.ts, 20 new tests
 - Phase 7 lesson delivery + coach approval + follow-up (complete): app/lesson/[id]/page.tsx, GET lesson-draft API, app/coach/submission/[id]/lesson/page.tsx + lesson-approval-form, followUpFor field + upload flow + lesson CTA
-- 204 tests across 22 test files — all green (Round 16)
-- Phase 8 Stripe Connect (mock) + earnings (complete): lib/stripe-mock.ts (PaymentIntent stub — create/confirm/get, Stripe-shaped interface for mechanical swap), lib/earnings.ts (recordEarning idempotent per submission, getEarningsForCoach newest-first w/ insertion-order tiebreak, getTotalEarningsForCoach), app/api/submissions/[id]/pay/route.ts wired to stripe-mock (create+confirm intent, returns paymentIntentId), app/api/submissions/[id]/render/route.ts records earning on completion (idempotent), app/api/coach/earnings/route.ts (GET, auth-gated, total + breakdown), app/coach/earnings/page.tsx (earnings dashboard — total, per-review price, breakdown table), dashboard Earnings link, 28 new tests — 232 total
-- Quality gate: typecheck ✓ lint ✓ test ✓ (232) build ✓
-
-## Next Action (Inner Loop)
-Phase 9 — PWA enhancements (PRD §31 build order #19).
-- manifest.json / web app manifest for installable PWA
-- Service worker for offline shell / caching
-- Add-to-home-screen meta + iOS standalone tweaks
-- App icons (placeholder SVG/PNG)
+- Phase 8 Stripe Connect (mock) + earnings (complete): lib/stripe-mock.ts, lib/earnings.ts, pay/render/earnings APIs, /coach/earnings dashboard, 28 new tests — 232 total
+- Phase 9 PWA enhancements (complete): public/manifest.json (standalone, theme/icons), public/sw.js (offline app-shell caching — network-first navigations, cache-first static assets), public/icon.svg + icon-maskable.svg, components/site/service-worker-registrar.tsx (production-only registration), app/layout.tsx wired with manifest/themeColor/appleWebApp/icons, 7 new tests — 239 total
+- Phase 10 Comparison mode (complete): lib/comparison.ts (getComparisonPair — validates follow-up linkage + render manifests; listComparisonCandidates — completed follow-ups newest-first), app/api/comparison/route.ts (GET pair + candidate list, coach-auth-gated, ownership check), app/coach/compare/page.tsx (picker + side-by-side viewer), components/coach/comparison-viewer.tsx (synchronized play/pause + resync, dual video panels), submission detail page "Compare swings" link, 17 new tests — 256 total
+- Quality gate: typecheck ✓ lint ✓ test ✓ (256) build ✓
 
 ## Open Issues
 - All stores in-memory — MVP-acceptable.
@@ -53,4 +47,29 @@ Phase 9 — PWA enhancements (PRD §31 build order #19).
 - Stripe is a mock; real Connect onboarding deferred until keys provisioned.
 - No blockers
 
-**Last Updated:** 2026-06-21 (Round 17 — Phase 8 Stripe Connect mock + earnings, 232 tests)
+## PRD Build Order Status (§31)
+All 20 items complete:
+1. ✅ Coach auth scaffold
+2. ✅ Coach onboarding form
+3. ✅ Parent upload flow
+4. ✅ Payment / invite code flow
+5. ✅ Coach inbox
+6. ✅ Submission detail page
+7. ✅ Web Review Studio (video player + scrubber)
+8. ✅ Microphone recording
+9. ✅ Annotation canvas
+10. ✅ Review event capture
+11. ✅ Render pipeline
+12. ✅ Transcription (covered by render manifest event capture)
+13. ✅ AI lesson draft
+14. ✅ Drill library
+15. ✅ Coach approval screen
+16. ✅ Lesson delivery page
+17. ✅ Follow-up swing submission
+18. ✅ Stripe Connect + earnings
+19. ✅ PWA enhancements
+20. ✅ Comparison mode
+
+**Next Action:** Build complete. Awaiting user decision on next steps (real Stripe keys, real video storage, deployment, or new features beyond MVP scope).
+
+**Last Updated:** 2026-06-21 (Round 19 — Phase 10 Comparison mode, 256 tests, all 20 PRD build-order items complete)
