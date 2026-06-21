@@ -122,13 +122,15 @@ export default async function SubmissionDetailPage({
           <div className="rounded-xl border border-border bg-card p-6">
             <h2 className="text-lg font-medium">Review in progress</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              You&apos;ve started reviewing this submission. The Review Studio
-              will be available in the next phase.
+              You&apos;ve started reviewing this submission. Open the Review
+              Studio to annotate the swing and record your feedback.
             </p>
             <div className="mt-4">
-              <Button variant="outline" size="lg" disabled>
-                Open Review Studio (coming soon)
-              </Button>
+              <a href={`/coach/review/${submission.id}`}>
+                <Button variant="default" size="lg">
+                  Open Review Studio
+                </Button>
+              </a>
             </div>
           </div>
         )}
@@ -139,6 +141,13 @@ export default async function SubmissionDetailPage({
             <p className="mt-1 text-sm text-muted-foreground">
               This submission has been reviewed and the lesson delivered.
             </p>
+            <div className="mt-4">
+              <a href={`/coach/review/${submission.id}`}>
+                <Button variant="outline" size="lg">
+                  Re-open Review Studio
+                </Button>
+              </a>
+            </div>
           </div>
         )}
       </section>
