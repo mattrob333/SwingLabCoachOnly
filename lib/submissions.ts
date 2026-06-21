@@ -27,6 +27,12 @@ export type Submission = {
   notes: string;
   status: SubmissionStatus;
   createdAt: Date;
+  /**
+   * Optional reference to the original submission this swing follows up on.
+   * Present when a parent submits a new swing after receiving a lesson,
+   * linking the follow-up to the original review (PRD §31 build order #17).
+   */
+  followUpFor?: string;
 };
 
 export type SubmissionInput = {
@@ -35,6 +41,8 @@ export type SubmissionInput = {
   playerAge: number;
   swingType: string;
   notes: string;
+  /** Optional — links this submission to an original lesson's submission id. */
+  followUpFor?: string;
 };
 
 /** In-memory store. Resets on deploy — fine for MVP. */
@@ -80,6 +88,7 @@ export function createSubmission(input: SubmissionInput): Submission {
     notes: input.notes,
     status: "pending_payment",
     createdAt: new Date(),
+    ...(input.followUpFor ? { followUpFor: input.followUpFor } : {}),
   };
   SUBMISSIONS.push(submission);
   return submission;
@@ -88,6 +97,26 @@ export function createSubmission(input: SubmissionInput): Submission {
 /** Look up a submission by id. */
 export function getSubmissionById(id: string): Submission | undefined {
   return SUBMISSIONS.find((s) => s.id === id);
+}
+
+/**
+ * Get all follow-up submissions linked to an original submission id.
+ * Returns newest-first. Used by the coach to see iterative progress on a
+ * player's swing after a lesson was delivered (PRD §31 build order #17).
+ *
+ * Sort is by createdAt descending; ties (same-millisecond creations) are
+ * broken by store insertion order (later push = newer) so ordering is
+ * deterministic regardless of timestamp resolution.
+ */
+export function getFollowUpsForSubmission(originalId: string): Submission[] {
+  return SUBMISSIONS.map((s, index) => ({ s, index }))
+    .filter(({ s }) => s.followUpFor === originalId)
+    .sort((a, b) => {
+      const dt = b.s.createdAt.getTime() - a.s.createdAt.getTime();
+      if (dt !== 0) return dt;
+      return b.index - a.index; // later insertion = newer
+    })
+    .map(({ s }) => s);
 }
 
 /** All submissions for a given coach, newest first. */

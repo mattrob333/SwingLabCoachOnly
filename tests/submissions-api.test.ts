@@ -65,4 +65,25 @@ describe("POST /api/submissions", () => {
     const data = await res.json();
     expect(data.errors).toContain("Coach is required");
   });
+
+  it("persists followUpFor when provided (build order #17)", async () => {
+    // First create an original submission to follow up on.
+    const original = await POST(makeRequest(validBody()));
+    const originalData = await original.json();
+
+    const res = await POST(
+      makeRequest({ ...validBody(), followUpFor: originalData.id }),
+    );
+    expect(res.status).toBe(201);
+    const data = await res.json();
+    const stored = SUBMISSIONS.find((s) => s.id === data.id);
+    expect(stored?.followUpFor).toBe(originalData.id);
+  });
+
+  it("omits followUpFor when not provided", async () => {
+    const res = await POST(makeRequest(validBody()));
+    const data = await res.json();
+    const stored = SUBMISSIONS.find((s) => s.id === data.id);
+    expect(stored?.followUpFor).toBeUndefined();
+  });
 });

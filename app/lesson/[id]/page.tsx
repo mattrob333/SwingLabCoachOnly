@@ -112,6 +112,22 @@ export default async function LessonPage({
           </div>
         )}
 
+        {draft.status === "approved" && (
+          <section className="mb-8 rounded-xl border border-green-500/30 bg-green-500/5 p-6 text-center">
+            <h2 className="text-lg font-semibold">Ready for a follow-up?</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+              Submit a new swing and your coach will review your progress against
+              this lesson.
+            </p>
+            <a
+              href={`/upload?followUpFor=${submission.id}`}
+              className="mt-4 inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              Submit a follow-up swing
+            </a>
+          </section>
+        )}
+
         <div className="mt-12 border-t border-border pt-6 text-center">
           <p className="text-sm text-muted-foreground">
             Questions about your lesson? Reply to your coach&apos;s email.

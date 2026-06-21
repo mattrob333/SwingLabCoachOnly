@@ -3,6 +3,7 @@ import {
   createSubmission,
   getSubmissionById,
   getSubmissionsForCoach,
+  getFollowUpsForSubmission,
   validateSubmissionInput,
   markSubmissionPaid,
   markSubmissionInReview,
@@ -239,5 +240,61 @@ describe("markSubmissionInReview", () => {
     expect(() => markSubmissionInReview(sub.id)).toThrow(
       "already in review",
     );
+  });
+});
+
+describe("follow-up submissions (build order #17)", () => {
+  beforeEach(() => {
+    SUBMISSIONS.length = 0;
+  });
+
+  function validInput(): SubmissionInput {
+    return {
+      coachSlug: "marcus-reed",
+      parentEmail: "parent@example.com",
+      playerAge: 12,
+      swingType: "baseball",
+      notes: "",
+    };
+  }
+
+  it("createSubmission persists followUpFor when provided", () => {
+    const original = createSubmission(validInput());
+    const followUp = createSubmission({
+      ...validInput(),
+      followUpFor: original.id,
+    });
+
+    expect(followUp.followUpFor).toBe(original.id);
+    expect(followUp.status).toBe("pending_payment");
+  });
+
+  it("createSubmission omits followUpFor when not provided", () => {
+    const sub = createSubmission(validInput());
+    expect(sub.followUpFor).toBeUndefined();
+  });
+
+  it("getFollowUpsForSubmission returns linked submissions newest-first", () => {
+    const original = createSubmission(validInput());
+
+    const first = createSubmission({
+      ...validInput(),
+      followUpFor: original.id,
+    });
+    const second = createSubmission({
+      ...validInput(),
+      followUpFor: original.id,
+    });
+    // An unrelated submission should not appear.
+    createSubmission(validInput());
+
+    const followUps = getFollowUpsForSubmission(original.id);
+    expect(followUps).toHaveLength(2);
+    expect(followUps[0].id).toBe(second.id);
+    expect(followUps[1].id).toBe(first.id);
+  });
+
+  it("getFollowUpsForSubmission returns empty array when none exist", () => {
+    expect(getFollowUpsForSubmission("nonexistent-id")).toEqual([]);
   });
 });

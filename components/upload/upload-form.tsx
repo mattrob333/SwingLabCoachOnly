@@ -6,9 +6,15 @@ import type { Coach } from "@/lib/coaches";
 
 type UploadFormProps = {
   coaches: Pick<Coach, "slug" | "name" | "priceUsd" | "turnaround">[];
+  /**
+   * Optional — when set, this upload is a follow-up to a previous lesson.
+   * The id is forwarded to the submissions API and links the new submission
+   * to the original (PRD §31 build order #17).
+   */
+  followUpFor?: string;
 };
 
-export function UploadForm({ coaches }: UploadFormProps) {
+export function UploadForm({ coaches, followUpFor }: UploadFormProps) {
   const [coachSlug, setCoachSlug] = useState("");
   const [parentEmail, setParentEmail] = useState("");
   const [playerAge, setPlayerAge] = useState("");
@@ -64,6 +70,7 @@ export function UploadForm({ coaches }: UploadFormProps) {
           playerAge: Number(playerAge),
           swingType,
           notes,
+          ...(followUpFor ? { followUpFor } : {}),
         }),
       });
 

@@ -35,19 +35,18 @@
 - Phase 5 (complete): lib/review/timecode.ts, lib/review/recording.ts (RecordingSegment, createSegment, finalizeSegment, sortSegmentsByStartTime), lib/review/strokes.ts (Point, Stroke, createStroke, addPoint, strokeBounds), lib/review/events.ts (ReviewEvent, createEvent, serializeEvents), VideoPlayer (play/pause, frame step, scrubber, shortcuts, onTimeUpdate + overlay + onEvent), VoiceRecorder (MediaRecorder, record/stop/playback/delete, event capture), AnnotationCanvas (freehand pen, color picker, undo/clear, timecode-anchored strokes, event capture), ReviewStudioClient (orchestrator + event timeline), /coach/review/[id] page
 - Phase 6 render pipeline (complete): lib/render/pipeline.ts (buildRenderManifest, serializeManifest, RenderManifest/AudioLayer/AnnotationLayer types), lib/render/store.ts (RENDER_MANIFESTS in-memory store, getManifestForSubmission), lib/submissions.ts (rendering + completed statuses, markSubmissionRendering, markSubmissionCompleted), app/api/submissions/[id]/render/route.ts (auth+ownership gated, in_review → rendering → completed), 24 new tests
 - Phase 6 AI lesson pack (complete): lib/drills.ts (drill catalog: baseball/softball/golf/generic + getDrillsForSwingType), lib/ai/lesson-draft.ts (generateLessonDraft pure fn — title, summary, key points from annotations, drills from swing type, LessonDraft/KeyPoint types), lib/ai/lesson-draft-store.ts (LESSON_DRAFTS in-memory store + getDraftForSubmission/saveDraft), app/api/submissions/[id]/lesson-draft/route.ts (POST generate + PATCH edit/approve/reject), 20 new tests
-- 194 tests across 21 test files — all green
+- 194 tests across 21 test files — all green (Round 14)
+- Phase 7 lesson delivery (in progress): app/lesson/[id]/page.tsx (parent-facing, no auth — title, summary, key moments with timecodes, drills, coach notes), GET /api/submissions/[id]/lesson-draft (no auth fetch for parent access), 4 new tests — 198 total
 - Quality gate: typecheck ✓ lint ✓ test ✓ build ✓
 
 ## Next Action (Inner Loop)
-Phase 7 — Lesson delivery + follow-up (PRD §31 build order #15-17). After the coach approves the lesson draft, the lesson is delivered to the parent. The parent can then submit a follow-up swing.
-- Lesson delivery page: /lesson/[id] — parent-facing page showing the approved lesson draft (title, summary, key points with timecodes, drills, coach notes). No auth required (parent accesses via link with submission id).
-- Coach approval screen: /coach/submission/[id]/lesson — coach reviews the generated draft, edits notes, approves/rejects. Links from submission detail page when status is "completed".
-- Follow-up swing submission (build order #17): parent can submit a new swing referencing the original lesson. lib/submissions.ts: add "followUpFor" field linking submissions. Upload form variant for follow-ups.
-- API route GET /api/submissions/[id]/lesson-draft to fetch the approved draft for the delivery page
+Phase 7 — Coach approval screen + follow-up submission (PRD §31 build order #15-17).
+- Coach approval screen: /coach/submission/[id]/lesson — coach reviews the generated draft, edits notes, approves/rejects. Client component with form for coachNotes + approve/reject buttons calling PATCH API. Links from submission detail page when status is "completed".
+- Follow-up swing submission (build order #17): parent can submit a new swing referencing the original lesson. lib/submissions.ts: add optional "followUpFor" field linking submissions. Upload form variant for follow-ups.
 
 ## Open Issues
 - All stores in-memory — MVP-acceptable.
 - Video URL is a sample placeholder; real video storage comes with render pipeline (Phase 6).
 - No blockers
 
-**Last Updated:** 2026-06-21 (Round 14 — Phase 6 AI lesson pack complete, 194 tests)
+**Last Updated:** 2026-06-21 (Round 15 — Phase 7 lesson delivery page + GET API, 198 tests)

@@ -31,6 +31,9 @@ export async function POST(request: NextRequest) {
     playerAge: Number(body.playerAge ?? 0),
     swingType: String(body.swingType ?? "baseball"),
     notes: String(body.notes ?? ""),
+    ...(typeof body.followUpFor === "string" && body.followUpFor
+      ? { followUpFor: body.followUpFor }
+      : {}),
   };
 
   // Verify the coach exists before creating a submission.

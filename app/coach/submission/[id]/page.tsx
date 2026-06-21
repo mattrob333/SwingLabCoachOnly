@@ -46,12 +46,14 @@ export default async function SubmissionDetailPage({
   const statusLabel: Record<string, string> = {
     paid: "New — awaiting review",
     in_review: "In review",
+    rendering: "Rendering lesson",
     completed: "Completed",
   };
 
   const statusColors: Record<string, string> = {
     paid: "bg-blue-100 text-blue-700",
     in_review: "bg-amber-100 text-amber-700",
+    rendering: "bg-purple-100 text-purple-700",
     completed: "bg-green-100 text-green-700",
   };
 
@@ -135,13 +137,29 @@ export default async function SubmissionDetailPage({
           </div>
         )}
 
+        {submission.status === "rendering" && (
+          <div className="rounded-xl border border-border bg-card p-6">
+            <h2 className="text-lg font-medium">Rendering lesson</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              The review has been submitted and the render pipeline is composing
+              the final lesson. This page will update when rendering completes.
+            </p>
+          </div>
+        )}
+
         {submission.status === "completed" && (
           <div className="rounded-xl border border-border bg-card p-6">
             <h2 className="text-lg font-medium">Review complete</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              This submission has been reviewed and the lesson delivered.
+              This submission has been reviewed and rendered. Review and approve
+              the AI-generated lesson draft to deliver it to the parent.
             </p>
-            <div className="mt-4">
+            <div className="mt-4 flex flex-wrap gap-3">
+              <a href={`/coach/submission/${submission.id}/lesson`}>
+                <Button variant="default" size="lg">
+                  Review lesson draft
+                </Button>
+              </a>
               <a href={`/coach/review/${submission.id}`}>
                 <Button variant="outline" size="lg">
                   Re-open Review Studio
