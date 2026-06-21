@@ -14,3 +14,8 @@
 **Context:** PRD recommends Supabase or similar.
 **Chosen direction:** Supabase for MVP speed.
 **Date:** 2026-06-21
+
+## 2026-06-21 — All 16 Required Artifacts Seeded
+**Decision:** Seed all required docs immediately even if initially thin, then iterate with traceability.
+**Reason:** Satisfies the "If these files do not exist, create them" rule in the SwingLab loop.
+**Date:** 2026-06-21

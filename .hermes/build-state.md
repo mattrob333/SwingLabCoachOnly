@@ -1,25 +1,26 @@
 # Build State: SwingLabCoachOnly
 
-**PRD Source:** Original user-provided SwingLab Web-First MVP PRD (full document)
+**PRD Source:** Original user-provided SwingLab Web-First MVP PRD
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Started:** 2026-06-21
-**Status:** In Progress (Round 1 - Bootstrap)
+**Status:** In Progress (Round 2 – Docs Bootstrap Complete)
 
-## Phases (from PRD Phase 0+)
-1. [ ] Phase 0: Prototype / Docs Bootstrap
-2. [ ] Phase 1: Web foundation (Next.js + auth + coach profiles)
+## Phases
+1. [x] Bootstrap repo + seed all 16 required /docs/ artifacts
+2. [ ] Phase 1: Next.js foundation (auth, coach profiles, public pages)
 3. [ ] ...
 
 ## Completed Tasks
-- None yet
+- Initial 16 docs seeded
+- README created
+- First commit pushed to GitHub
 
 ## Open Issues / Blockers
-- Repo is completely empty (no code, no docs)
-- Need to seed all 16 required /docs/ artifacts
-- Need to initialize Next.js project + tech stack
+- None blocking
 
 ## Next Action
-- Run Round 1 of SwingLab Agent Build Loop: Create initial docs, decisions, assumptions, tasks, and state.
-- Produce required round output format.
+- Initialize Next.js project (Phase 1)
+- Continue Round 2/3 of SwingLab loop
+- Push next visible changes
 
-**Last Run:** 2026-06-21 (initial bootstrap)
+**Last Run:** 2026-06-21 (docs bootstrap + first push)
