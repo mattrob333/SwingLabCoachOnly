@@ -8,6 +8,7 @@ import {
   type Stroke,
   type Point,
 } from "@/lib/review/strokes";
+import { createEvent, type ReviewEvent } from "@/lib/review/events";
 
 type AnnotationCanvasProps = {
   /**
@@ -15,6 +16,8 @@ type AnnotationCanvasProps = {
    * so each annotation is anchored to a video timecode.
    */
   currentTime: number;
+  /** Optional callback fired when a review event (stroke) occurs. */
+  onEvent?: (event: ReviewEvent) => void;
 };
 
 const COLORS = ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#ffffff"];
@@ -33,7 +36,7 @@ const COLORS = ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#ffffff"];
  * verified via the build. The stroke model it relies on is unit-tested in
  * tests/strokes.test.ts.
  */
-export function AnnotationCanvas({ currentTime }: AnnotationCanvasProps) {
+export function AnnotationCanvas({ currentTime, onEvent }: AnnotationCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [strokes, setStrokes] = useState<Stroke[]>([]);
   const [color, setColor] = useState(COLORS[0]);
@@ -45,6 +48,7 @@ export function AnnotationCanvas({ currentTime }: AnnotationCanvasProps) {
   const strokesRef = useRef<Stroke[]>([]);
   const colorRef = useRef(color);
   const currentTimeRef = useRef(currentTime);
+  const onEventRef = useRef(onEvent);
 
   useEffect(() => {
     strokesRef.current = strokes;
@@ -55,6 +59,9 @@ export function AnnotationCanvas({ currentTime }: AnnotationCanvasProps) {
   useEffect(() => {
     currentTimeRef.current = currentTime;
   }, [currentTime]);
+  useEffect(() => {
+    onEventRef.current = onEvent;
+  }, [onEvent]);
 
   function drawStroke(ctx: CanvasRenderingContext2D, stroke: Stroke) {
     if (stroke.points.length < 1) return;
@@ -148,6 +155,12 @@ export function AnnotationCanvas({ currentTime }: AnnotationCanvasProps) {
     setIsDrawing(false);
     if (finished.points.length > 0) {
       setStrokes((prev) => [...prev, finished]);
+      onEventRef.current?.(
+        createEvent("stroke", finished.timecode, {
+          pointCount: finished.points.length,
+          color: finished.color,
+        }),
+      );
     }
   }
 

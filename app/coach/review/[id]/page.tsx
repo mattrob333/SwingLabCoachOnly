@@ -72,15 +72,8 @@ export default async function ReviewStudioPage({
         </div>
       </div>
 
-      {/* Video player + voiceover recording */}
+      {/* Video player + voiceover + annotation + event timeline */}
       <ReviewStudioClient videoUrl={SAMPLE_VIDEO_URL} />
-
-      {/* Coming next: review event capture */}
-      <div className="rounded-xl border border-dashed border-border bg-muted/30 p-6 text-center">
-        <p className="text-sm text-muted-foreground">
-          Review event capture arrives in the next phase.
-        </p>
-      </div>
     </Container>
   );
 }

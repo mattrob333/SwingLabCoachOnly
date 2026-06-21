@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** In Progress (Phase 5 in progress — video player + recording model + mic recording UI done; annotation canvas next)
+**Status:** In Progress (Phase 5 in progress — video + recording + annotation done; review event capture next)
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 5 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub.
@@ -17,7 +17,7 @@
 4. [x] Phase 2: Coach auth + onboarding (Rounds 5–6)
 5. [x] Phase 3: Parent upload + payment (Round 7)
 6. [x] Phase 4: Coach inbox + submission detail (Round 8)
-7. [~] Phase 5: Review Studio (Round 10 — video player + scrubber + recording model + mic recording UI done; annotation canvas next)
+7. [~] Phase 5: Review Studio (Round 11 — video + scrubber + recording + mic UI + annotation canvas done; review event capture next)
 8. [ ] Phase 6: Render pipeline
 9. [ ] Phase 6: AI lesson pack
 10. [ ] Phase 7: Lesson delivery + follow-up
@@ -32,24 +32,22 @@
 - Phase 2: auth (scrypt + HMAC sessions), login/logout API, middleware, login + dashboard pages, onboarding form + API
 - Phase 3: lib/submissions.ts, lib/invite-codes.ts, submissions/pay/redeem-code APIs, upload form, payment page
 - Phase 4: Coach inbox (dashboard with stat cards + submission cards), submission detail page (/coach/submission/[id]), markSubmissionInReview, POST /api/submissions/[id]/review, StartReviewButton
-- Phase 5 (partial): lib/review/timecode.ts (formatTimecode, parseTimecode, stepFrames, clampTime), lib/review/recording.ts (RecordingSegment, createSegment, finalizeSegment, sortSegmentsByStartTime), VideoPlayer component (play/pause, frame step, click-to-seek scrubber, keyboard shortcuts, onTimeUpdate callback), VoiceRecorder component (MediaRecorder API, record/stop/playback/delete, segments anchored to video timecode), ReviewStudioClient orchestrator, /coach/review/[id] Review Studio page (auth + ownership guarded)
-- 134 tests across 14 test files — all green
+- Phase 5 (partial): lib/review/timecode.ts, lib/review/recording.ts (RecordingSegment, createSegment, finalizeSegment, sortSegmentsByStartTime), lib/review/strokes.ts (Point, Stroke, createStroke, addPoint, strokeBounds), VideoPlayer (play/pause, frame step, scrubber, shortcuts, onTimeUpdate + overlay slot), VoiceRecorder (MediaRecorder, record/stop/playback/delete), AnnotationCanvas (freehand pen, color picker, undo/clear, timecode-anchored strokes), ReviewStudioClient orchestrator, /coach/review/[id] page
+- 143 tests across 15 test files — all green
 - Quality gate: typecheck ✓ lint ✓ test ✓ build ✓
 
 ## Next Action (Inner Loop)
-Phase 5 continued — Annotation canvas (PRD §31 build order #9). Build the drawing canvas overlay:
-- AnnotationCanvas client component overlaid on the video (transparent canvas sized to video frame)
-- Draw tools: pen (freehand), color picker, undo/clear
-- Strokes tied to video timecode (each stroke records the time it was drawn)
-- Uses lib/review/ for stroke model (create a lib/review/strokes.ts with pure helpers: createStroke, addPoint, strokeBounds — TDD first)
-- Integrated into ReviewStudioClient alongside VideoPlayer + VoiceRecorder
-- Note: Canvas drawing is browser-only; test the stroke model pure helpers, verify UI via build
-
-After annotation canvas: review event capture (#10), then Phase 5 complete → Phase 6 render pipeline.
+Phase 5 continued — Review event capture (PRD §31 build order #10). Build the event log:
+- lib/review/events.ts with pure helpers (createEvent, serializeEvents) — TDD first
+- ReviewEvent type: { id, type, timecode, payload, wallClock }
+- Event types: play, pause, seek, record_start, record_stop, stroke
+- onEvent callback on VideoPlayer (play/pause/seek) → ReviewStudioClient maintains event log
+- Render event timeline summary in Review Studio
+- After this: Phase 5 complete → Phase 6 render pipeline.
 
 ## Open Issues
 - All stores in-memory — MVP-acceptable.
 - Video URL is a sample placeholder; real video storage comes with render pipeline (Phase 6).
 - No blockers
 
-**Last Updated:** 2026-06-21 (Round 10 — Phase 5 microphone recording UI complete)
+**Last Updated:** 2026-06-21 (Round 11 — Phase 5 annotation canvas complete)

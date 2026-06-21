@@ -9,6 +9,7 @@ import {
   sortSegmentsByStartTime,
   type RecordingSegment,
 } from "@/lib/review/recording";
+import { createEvent, type ReviewEvent } from "@/lib/review/events";
 
 // MediaRecorder support is a browser-only, stable external signal. Reading it
 // via useSyncExternalStore avoids both hydration mismatch (server returns false)
@@ -33,6 +34,8 @@ type VoiceRecorderProps = {
    * starts so each voiceover segment is anchored to a video timecode.
    */
   currentTime: number;
+  /** Optional callback fired when a review event (record_start/record_stop) occurs. */
+  onEvent?: (event: ReviewEvent) => void;
 };
 
 /**
@@ -49,7 +52,7 @@ type VoiceRecorderProps = {
  * is verified via the build, not unit tests. The segment logic it relies on
  * is unit-tested in tests/recording.test.ts.
  */
-export function VoiceRecorder({ currentTime }: VoiceRecorderProps) {
+export function VoiceRecorder({ currentTime, onEvent }: VoiceRecorderProps) {
   const isSupported = useSyncExternalStore(
     subscribeMediaRecorderSupport,
     getMediaRecorderSupportSnapshot,
@@ -64,6 +67,10 @@ export function VoiceRecorder({ currentTime }: VoiceRecorderProps) {
   const activeSegmentRef = useRef<RecordingSegment | null>(null);
   const recordStartRef = useRef<number>(0);
   const streamRef = useRef<MediaStream | null>(null);
+  const onEventRef = useRef(onEvent);
+  useEffect(() => {
+    onEventRef.current = onEvent;
+  }, [onEvent]);
 
   const handleStop = useCallback(() => {
     const recorder = mediaRecorderRef.current;
@@ -76,6 +83,11 @@ export function VoiceRecorder({ currentTime }: VoiceRecorderProps) {
 
     const finalized = finalizeSegment(segment, endTime, audioBlobUrl);
     setSegments((prev) => sortSegmentsByStartTime([...prev, finalized]));
+    onEventRef.current?.(
+      createEvent("record_stop", segment.startTime, {
+        duration: finalized.duration,
+      }),
+    );
 
     // Reset refs
     mediaRecorderRef.current = null;
@@ -110,6 +122,7 @@ export function VoiceRecorder({ currentTime }: VoiceRecorderProps) {
 
       recorder.start();
       setIsRecording(true);
+      onEventRef.current?.(createEvent("record_start", currentTime));
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Could not access microphone";

@@ -8,6 +8,7 @@ import {
   clampTime,
   FRAME_RATE,
 } from "@/lib/review/timecode";
+import { createEvent, type ReviewEvent } from "@/lib/review/events";
 
 type VideoPlayerProps = {
   /** Video URL to play. For MVP this is a sample swing video. */
@@ -16,6 +17,8 @@ type VideoPlayerProps = {
   onTimeUpdate?: (currentTime: number) => void;
   /** Optional content rendered as an absolute overlay on top of the video frame. */
   overlay?: React.ReactNode;
+  /** Optional callback fired when a review event (play/pause/seek) occurs. */
+  onEvent?: (event: ReviewEvent) => void;
 };
 
 /**
@@ -30,7 +33,7 @@ type VideoPlayerProps = {
  * The player is the foundation for the Review Studio: annotation canvas,
  * microphone recording, and review event capture will layer on top of it.
  */
-export function VideoPlayer({ src, onTimeUpdate, overlay }: VideoPlayerProps) {
+export function VideoPlayer({ src, onTimeUpdate, overlay, onEvent }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -43,6 +46,12 @@ export function VideoPlayer({ src, onTimeUpdate, overlay }: VideoPlayerProps) {
   useEffect(() => {
     onTimeUpdateRef.current = onTimeUpdate;
   }, [onTimeUpdate]);
+
+  // Same ref pattern for onEvent.
+  const onEventRef = useRef(onEvent);
+  useEffect(() => {
+    onEventRef.current = onEvent;
+  }, [onEvent]);
 
   // Sync state from the video element
   useEffect(() => {
@@ -58,11 +67,13 @@ export function VideoPlayer({ src, onTimeUpdate, overlay }: VideoPlayerProps) {
       setDuration(this.duration);
       setIsLoaded(true);
     }
-    function onPlay() {
+    function onPlay(this: HTMLVideoElement) {
       setIsPlaying(true);
+      onEventRef.current?.(createEvent("play", this.currentTime));
     }
-    function onPause() {
+    function onPause(this: HTMLVideoElement) {
       setIsPlaying(false);
+      onEventRef.current?.(createEvent("pause", this.currentTime));
     }
     function onEnded() {
       setIsPlaying(false);
@@ -97,18 +108,22 @@ export function VideoPlayer({ src, onTimeUpdate, overlay }: VideoPlayerProps) {
     const video = videoRef.current;
     if (!video) return;
     video.pause();
-    const newTime = stepFrames(video.currentTime, 1, duration);
+    const from = video.currentTime;
+    const newTime = stepFrames(from, 1, duration);
     video.currentTime = newTime;
     setCurrentTime(newTime);
+    onEventRef.current?.(createEvent("seek", newTime, { from, to: newTime }));
   }, [duration]);
 
   const stepBackward = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
     video.pause();
-    const newTime = stepFrames(video.currentTime, -1, duration);
+    const from = video.currentTime;
+    const newTime = stepFrames(from, -1, duration);
     video.currentTime = newTime;
     setCurrentTime(newTime);
+    onEventRef.current?.(createEvent("seek", newTime, { from, to: newTime }));
   }, [duration]);
 
   // Keyboard shortcuts
@@ -133,9 +148,11 @@ export function VideoPlayer({ src, onTimeUpdate, overlay }: VideoPlayerProps) {
   function handleScrubberChange(e: React.ChangeEvent<HTMLInputElement>) {
     const video = videoRef.current;
     if (!video) return;
+    const from = video.currentTime;
     const newTime = clampTime(Number(e.target.value), duration);
     video.currentTime = newTime;
     setCurrentTime(newTime);
+    onEventRef.current?.(createEvent("seek", newTime, { from, to: newTime }));
   }
 
   function handleScrubberClick(e: React.MouseEvent<HTMLDivElement>) {
@@ -143,9 +160,11 @@ export function VideoPlayer({ src, onTimeUpdate, overlay }: VideoPlayerProps) {
     if (!video || !duration) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const ratio = (e.clientX - rect.left) / rect.width;
+    const from = video.currentTime;
     const newTime = clampTime(ratio * duration, duration);
     video.currentTime = newTime;
     setCurrentTime(newTime);
+    onEventRef.current?.(createEvent("seek", newTime, { from, to: newTime }));
   }
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
