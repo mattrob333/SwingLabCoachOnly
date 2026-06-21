@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
+import { ServiceWorkerRegistrar } from "@/components/site/service-worker-registrar";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -13,6 +14,17 @@ export const metadata: Metadata = {
   },
   description:
     "SwingLab turns a submitted swing video into a paid, useful lesson in 5–10 minutes. Web-first, coach-approved.",
+  manifest: "/manifest.json",
+  themeColor: "#0a0a0a",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "SwingLab",
+  },
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/icon.svg" }],
+  },
 };
 
 export default function RootLayout({
@@ -26,6 +38,7 @@ export default function RootLayout({
         <SiteHeader />
         <main className="flex flex-1 flex-col">{children}</main>
         <SiteFooter />
+        <ServiceWorkerRegistrar />
       </body>
     </html>
   );
