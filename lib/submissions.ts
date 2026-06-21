@@ -15,6 +15,7 @@ export type SubmissionStatus =
   | "pending_payment"
   | "paid"
   | "in_review"
+  | "rendering"
   | "completed";
 
 export type Submission = {
@@ -134,5 +135,45 @@ export function markSubmissionInReview(id: string): Submission {
     );
   }
   submission.status = "in_review";
+  return submission;
+}
+
+/**
+ * Mark an in_review submission as rendering.
+ * Only transitions from `in_review` → `rendering`.
+ * Returns the updated submission or throws if the submission doesn't exist
+ * or is not in review.
+ */
+export function markSubmissionRendering(id: string): Submission {
+  const submission = getSubmissionById(id);
+  if (!submission) {
+    throw new Error(`Submission not found: ${id}`);
+  }
+  if (submission.status !== "in_review") {
+    throw new Error(
+      `Submission ${id} is not in review (current: ${submission.status})`,
+    );
+  }
+  submission.status = "rendering";
+  return submission;
+}
+
+/**
+ * Mark a rendering submission as completed.
+ * Only transitions from `rendering` → `completed`.
+ * Returns the updated submission or throws if the submission doesn't exist
+ * or is not rendering.
+ */
+export function markSubmissionCompleted(id: string): Submission {
+  const submission = getSubmissionById(id);
+  if (!submission) {
+    throw new Error(`Submission not found: ${id}`);
+  }
+  if (submission.status !== "rendering") {
+    throw new Error(
+      `Submission ${id} is not rendering (current: ${submission.status})`,
+    );
+  }
+  submission.status = "completed";
   return submission;
 }
