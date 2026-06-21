@@ -12,7 +12,9 @@ import {
 import type { RenderManifest } from "@/lib/render/pipeline";
 
 /**
- * Phase 6 (build order #13) — AI lesson draft endpoints.
+ * GET /api/submissions/[id]/lesson-draft
+ *   Fetches the lesson draft for a submission. No auth required — parents
+ *   access the lesson via a link containing the submission id.
  *
  * POST /api/submissions/[id]/lesson-draft
  *   Generates a lesson draft from the coach's review session (render manifest).
@@ -40,6 +42,31 @@ function authGate(request: NextRequest) {
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   const session = token ? verifySession(token) : null;
   return session;
+}
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+
+  const submission = getSubmissionById(id);
+  if (!submission) {
+    return NextResponse.json(
+      { error: "Submission not found" },
+      { status: 404 },
+    );
+  }
+
+  const draft = getDraftForSubmission(id);
+  if (!draft) {
+    return NextResponse.json(
+      { error: "No lesson draft found for this submission" },
+      { status: 404 },
+    );
+  }
+
+  return NextResponse.json(draft);
 }
 
 export async function POST(
