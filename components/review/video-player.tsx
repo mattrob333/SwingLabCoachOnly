@@ -14,6 +14,8 @@ type VideoPlayerProps = {
   src: string;
   /** Optional callback fired on each timeupdate with the current playback time. */
   onTimeUpdate?: (currentTime: number) => void;
+  /** Optional content rendered as an absolute overlay on top of the video frame. */
+  overlay?: React.ReactNode;
 };
 
 /**
@@ -28,7 +30,7 @@ type VideoPlayerProps = {
  * The player is the foundation for the Review Studio: annotation canvas,
  * microphone recording, and review event capture will layer on top of it.
  */
-export function VideoPlayer({ src, onTimeUpdate }: VideoPlayerProps) {
+export function VideoPlayer({ src, onTimeUpdate, overlay }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -159,6 +161,11 @@ export function VideoPlayer({ src, onTimeUpdate }: VideoPlayerProps) {
           playsInline
           preload="metadata"
         />
+        {overlay && (
+          <div className="pointer-events-none absolute inset-0">
+            {overlay}
+          </div>
+        )}
       </div>
 
       {/* Scrubber bar (click-to-seek) */}

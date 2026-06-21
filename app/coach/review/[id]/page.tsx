@@ -75,10 +75,10 @@ export default async function ReviewStudioPage({
       {/* Video player + voiceover recording */}
       <ReviewStudioClient videoUrl={SAMPLE_VIDEO_URL} />
 
-      {/* Coming next: annotation canvas + review event capture */}
+      {/* Coming next: review event capture */}
       <div className="rounded-xl border border-dashed border-border bg-muted/30 p-6 text-center">
         <p className="text-sm text-muted-foreground">
-          Annotation canvas and review event capture arrive in the next phase.
+          Review event capture arrives in the next phase.
         </p>
       </div>
     </Container>
