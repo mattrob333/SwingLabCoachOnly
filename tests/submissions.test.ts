@@ -5,6 +5,7 @@ import {
   getSubmissionsForCoach,
   validateSubmissionInput,
   markSubmissionPaid,
+  markSubmissionInReview,
   type SubmissionInput,
   SUBMISSIONS,
 } from "@/lib/submissions";
@@ -178,5 +179,65 @@ describe("markSubmissionPaid", () => {
     markSubmissionPaid(sub.id);
 
     expect(() => markSubmissionPaid(sub.id)).toThrow("not pending payment");
+  });
+});
+
+describe("markSubmissionInReview", () => {
+  beforeEach(() => {
+    SUBMISSIONS.length = 0;
+  });
+
+  it("transitions a paid submission to in_review", () => {
+    const input: SubmissionInput = {
+      coachSlug: "marcus-reed",
+      parentEmail: "parent@example.com",
+      playerAge: 12,
+      swingType: "baseball",
+      notes: "",
+    };
+    const sub = createSubmission(input);
+    markSubmissionPaid(sub.id);
+
+    const updated = markSubmissionInReview(sub.id);
+    expect(updated.status).toBe("in_review");
+    expect(getSubmissionById(sub.id)?.status).toBe("in_review");
+  });
+
+  it("throws when the submission does not exist", () => {
+    expect(() => markSubmissionInReview("nonexistent-id")).toThrow(
+      "Submission not found",
+    );
+  });
+
+  it("throws when the submission is still pending_payment", () => {
+    const input: SubmissionInput = {
+      coachSlug: "marcus-reed",
+      parentEmail: "parent@example.com",
+      playerAge: 12,
+      swingType: "baseball",
+      notes: "",
+    };
+    const sub = createSubmission(input);
+    // Not paid yet
+    expect(() => markSubmissionInReview(sub.id)).toThrow(
+      "not paid",
+    );
+  });
+
+  it("throws when the submission is already in_review", () => {
+    const input: SubmissionInput = {
+      coachSlug: "marcus-reed",
+      parentEmail: "parent@example.com",
+      playerAge: 12,
+      swingType: "baseball",
+      notes: "",
+    };
+    const sub = createSubmission(input);
+    markSubmissionPaid(sub.id);
+    markSubmissionInReview(sub.id);
+
+    expect(() => markSubmissionInReview(sub.id)).toThrow(
+      "already in review",
+    );
   });
 });

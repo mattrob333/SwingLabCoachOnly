@@ -114,3 +114,25 @@ export function markSubmissionPaid(id: string): Submission {
   submission.status = "paid";
   return submission;
 }
+
+/**
+ * Mark a paid submission as in_review. Only transitions from `paid` → `in_review`.
+ * Returns the updated submission or throws if the submission doesn't exist
+ * or is not in a reviewable state.
+ */
+export function markSubmissionInReview(id: string): Submission {
+  const submission = getSubmissionById(id);
+  if (!submission) {
+    throw new Error(`Submission not found: ${id}`);
+  }
+  if (submission.status === "in_review") {
+    throw new Error(`Submission ${id} is already in review`);
+  }
+  if (submission.status !== "paid") {
+    throw new Error(
+      `Submission ${id} is not paid (current: ${submission.status})`,
+    );
+  }
+  submission.status = "in_review";
+  return submission;
+}
