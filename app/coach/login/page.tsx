@@ -1,20 +1,24 @@
+import { Suspense } from "react";
 import { Container } from "@/components/site/container";
+import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata = {
   title: "Coach login",
   description: "Sign in to the SwingLab coach studio.",
 };
 
-/**
- * Phase 1 stub. Auth + coach studio land in Phase 2 — see docs/TASKS.md.
- */
 export default function CoachLoginPage() {
   return (
-    <Container className="py-16 text-center">
-      <h1 className="text-2xl font-semibold tracking-tight">Coach login</h1>
-      <p className="mx-auto mt-3 max-w-md text-muted-foreground">
-        Coach authentication and the Review Studio are coming soon.
-      </p>
+    <Container className="py-16">
+      <div className="mx-auto max-w-sm text-center">
+        <h1 className="text-2xl font-semibold tracking-tight">Coach login</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Sign in to access your coach dashboard and Review Studio.
+        </p>
+      </div>
+      <Suspense fallback={null}>
+        <LoginForm />
+      </Suspense>
     </Container>
   );
 }

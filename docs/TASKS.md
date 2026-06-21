@@ -42,4 +42,19 @@
 **Acceptance criteria:** Dragging scrubber renders cached frames for both swings via framesForProgress; no buffering/loading spinner under normal conditions
 **Status:** Pending (next round)
 
+## Task: Phase 2 — Coach Auth Scaffold (PRD §31 build order #1)
+**User story:** As a coach, I can sign in with my handle + password and reach a protected dashboard; unauthenticated visitors are redirected to login.
+**Scope:** `lib/auth/credentials.ts` (scrypt hashing + coach credential store), `lib/auth/session.ts` (HMAC-signed session tokens), `app/api/auth/login/route.ts`, `app/api/auth/logout/route.ts`, `middleware.ts` (protects /coach/dashboard), `app/coach/login/page.tsx` (form), `components/auth/login-form.tsx`, `app/coach/dashboard/page.tsx` (protected server component).
+**Dependencies:** Phase 1 web foundation.
+**Acceptance criteria:**
+1. `POST /api/auth/login` with valid slug+password sets httpOnly session cookie and returns 200; invalid credentials return 401 without leaking which slugs exist.
+2. `POST /api/auth/logout` clears the cookie and redirects to /coach/login.
+3. Middleware redirects unauthenticated `/coach/dashboard/*` requests to `/coach/login?redirect=...`.
+4. Dashboard server component reads the session cookie and renders the signed-in coach's name; no session → 404.
+5. Sessions are signed (HMAC-SHA256), tamper-proof, and expire after 7 days.
+**Test requirements:** `tests/auth-credentials.test.ts` (11) + `tests/auth-session.test.ts` (7) — 18 new tests.
+**Traceability:** PRD §31 build order #1 (Coach auth scaffold); docs/DECISIONS.md "Phase 2 Coach Auth".
+**Failure states:** Tampered token → null session → redirect to login; expired token → null; wrong password → 401.
+**Status:** ✅ Complete (Round 5)
+
 (Additional tasks will be added in future rounds following the exact good task format.)
