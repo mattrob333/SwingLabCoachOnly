@@ -6,6 +6,7 @@ import { StartReviewButton } from "@/components/coach/start-review-button";
 import { verifySession, SESSION_COOKIE } from "@/lib/auth/session";
 import { getCoachBySlug } from "@/lib/coaches";
 import { getSubmissionById } from "@/lib/submissions";
+import { listComparisonCandidates } from "@/lib/comparison";
 
 export const metadata = {
   title: "Submission detail",
@@ -42,6 +43,9 @@ export default async function SubmissionDetailPage({
   ) {
     notFound();
   }
+
+  // Phase 10 — follow-up swings with completed lessons available for comparison.
+  const comparisonCandidates = listComparisonCandidates(submission.id);
 
   const statusLabel: Record<string, string> = {
     paid: "New — awaiting review",
@@ -169,6 +173,25 @@ export default async function SubmissionDetailPage({
           </div>
         )}
       </section>
+
+      {/* Comparison mode — show when there are comparable follow-ups */}
+      {comparisonCandidates.length > 0 && (
+        <section className="mt-6 rounded-xl border border-border bg-card p-6">
+          <h2 className="text-lg font-medium">Compare swings</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {comparisonCandidates.length} follow-up swing
+            {comparisonCandidates.length === 1 ? "" : "s"} with a completed
+            lesson can be compared side by side with this original.
+          </p>
+          <div className="mt-4">
+            <a href={`/coach/compare?original=${submission.id}`}>
+              <Button variant="outline" size="lg">
+                Open comparison
+              </Button>
+            </a>
+          </div>
+        </section>
+      )}
     </Container>
   );
 }
