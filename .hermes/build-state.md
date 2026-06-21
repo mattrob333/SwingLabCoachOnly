@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** In Progress (Phase 7 lesson delivery + approval + follow-up complete — Phase 8 Stripe next)
+**Status:** In Progress (Phase 8 Stripe Connect + earnings complete — Phase 9 PWA next)
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 5 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub.
@@ -21,7 +21,7 @@
 8. [x] Phase 6: Render pipeline (Round 13 — manifest composition, render API, status transitions)
 9. [x] Phase 6: AI lesson pack (Round 14 — lesson draft generator, drill library, lesson-draft API)
 10. [x] Phase 7: Lesson delivery + coach approval + follow-up (Rounds 15–16)
-11. [ ] Phase 8: Stripe Connect + earnings (next)
+11. [x] Phase 8: Stripe Connect (mock) + earnings (Round 17)
 12. [ ] Phase 9: PWA enhancements
 13. [ ] Phase 10: Comparison mode
 
@@ -32,26 +32,25 @@
 - Phase 2: auth (scrypt + HMAC sessions), login/logout API, middleware, login + dashboard pages, onboarding form + API
 - Phase 3: lib/submissions.ts, lib/invite-codes.ts, submissions/pay/redeem-code APIs, upload form, payment page
 - Phase 4: Coach inbox (dashboard with stat cards + submission cards), submission detail page (/coach/submission/[id]), markSubmissionInReview, POST /api/submissions/[id]/review, StartReviewButton
-- Phase 5 (complete): lib/review/timecode.ts, lib/review/recording.ts (RecordingSegment, createSegment, finalizeSegment, sortSegmentsByStartTime), lib/review/strokes.ts (Point, Stroke, createStroke, addPoint, strokeBounds), lib/review/events.ts (ReviewEvent, createEvent, serializeEvents), VideoPlayer (play/pause, frame step, scrubber, shortcuts, onTimeUpdate + overlay + onEvent), VoiceRecorder (MediaRecorder, record/stop/playback/delete, event capture), AnnotationCanvas (freehand pen, color picker, undo/clear, timecode-anchored strokes, event capture), ReviewStudioClient (orchestrator + event timeline), /coach/review/[id] page
-- Phase 6 render pipeline (complete): lib/render/pipeline.ts (buildRenderManifest, serializeManifest, RenderManifest/AudioLayer/AnnotationLayer types), lib/render/store.ts (RENDER_MANIFESTS in-memory store, getManifestForSubmission), lib/submissions.ts (rendering + completed statuses, markSubmissionRendering, markSubmissionCompleted), app/api/submissions/[id]/render/route.ts (auth+ownership gated, in_review → rendering → completed), 24 new tests
-- Phase 6 AI lesson pack (complete): lib/drills.ts (drill catalog: baseball/softball/golf/generic + getDrillsForSwingType), lib/ai/lesson-draft.ts (generateLessonDraft pure fn — title, summary, key points from annotations, drills from swing type, LessonDraft/KeyPoint types), lib/ai/lesson-draft-store.ts (LESSON_DRAFTS in-memory store + getDraftForSubmission/saveDraft), app/api/submissions/[id]/lesson-draft/route.ts (POST generate + PATCH edit/approve/reject), 20 new tests
-- 194 tests across 21 test files — all green (Round 14)
-- Phase 7 lesson delivery (in progress): app/lesson/[id]/page.tsx (parent-facing, no auth — title, summary, key moments with timecodes, drills, coach notes), GET /api/submissions/[id]/lesson-draft (no auth fetch for parent access), 4 new tests — 198 total
-- Phase 7 coach approval screen (complete): app/coach/submission/[id]/lesson/page.tsx (server component, auth-gated, coach-ownership verified), components/coach/lesson-approval-form.tsx (client — editable coachNotes textarea, Save notes / Approve / Reject buttons → PATCH API, status banner, draft preview with key moments + drills), submission detail page link to approval screen when completed, rendering status section + label added
-- Phase 7 follow-up swing submission (complete): lib/submissions.ts (optional followUpFor field on Submission + SubmissionInput, getFollowUpsForSubmission helper with deterministic newest-first sort), POST /api/submissions accepts followUpFor, upload-form accepts followUpFor prop + forwards to API, upload page reads ?followUpFor= query param (verifies original exists, shows follow-up banner + heading), lesson page shows "Submit a follow-up swing" CTA when draft is approved
+- Phase 5 (complete): lib/review/timecode.ts, lib/review/recording.ts, lib/review/strokes.ts, lib/review/events.ts, VideoPlayer, VoiceRecorder, AnnotationCanvas, ReviewStudioClient, /coach/review/[id] page
+- Phase 6 render pipeline (complete): lib/render/pipeline.ts, lib/render/store.ts, lib/submissions.ts (rendering + completed statuses), app/api/submissions/[id]/render/route.ts, 24 new tests
+- Phase 6 AI lesson pack (complete): lib/drills.ts, lib/ai/lesson-draft.ts, lib/ai/lesson-draft-store.ts, app/api/submissions/[id]/lesson-draft/route.ts, 20 new tests
+- Phase 7 lesson delivery + coach approval + follow-up (complete): app/lesson/[id]/page.tsx, GET lesson-draft API, app/coach/submission/[id]/lesson/page.tsx + lesson-approval-form, followUpFor field + upload flow + lesson CTA
 - 204 tests across 22 test files — all green (Round 16)
-- Quality gate: typecheck ✓ lint ✓ test ✓ build ✓
+- Phase 8 Stripe Connect (mock) + earnings (complete): lib/stripe-mock.ts (PaymentIntent stub — create/confirm/get, Stripe-shaped interface for mechanical swap), lib/earnings.ts (recordEarning idempotent per submission, getEarningsForCoach newest-first w/ insertion-order tiebreak, getTotalEarningsForCoach), app/api/submissions/[id]/pay/route.ts wired to stripe-mock (create+confirm intent, returns paymentIntentId), app/api/submissions/[id]/render/route.ts records earning on completion (idempotent), app/api/coach/earnings/route.ts (GET, auth-gated, total + breakdown), app/coach/earnings/page.tsx (earnings dashboard — total, per-review price, breakdown table), dashboard Earnings link, 28 new tests — 232 total
+- Quality gate: typecheck ✓ lint ✓ test ✓ (232) build ✓
 
 ## Next Action (Inner Loop)
-Phase 8 — Stripe Connect + earnings (PRD §31 build order #18).
-- Stripe Connect integration: coach onboarding to Stripe Connect (onboarding form extension), payout configuration.
-- Earnings model: lib/earnings.ts — track coach earnings per completed submission, earnings dashboard.
-- Mock Stripe for MVP (no real API keys): lib/stripe-mock.ts with createPaymentIntent / confirmPayment stubs that the existing /api/submissions/[id]/pay route can use.
-- Coach earnings view: /coach/earnings page showing total + per-submission breakdown.
+Phase 9 — PWA enhancements (PRD §31 build order #19).
+- manifest.json / web app manifest for installable PWA
+- Service worker for offline shell / caching
+- Add-to-home-screen meta + iOS standalone tweaks
+- App icons (placeholder SVG/PNG)
 
 ## Open Issues
 - All stores in-memory — MVP-acceptable.
 - Video URL is a sample placeholder; real video storage comes with render pipeline (Phase 6).
+- Stripe is a mock; real Connect onboarding deferred until keys provisioned.
 - No blockers
 
-**Last Updated:** 2026-06-21 (Round 16 — Phase 7 coach approval screen + follow-up submission, 204 tests)
+**Last Updated:** 2026-06-21 (Round 17 — Phase 8 Stripe Connect mock + earnings, 232 tests)
