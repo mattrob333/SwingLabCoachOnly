@@ -3,7 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Menu, X } from "lucide-react";
 import { Container } from "@/components/site/container";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -41,15 +43,15 @@ export function CoachTopNav() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur">
+    <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/80 backdrop-blur">
       <Container className="flex h-14 items-center justify-between">
         <Link
           href="/coach/dashboard"
-          className="flex items-center gap-2 font-semibold"
+          className="flex items-center gap-2 font-semibold transition-colors hover:text-primary"
         >
           <span
             aria-hidden
-            className="inline-flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs"
+            className="inline-flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs shadow-sm"
           >
             SL
           </span>
@@ -84,12 +86,9 @@ export function CoachTopNav() {
             method="post"
             className="hidden sm:block"
           >
-            <button
-              type="submit"
-              className="inline-flex h-8 items-center justify-center rounded-lg border border-border bg-background px-2.5 text-sm font-medium hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
+            <Button type="submit" variant="outline" size="sm">
               Sign out
-            </button>
+            </Button>
           </form>
 
           {/* Mobile hamburger */}
@@ -100,29 +99,11 @@ export function CoachTopNav() {
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((v) => !v)}
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              aria-hidden="true"
-            >
-              {menuOpen ? (
-                <path
-                  d="M5 5l10 10M15 5L5 15"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              ) : (
-                <path
-                  d="M3 6h14M3 10h14M3 14h14"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              )}
-            </svg>
+            {menuOpen ? (
+              <X className="h-5 w-5" aria-hidden="true" />
+            ) : (
+              <Menu className="h-5 w-5" aria-hidden="true" />
+            )}
           </button>
         </div>
       </Container>
@@ -130,7 +111,7 @@ export function CoachTopNav() {
       {/* Mobile dropdown */}
       {menuOpen && (
         <nav
-          className="border-t border-border/60 bg-background sm:hidden"
+          className="border-t border-border/70 bg-background sm:hidden"
           data-testid="mobile-menu"
         >
           <Container className="flex flex-col gap-1 py-3">
@@ -150,12 +131,13 @@ export function CoachTopNav() {
               </Link>
             ))}
             <form action="/api/auth/logout" method="post">
-              <button
+              <Button
                 type="submit"
-                className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                variant="ghost"
+                className="w-full justify-start"
               >
                 Sign out
-              </button>
+              </Button>
             </form>
           </Container>
         </nav>

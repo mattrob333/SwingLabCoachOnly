@@ -10,12 +10,12 @@ const NAV = [
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur">
+    <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/80 backdrop-blur">
       <Container className="flex h-14 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
+        <Link href="/" className="flex items-center gap-2 font-semibold transition-colors hover:text-primary">
           <span
             aria-hidden
-            className="inline-flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs"
+            className="inline-flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs shadow-sm"
           >
             SL
           </span>
