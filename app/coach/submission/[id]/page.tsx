@@ -2,7 +2,10 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/site/container";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { StartReviewButton } from "@/components/coach/start-review-button";
+import { statusBadgeVariant } from "@/components/coach/coach-inbox";
 import { verifySession, SESSION_COOKIE } from "@/lib/auth/session";
 import { getCoachBySlug } from "@/lib/coaches";
 import { getSubmissionById } from "@/lib/submissions";
@@ -54,15 +57,8 @@ export default async function SubmissionDetailPage({
     completed: "Completed",
   };
 
-  const statusColors: Record<string, string> = {
-    paid: "bg-blue-100 text-blue-700",
-    in_review: "bg-amber-100 text-amber-700",
-    rendering: "bg-purple-100 text-purple-700",
-    completed: "bg-green-100 text-green-700",
-  };
-
   return (
-    <Container className="py-12">
+    <Container className="py-8 sm:py-12">
       {/* Back link */}
       <a
         href="/coach/dashboard"
@@ -74,14 +70,12 @@ export default async function SubmissionDetailPage({
       <div className="mt-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
               Submission
             </h1>
-            <span
-              className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[submission.status] ?? "bg-muted text-muted-foreground"}`}
-            >
+            <Badge variant={statusBadgeVariant(submission.status)}>
               {statusLabel[submission.status] ?? submission.status}
-            </span>
+            </Badge>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             Submitted {submission.createdAt.toLocaleDateString()} at{" "}
@@ -103,16 +97,16 @@ export default async function SubmissionDetailPage({
           <h2 className="text-sm font-medium text-muted-foreground">
             Parent notes
           </h2>
-          <p className="mt-2 whitespace-pre-wrap rounded-xl border border-border bg-card p-4 text-sm">
-            {submission.notes}
-          </p>
+          <Card className="mt-2 p-4">
+            <p className="whitespace-pre-wrap text-sm">{submission.notes}</p>
+          </Card>
         </section>
       )}
 
       {/* Action area */}
       <section className="mt-8">
         {submission.status === "paid" && (
-          <div className="rounded-xl border border-border bg-card p-6">
+          <Card className="p-6">
             <h2 className="text-lg font-medium">Ready to review</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               This submission has been paid. Start the review to open the Review
@@ -121,11 +115,11 @@ export default async function SubmissionDetailPage({
             <div className="mt-4">
               <StartReviewButton submissionId={submission.id} />
             </div>
-          </div>
+          </Card>
         )}
 
         {submission.status === "in_review" && (
-          <div className="rounded-xl border border-border bg-card p-6">
+          <Card className="p-6">
             <h2 className="text-lg font-medium">Review in progress</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               You&apos;ve started reviewing this submission. Open the Review
@@ -138,21 +132,21 @@ export default async function SubmissionDetailPage({
                 </Button>
               </a>
             </div>
-          </div>
+          </Card>
         )}
 
         {submission.status === "rendering" && (
-          <div className="rounded-xl border border-border bg-card p-6">
+          <Card className="p-6">
             <h2 className="text-lg font-medium">Rendering lesson</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               The review has been submitted and the render pipeline is composing
               the final lesson. This page will update when rendering completes.
             </p>
-          </div>
+          </Card>
         )}
 
         {submission.status === "completed" && (
-          <div className="rounded-xl border border-border bg-card p-6">
+          <Card className="p-6">
             <h2 className="text-lg font-medium">Review complete</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               This submission has been processed into an interactive lesson the
@@ -170,13 +164,13 @@ export default async function SubmissionDetailPage({
                 </Button>
               </a>
             </div>
-          </div>
+          </Card>
         )}
       </section>
 
       {/* Comparison mode — show when there are comparable follow-ups */}
       {comparisonCandidates.length > 0 && (
-        <section className="mt-6 rounded-xl border border-border bg-card p-6">
+        <Card className="mt-6 p-6">
           <h2 className="text-lg font-medium">Compare swings</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             {comparisonCandidates.length} follow-up swing
@@ -190,7 +184,7 @@ export default async function SubmissionDetailPage({
               </Button>
             </a>
           </div>
-        </section>
+        </Card>
       )}
     </Container>
   );
@@ -198,11 +192,11 @@ export default async function SubmissionDetailPage({
 
 function DetailField({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
+    <Card className="p-4">
       <p className="text-xs uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
       <p className="mt-1 text-sm font-medium">{value}</p>
-    </div>
+    </Card>
   );
 }
