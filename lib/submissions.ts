@@ -1,5 +1,5 @@
 /**
- * Submission domain facade (Wave 1 Task 5).
+ * Submission domain facade (Wave 1 Task 5 — async since Task 7).
  *
  * This module re-exports the public types, validation helper, and in-memory
  * array (for test reset), and delegates the data-access free functions
@@ -8,8 +8,8 @@
  * When Supabase keys are added to .env, all calls transparently route to
  * the Supabase repository (currently a stub — Wave 1 Task 6+).
  *
- * All 44 existing import sites continue to work unchanged because the
- * exported names and types are identical.
+ * All functions are async to match the repository interface (which must be
+ * async to support Supabase fetch queries).
  */
 
 export type {
@@ -26,12 +26,16 @@ import type { Submission, SubmissionInput } from "@/lib/repositories/types";
 export { SUBMISSIONS } from "@/lib/repositories/in-memory-submissions";
 
 /** Create a new submission. Always starts as `pending_payment`. */
-export function createSubmission(input: SubmissionInput): Submission {
+export async function createSubmission(
+  input: SubmissionInput,
+): Promise<Submission> {
   return getSubmissionRepository().create(input);
 }
 
 /** Look up a submission by id. */
-export function getSubmissionById(id: string): Submission | undefined {
+export async function getSubmissionById(
+  id: string,
+): Promise<Submission | undefined> {
   return getSubmissionRepository().getById(id);
 }
 
@@ -39,31 +43,41 @@ export function getSubmissionById(id: string): Submission | undefined {
  * Get all follow-up submissions linked to an original submission id.
  * Returns newest-first.
  */
-export function getFollowUpsForSubmission(originalId: string): Submission[] {
+export async function getFollowUpsForSubmission(
+  originalId: string,
+): Promise<Submission[]> {
   return getSubmissionRepository().getFollowUpsFor(originalId);
 }
 
 /** All submissions for a given coach, newest first. */
-export function getSubmissionsForCoach(coachSlug: string): Submission[] {
+export async function getSubmissionsForCoach(
+  coachSlug: string,
+): Promise<Submission[]> {
   return getSubmissionRepository().getForCoach(coachSlug);
 }
 
 /** Mark a submission as paid. Only transitions from `pending_payment` → `paid`. */
-export function markSubmissionPaid(id: string): Submission {
+export async function markSubmissionPaid(id: string): Promise<Submission> {
   return getSubmissionRepository().markPaid(id);
 }
 
 /** Mark a paid submission as in_review. Only transitions from `paid` → `in_review`. */
-export function markSubmissionInReview(id: string): Submission {
+export async function markSubmissionInReview(
+  id: string,
+): Promise<Submission> {
   return getSubmissionRepository().markInReview(id);
 }
 
 /** Mark an in_review submission as rendering. Only transitions from `in_review` → `rendering`. */
-export function markSubmissionRendering(id: string): Submission {
+export async function markSubmissionRendering(
+  id: string,
+): Promise<Submission> {
   return getSubmissionRepository().markRendering(id);
 }
 
 /** Mark a rendering submission as completed. Only transitions from `rendering` → `completed`. */
-export function markSubmissionCompleted(id: string): Submission {
+export async function markSubmissionCompleted(
+  id: string,
+): Promise<Submission> {
   return getSubmissionRepository().markCompleted(id);
 }

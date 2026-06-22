@@ -16,7 +16,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const submission = getSubmissionById(id);
+  const submission = await getSubmissionById(id);
 
   if (!submission) {
     return NextResponse.json(
@@ -53,7 +53,7 @@ export async function POST(
   }
 
   try {
-    const updated = markSubmissionPaid(id);
+    const updated = await markSubmissionPaid(id);
     return NextResponse.json({
       id: updated.id,
       status: updated.status,

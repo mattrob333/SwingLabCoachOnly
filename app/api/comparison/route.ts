@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Ownership: the original must exist and belong to this coach.
-  const original = getSubmissionById(originalId);
+  const original = await getSubmissionById(originalId);
   if (!original || original.coachSlug !== session.coachSlug) {
     return NextResponse.json(
       { error: "Submission not found" },
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
   // Pair mode
   if (followUpId) {
     try {
-      const pair = getComparisonPair(originalId, followUpId);
+      const pair = await getComparisonPair(originalId, followUpId);
       return NextResponse.json({
         original: {
           submissionId: pair.original.submission.id,
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Candidate-list mode
-  const candidates = listComparisonCandidates(originalId);
+  const candidates = await listComparisonCandidates(originalId);
   return NextResponse.json({
     originalSubmissionId: originalId,
     candidates: candidates.map((c) => ({

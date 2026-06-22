@@ -40,12 +40,12 @@ function validInput(): SubmissionInput {
   };
 }
 
-function completeSubmission(): string {
-  const sub = createSubmission(validInput());
-  markSubmissionPaid(sub.id);
-  markSubmissionInReview(sub.id);
-  markSubmissionRendering(sub.id);
-  markSubmissionCompleted(sub.id);
+async function completeSubmission(): Promise<string> {
+  const sub = await createSubmission(validInput());
+  await markSubmissionPaid(sub.id);
+  await markSubmissionInReview(sub.id);
+  await markSubmissionRendering(sub.id);
+  await markSubmissionCompleted(sub.id);
   return sub.id;
 }
 
@@ -56,7 +56,7 @@ describe("POST /api/submissions/[id]/lesson-draft", () => {
   });
 
   it("generates a lesson draft for a completed submission", async () => {
-    const id = completeSubmission();
+    const id = await completeSubmission();
     const token = signSession(createSessionPayload("marcus-reed"));
 
     const res = await POST(
@@ -90,7 +90,7 @@ describe("POST /api/submissions/[id]/lesson-draft", () => {
   });
 
   it("returns 401 when not authenticated", async () => {
-    const id = completeSubmission();
+    const id = await completeSubmission();
     const res = await POST(
       makeRequest({}, { swingType: "baseball", manifest: { videoUrl: "x", audioLayers: [], annotationLayers: [], events: [], createdAt: 0 } }),
       makeParams(id),
@@ -99,7 +99,7 @@ describe("POST /api/submissions/[id]/lesson-draft", () => {
   });
 
   it("returns 403 when the submission belongs to a different coach", async () => {
-    const id = completeSubmission();
+    const id = await completeSubmission();
     const token = signSession(createSessionPayload("priya-anand"));
     const res = await POST(
       makeRequest({ [SESSION_COOKIE]: token }, { swingType: "baseball", manifest: { videoUrl: "x", audioLayers: [], annotationLayers: [], events: [], createdAt: 0 } }),
@@ -118,9 +118,9 @@ describe("POST /api/submissions/[id]/lesson-draft", () => {
   });
 
   it("returns 409 when the submission is not completed", async () => {
-    const sub = createSubmission(validInput());
-    markSubmissionPaid(sub.id);
-    markSubmissionInReview(sub.id);
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
+    await markSubmissionInReview(sub.id);
     // still in_review, not completed
 
     const token = signSession(createSessionPayload("marcus-reed"));
@@ -139,7 +139,7 @@ describe("PATCH /api/submissions/[id]/lesson-draft", () => {
   });
 
   it("approves a lesson draft", async () => {
-    const id = completeSubmission();
+    const id = await completeSubmission();
     const token = signSession(createSessionPayload("marcus-reed"));
 
     // Generate first
@@ -169,7 +169,7 @@ describe("PATCH /api/submissions/[id]/lesson-draft", () => {
   });
 
   it("rejects a lesson draft", async () => {
-    const id = completeSubmission();
+    const id = await completeSubmission();
     const token = signSession(createSessionPayload("marcus-reed"));
 
     await POST(
@@ -197,7 +197,7 @@ describe("PATCH /api/submissions/[id]/lesson-draft", () => {
   });
 
   it("updates coach notes", async () => {
-    const id = completeSubmission();
+    const id = await completeSubmission();
     const token = signSession(createSessionPayload("marcus-reed"));
 
     await POST(
@@ -225,7 +225,7 @@ describe("PATCH /api/submissions/[id]/lesson-draft", () => {
   });
 
   it("returns 404 when no draft exists for the submission", async () => {
-    const id = completeSubmission();
+    const id = await completeSubmission();
     const token = signSession(createSessionPayload("marcus-reed"));
 
     const res = await PATCH(
@@ -236,7 +236,7 @@ describe("PATCH /api/submissions/[id]/lesson-draft", () => {
   });
 
   it("returns 401 when not authenticated", async () => {
-    const id = completeSubmission();
+    const id = await completeSubmission();
     const res = await PATCH(
       makeRequest({}, { status: "approved" }),
       makeParams(id),

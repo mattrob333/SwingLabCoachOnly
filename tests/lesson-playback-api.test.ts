@@ -71,9 +71,9 @@ describe("lesson playback API", () => {
   });
 
   it("rejects unauthenticated processing", async () => {
-    const sub = createSubmission(validInput());
-    markSubmissionPaid(sub.id);
-    markSubmissionInReview(sub.id);
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
+    await markSubmissionInReview(sub.id);
 
     const res = await POST(makeRequest({}, playbackInput()), makeParams(sub.id));
 
@@ -81,9 +81,9 @@ describe("lesson playback API", () => {
   });
 
   it("rejects processing with no notes", async () => {
-    const sub = createSubmission(validInput());
-    markSubmissionPaid(sub.id);
-    markSubmissionInReview(sub.id);
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
+    await markSubmissionInReview(sub.id);
     const token = signSession(createSessionPayload("marcus-reed"));
 
     const res = await POST(
@@ -95,9 +95,9 @@ describe("lesson playback API", () => {
   });
 
   it("stores a playback manifest and completes the submission", async () => {
-    const sub = createSubmission(validInput());
-    markSubmissionPaid(sub.id);
-    markSubmissionInReview(sub.id);
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
+    await markSubmissionInReview(sub.id);
     const token = signSession(createSessionPayload("marcus-reed"));
 
     const res = await POST(
@@ -109,14 +109,14 @@ describe("lesson playback API", () => {
     const data = await res.json();
     expect(data.notes).toHaveLength(1);
     expect(PLAYBACK_MANIFESTS).toHaveLength(1);
-    expect(getSubmissionById(sub.id)?.status).toBe("completed");
+    expect((await getSubmissionById(sub.id))?.status).toBe("completed");
     expect(EARNINGS).toHaveLength(1);
   });
 
   it("returns the processed playback manifest", async () => {
-    const sub = createSubmission(validInput());
-    markSubmissionPaid(sub.id);
-    markSubmissionInReview(sub.id);
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
+    await markSubmissionInReview(sub.id);
     const token = signSession(createSessionPayload("marcus-reed"));
 
     await POST(

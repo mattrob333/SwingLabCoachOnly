@@ -22,7 +22,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const submission = getSubmissionById(id);
+  const submission = await getSubmissionById(id);
 
   if (!submission) {
     return NextResponse.json(
@@ -38,7 +38,7 @@ export async function POST(
     );
   }
 
-  const coach = getCoachBySlug(submission.coachSlug);
+  const coach = await getCoachBySlug(submission.coachSlug);
   if (!coach) {
     return NextResponse.json(
       { error: "Coach not found for this submission" },
@@ -58,7 +58,7 @@ export async function POST(
     });
     confirmPaymentIntent(intent.id);
 
-    const updated = markSubmissionPaid(id);
+    const updated = await markSubmissionPaid(id);
     return NextResponse.json({
       id: updated.id,
       status: updated.status,

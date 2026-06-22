@@ -28,12 +28,12 @@ export default async function ReviewStudioPage({
     notFound();
   }
 
-  const coach = getCoachBySlug(session.coachSlug);
+  const coach = await getCoachBySlug(session.coachSlug);
   if (!coach) {
     notFound();
   }
 
-  const submission = getSubmissionById(id);
+  const submission = await getSubmissionById(id);
 
   // Guard: submission must exist, belong to this coach, and be in_review.
   // Payment before review is enforced — paid submissions start review from

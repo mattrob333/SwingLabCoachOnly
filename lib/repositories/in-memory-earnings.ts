@@ -1,8 +1,9 @@
 /**
- * In-memory earning repository (Wave 1 Task 5).
+ * In-memory earning repository (Wave 1 Task 5 — async since Task 7).
  *
  * Wraps the existing in-memory earning array + idempotent record logic that
  * previously lived in lib/earnings.ts. The array is exported for test reset.
+ * All methods are async to match the repository interface.
  */
 
 import { randomUUID } from "node:crypto";
@@ -18,7 +19,7 @@ export const EARNINGS: Earning[] = [];
 export class InMemoryEarningRepository implements EarningRepository {
   readonly mode = "mock" as const;
 
-  record(input: EarningInput): Earning {
+  async record(input: EarningInput): Promise<Earning> {
     if (!input.coachSlug || input.coachSlug.trim().length === 0) {
       throw new Error("Coach slug is required for earning");
     }
@@ -28,7 +29,7 @@ export class InMemoryEarningRepository implements EarningRepository {
     if (!input.amountUsd || input.amountUsd < 1) {
       throw new Error("Earning amount must be at least $1");
     }
-    const existing = this.getForSubmission(input.submissionId);
+    const existing = await this.getForSubmission(input.submissionId);
     if (existing) return existing;
     const earning: Earning = {
       id: `earn_${randomUUID()}`,
@@ -42,11 +43,11 @@ export class InMemoryEarningRepository implements EarningRepository {
     return earning;
   }
 
-  getForSubmission(submissionId: string): Earning | undefined {
+  async getForSubmission(submissionId: string): Promise<Earning | undefined> {
     return EARNINGS.find((e) => e.submissionId === submissionId);
   }
 
-  getForCoach(coachSlug: string): Earning[] {
+  async getForCoach(coachSlug: string): Promise<Earning[]> {
     return EARNINGS.map((e, index) => ({ e, index }))
       .filter(({ e }) => e.coachSlug === coachSlug)
       .sort((a, b) => {
@@ -57,7 +58,8 @@ export class InMemoryEarningRepository implements EarningRepository {
       .map(({ e }) => e);
   }
 
-  getTotalForCoach(coachSlug: string): number {
-    return this.getForCoach(coachSlug).reduce((sum, e) => sum + e.amountUsd, 0);
+  async getTotalForCoach(coachSlug: string): Promise<number> {
+    const earnings = await this.getForCoach(coachSlug);
+    return earnings.reduce((sum, e) => sum + e.amountUsd, 0);
   }
 }

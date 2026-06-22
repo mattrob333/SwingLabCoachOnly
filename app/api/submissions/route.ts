@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Verify the coach exists before creating a submission.
-  if (input.coachSlug && !getCoachBySlug(input.coachSlug)) {
+  if (input.coachSlug && !await getCoachBySlug(input.coachSlug)) {
     return NextResponse.json(
       { error: "Selected coach not found" },
       { status: 404 },
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const submission = createSubmission(input);
+    const submission = await createSubmission(input);
     return NextResponse.json(
       {
         id: submission.id,

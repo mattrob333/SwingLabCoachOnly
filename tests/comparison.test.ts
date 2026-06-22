@@ -41,7 +41,7 @@ describe("comparison mode (Phase 10)", () => {
   });
 
   describe("getComparisonPair", () => {
-    it("returns original + follow-up with their video URLs", () => {
+    it("returns original + follow-up with their video URLs", async () => {
       const original = makeSubmission({ id: "orig-1" });
       const followUp = makeSubmission({
         id: "follow-1",
@@ -52,7 +52,7 @@ describe("comparison mode (Phase 10)", () => {
       seedManifest("orig-1", "https://cdn/original.mp4");
       seedManifest("follow-1", "https://cdn/followup.mp4");
 
-      const pair = getComparisonPair("orig-1", "follow-1");
+      const pair = await getComparisonPair("orig-1", "follow-1");
 
       expect(pair.original.submission.id).toBe("orig-1");
       expect(pair.followUp.submission.id).toBe("follow-1");
@@ -60,7 +60,7 @@ describe("comparison mode (Phase 10)", () => {
       expect(pair.followUp.videoUrl).toBe("https://cdn/followup.mp4");
     });
 
-    it("throws if the original submission does not exist", () => {
+    it("throws if the original submission does not exist", async () => {
       const followUp = makeSubmission({
         id: "follow-1",
         followUpFor: "orig-1",
@@ -68,22 +68,22 @@ describe("comparison mode (Phase 10)", () => {
       SUBMISSIONS.push(followUp);
       seedManifest("follow-1", "https://cdn/followup.mp4");
 
-      expect(() => getComparisonPair("orig-1", "follow-1")).toThrow(
+      await expect(getComparisonPair("orig-1", "follow-1")).rejects.toThrow(
         /Original submission not found/,
       );
     });
 
-    it("throws if the follow-up submission does not exist", () => {
+    it("throws if the follow-up submission does not exist", async () => {
       const original = makeSubmission({ id: "orig-1" });
       SUBMISSIONS.push(original);
       seedManifest("orig-1", "https://cdn/original.mp4");
 
-      expect(() => getComparisonPair("orig-1", "follow-1")).toThrow(
+      await expect(getComparisonPair("orig-1", "follow-1")).rejects.toThrow(
         /Follow-up submission not found/,
       );
     });
 
-    it("throws if the follow-up is not linked to the original", () => {
+    it("throws if the follow-up is not linked to the original", async () => {
       const original = makeSubmission({ id: "orig-1" });
       // followUpFor points to a DIFFERENT original
       const followUp = makeSubmission({
@@ -94,12 +94,12 @@ describe("comparison mode (Phase 10)", () => {
       seedManifest("orig-1", "https://cdn/original.mp4");
       seedManifest("follow-1", "https://cdn/followup.mp4");
 
-      expect(() => getComparisonPair("orig-1", "follow-1")).toThrow(
+      await expect(getComparisonPair("orig-1", "follow-1")).rejects.toThrow(
         /not a follow-up of/,
       );
     });
 
-    it("throws if the original has no render manifest", () => {
+    it("throws if the original has no render manifest", async () => {
       const original = makeSubmission({ id: "orig-1" });
       const followUp = makeSubmission({
         id: "follow-1",
@@ -108,12 +108,12 @@ describe("comparison mode (Phase 10)", () => {
       SUBMISSIONS.push(original, followUp);
       seedManifest("follow-1", "https://cdn/followup.mp4");
 
-      expect(() => getComparisonPair("orig-1", "follow-1")).toThrow(
+      await expect(getComparisonPair("orig-1", "follow-1")).rejects.toThrow(
         /Original submission has no rendered lesson/,
       );
     });
 
-    it("throws if the follow-up has no render manifest", () => {
+    it("throws if the follow-up has no render manifest", async () => {
       const original = makeSubmission({ id: "orig-1" });
       const followUp = makeSubmission({
         id: "follow-1",
@@ -122,14 +122,14 @@ describe("comparison mode (Phase 10)", () => {
       SUBMISSIONS.push(original, followUp);
       seedManifest("orig-1", "https://cdn/original.mp4");
 
-      expect(() => getComparisonPair("orig-1", "follow-1")).toThrow(
+      await expect(getComparisonPair("orig-1", "follow-1")).rejects.toThrow(
         /Follow-up submission has no rendered lesson/,
       );
     });
   });
 
   describe("listComparisonCandidates", () => {
-    it("returns completed follow-ups for an original, newest-first", () => {
+    it("returns completed follow-ups for an original, newest-first", async () => {
       const original = makeSubmission({ id: "orig-1" });
       const older = makeSubmission({
         id: "follow-old",
@@ -146,14 +146,14 @@ describe("comparison mode (Phase 10)", () => {
       seedManifest("follow-old", "https://cdn/old.mp4");
       seedManifest("follow-new", "https://cdn/new.mp4");
 
-      const candidates = listComparisonCandidates("orig-1");
+      const candidates = await listComparisonCandidates("orig-1");
       expect(candidates.map((c) => c.submission.id)).toEqual([
         "follow-new",
         "follow-old",
       ]);
     });
 
-    it("excludes follow-ups that have no render manifest yet", () => {
+    it("excludes follow-ups that have no render manifest yet", async () => {
       const original = makeSubmission({ id: "orig-1" });
       const completed = makeSubmission({
         id: "follow-done",
@@ -168,19 +168,19 @@ describe("comparison mode (Phase 10)", () => {
       seedManifest("orig-1", "https://cdn/original.mp4");
       seedManifest("follow-done", "https://cdn/done.mp4");
 
-      const candidates = listComparisonCandidates("orig-1");
+      const candidates = await listComparisonCandidates("orig-1");
       expect(candidates.map((c) => c.submission.id)).toEqual(["follow-done"]);
     });
 
-    it("returns an empty array when there are no follow-ups", () => {
+    it("returns an empty array when there are no follow-ups", async () => {
       const original = makeSubmission({ id: "orig-1" });
       SUBMISSIONS.push(original);
       seedManifest("orig-1", "https://cdn/original.mp4");
 
-      expect(listComparisonCandidates("orig-1")).toEqual([]);
+      expect(await listComparisonCandidates("orig-1")).toEqual([]);
     });
 
-    it("breaks same-timestamp ties by insertion order (later = newer)", () => {
+    it("breaks same-timestamp ties by insertion order (later = newer)", async () => {
       const ts = new Date("2026-06-10T00:00:00Z");
       const original = makeSubmission({ id: "orig-1" });
       const first = makeSubmission({
@@ -198,7 +198,7 @@ describe("comparison mode (Phase 10)", () => {
       seedManifest("follow-first", "https://cdn/first.mp4");
       seedManifest("follow-second", "https://cdn/second.mp4");
 
-      const candidates = listComparisonCandidates("orig-1");
+      const candidates = await listComparisonCandidates("orig-1");
       // second was pushed later → appears first (newest)
       expect(candidates.map((c) => c.submission.id)).toEqual([
         "follow-second",

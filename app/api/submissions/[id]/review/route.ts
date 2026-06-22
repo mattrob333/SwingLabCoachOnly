@@ -30,7 +30,7 @@ export async function POST(
     );
   }
 
-  const submission = getSubmissionById(id);
+  const submission = await getSubmissionById(id);
   if (!submission) {
     return NextResponse.json(
       { error: "Submission not found" },
@@ -54,7 +54,7 @@ export async function POST(
   }
 
   try {
-    const updated = markSubmissionInReview(id);
+    const updated = await markSubmissionInReview(id);
     return NextResponse.json({
       id: updated.id,
       status: updated.status,

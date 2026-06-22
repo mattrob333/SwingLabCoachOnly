@@ -30,7 +30,7 @@ describe("POST /api/submissions/[id]/pay", () => {
   });
 
   it("confirms a mock payment intent and marks the submission paid", async () => {
-    const sub = createSubmission(validInput());
+    const sub = await createSubmission(validInput());
     const res = await POST({} as never, makeParams(sub.id));
 
     expect(res.status).toBe(200);
@@ -38,7 +38,7 @@ describe("POST /api/submissions/[id]/pay", () => {
     expect(data.status).toBe("paid");
     expect(data.amountPaid).toBe(49);
     expect(data.paymentIntentId).toMatch(/^pi_/);
-    expect(getSubmissionById(sub.id)?.status).toBe("paid");
+    expect((await getSubmissionById(sub.id))?.status).toBe("paid");
     expect(PAYMENT_INTENTS).toHaveLength(1);
     expect(PAYMENT_INTENTS[0].status).toBe("succeeded");
   });
@@ -49,8 +49,8 @@ describe("POST /api/submissions/[id]/pay", () => {
   });
 
   it("returns 409 when the submission is already paid", async () => {
-    const sub = createSubmission(validInput());
-    markSubmissionPaid(sub.id);
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
     const res = await POST({} as never, makeParams(sub.id));
     expect(res.status).toBe(409);
   });

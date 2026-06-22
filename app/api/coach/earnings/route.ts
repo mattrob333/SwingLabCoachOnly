@@ -22,8 +22,8 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const earnings = getEarningsForCoach(session.coachSlug);
-  const total = getTotalEarningsForCoach(session.coachSlug);
+  const earnings = await getEarningsForCoach(session.coachSlug);
+  const total = await getTotalEarningsForCoach(session.coachSlug);
 
   return NextResponse.json({
     totalUsd: total,

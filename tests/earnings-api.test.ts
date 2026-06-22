@@ -36,8 +36,8 @@ describe("GET /api/coach/earnings", () => {
   });
 
   it("returns the coach's total and per-submission breakdown", async () => {
-    recordEarning(earning({ submissionId: "sub-1", amountUsd: 49 }));
-    recordEarning(earning({ submissionId: "sub-2", amountUsd: 39 }));
+    await recordEarning(earning({ submissionId: "sub-1", amountUsd: 49 }));
+    await recordEarning(earning({ submissionId: "sub-2", amountUsd: 39 }));
 
     const token = signSession(createSessionPayload("marcus-reed"));
     const res = await GET(makeRequest({ [SESSION_COOKIE]: token }));
@@ -54,8 +54,8 @@ describe("GET /api/coach/earnings", () => {
   });
 
   it("only returns the signed-in coach's earnings", async () => {
-    recordEarning(earning({ submissionId: "sub-1", coachSlug: "marcus-reed" }));
-    recordEarning(
+    await recordEarning(earning({ submissionId: "sub-1", coachSlug: "marcus-reed" }));
+    await recordEarning(
       earning({ submissionId: "sub-2", coachSlug: "priya-anand" }),
     );
 

@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const coach = upsertCoach(input);
+    const coach = await upsertCoach(input);
     return NextResponse.json({ slug: coach.slug, name: coach.name });
   } catch (err) {
     return NextResponse.json(

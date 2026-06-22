@@ -22,13 +22,13 @@ export default async function CoachEarningsPage() {
     notFound();
   }
 
-  const coach = getCoachBySlug(session.coachSlug);
+  const coach = await getCoachBySlug(session.coachSlug);
   if (!coach) {
     notFound();
   }
 
-  const earnings = getEarningsForCoach(coach.slug);
-  const total = getTotalEarningsForCoach(coach.slug);
+  const earnings = await getEarningsForCoach(coach.slug);
+  const total = await getTotalEarningsForCoach(coach.slug);
 
   return (
     <Container className="py-12">

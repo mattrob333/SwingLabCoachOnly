@@ -89,7 +89,7 @@ describe("upsertCoach", () => {
     }
   });
 
-  it("creates a new coach from valid input", () => {
+  it("creates a new coach from valid input", async () => {
     const input: CoachInput = {
       name: "Jane Doe",
       title: "Hitting Coach",
@@ -99,15 +99,15 @@ describe("upsertCoach", () => {
       turnaround: "PT24H",
       highlights: ["Fast turnaround", "Drill plan"],
     };
-    const coach = upsertCoach(input);
+    const coach = await upsertCoach(input);
     expect(coach.slug).toBe("jane-doe");
     expect(coach.name).toBe("Jane Doe");
     expect(coach.highlights).toEqual(["Fast turnaround", "Drill plan"]);
     expect(coach.testimonials).toEqual([]);
-    expect(getCoachBySlug("jane-doe")).toBe(coach);
+    expect(await getCoachBySlug("jane-doe")).toBe(coach);
   });
 
-  it("updates an existing coach when the slug matches", () => {
+  it("updates an existing coach when the slug matches", async () => {
     const input: CoachInput = {
       name: "Marcus Reed",
       title: "Updated Title",
@@ -118,15 +118,15 @@ describe("upsertCoach", () => {
       highlights: ["New highlight"],
       existingSlug: "marcus-reed",
     };
-    const coach = upsertCoach(input);
+    const coach = await upsertCoach(input);
     expect(coach.slug).toBe("marcus-reed");
     expect(coach.title).toBe("Updated Title");
     expect(coach.priceUsd).toBe(59);
     // Same object reference (updated in place)
-    expect(getCoachBySlug("marcus-reed")).toBe(coach);
+    expect(await getCoachBySlug("marcus-reed")).toBe(coach);
   });
 
-  it("disambiguates a slug collision by appending a numeric suffix", () => {
+  it("disambiguates a slug collision by appending a numeric suffix", async () => {
     const input: CoachInput = {
       name: "Marcus Reed",
       title: "Another Coach",
@@ -136,13 +136,13 @@ describe("upsertCoach", () => {
       turnaround: "PT48H",
       highlights: [],
     };
-    const coach = upsertCoach(input);
+    const coach = await upsertCoach(input);
     expect(coach.slug).toBe("marcus-reed-2");
-    expect(getAllCoachSlugs()).toContain("marcus-reed-2");
+    expect(await getAllCoachSlugs()).toContain("marcus-reed-2");
   });
 
-  it("throws on invalid input", () => {
-    expect(() =>
+  it("throws on invalid input", async () => {
+    await expect(
       upsertCoach({
         name: "",
         title: "x",
@@ -152,6 +152,6 @@ describe("upsertCoach", () => {
         turnaround: "",
         highlights: [],
       })
-    ).toThrow();
+    ).rejects.toThrow();
   });
 });

@@ -37,12 +37,12 @@ export default async function LessonApprovalPage({
     notFound();
   }
 
-  const coach = getCoachBySlug(session.coachSlug);
+  const coach = await getCoachBySlug(session.coachSlug);
   if (!coach) {
     notFound();
   }
 
-  const submission = getSubmissionById(id);
+  const submission = await getSubmissionById(id);
   if (
     !submission ||
     submission.coachSlug !== coach.slug ||

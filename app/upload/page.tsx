@@ -16,7 +16,7 @@ export default async function UploadPage({
   const { followUpFor } = await searchParams;
 
   // If this is a follow-up, verify the original submission exists.
-  const original = followUpFor ? getSubmissionById(followUpFor) : undefined;
+  const original = followUpFor ? await getSubmissionById(followUpFor) : undefined;
   const isFollowUp = Boolean(original);
 
   return (

@@ -1,9 +1,9 @@
 /**
- * In-memory playback manifest repository (Wave 1 Task 5).
+ * In-memory playback manifest repository (Wave 1 Task 5 — async since Task 7).
  *
  * Wraps the existing in-memory manifest array + file-store persistence that
  * previously lived in lib/lesson/playback-store.ts. The array is exported
- * for test reset.
+ * for test reset. All methods are async to match the repository interface.
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -51,21 +51,21 @@ export class InMemoryPlaybackManifestRepository
 {
   readonly mode = "mock" as const;
 
-  getForSubmission(
+  async getForSubmission(
     submissionId: string,
-  ): StoredPlaybackManifest | undefined {
+  ): Promise<StoredPlaybackManifest | undefined> {
     load();
     return PLAYBACK_MANIFESTS.find(
       (m) => m.submissionId === submissionId,
     );
   }
 
-  save(
+  async save(
     submissionId: string,
     manifest: LessonPlaybackManifest,
-  ): StoredPlaybackManifest {
+  ): Promise<StoredPlaybackManifest> {
     load();
-    const existing = this.getForSubmission(submissionId);
+    const existing = await this.getForSubmission(submissionId);
     if (existing) {
       Object.assign(existing, manifest);
       save();

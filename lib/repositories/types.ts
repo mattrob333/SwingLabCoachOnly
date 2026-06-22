@@ -82,14 +82,14 @@ export function validateSubmissionInput(input: SubmissionInput): string[] {
 
 export interface SubmissionRepository {
   readonly mode: "live" | "mock";
-  create(input: SubmissionInput): Submission;
-  getById(id: string): Submission | undefined;
-  getFollowUpsFor(originalId: string): Submission[];
-  getForCoach(coachSlug: string): Submission[];
-  markPaid(id: string): Submission;
-  markInReview(id: string): Submission;
-  markRendering(id: string): Submission;
-  markCompleted(id: string): Submission;
+  create(input: SubmissionInput): Promise<Submission>;
+  getById(id: string): Promise<Submission | undefined>;
+  getFollowUpsFor(originalId: string): Promise<Submission[]>;
+  getForCoach(coachSlug: string): Promise<Submission[]>;
+  markPaid(id: string): Promise<Submission>;
+  markInReview(id: string): Promise<Submission>;
+  markRendering(id: string): Promise<Submission>;
+  markCompleted(id: string): Promise<Submission>;
 }
 
 // ---------------------------------------------------------------------------
@@ -159,9 +159,9 @@ export function validateCoachInput(input: CoachInput): string[] {
 
 export interface CoachRepository {
   readonly mode: "live" | "mock";
-  getBySlug(slug: string): Coach | undefined;
-  getAllSlugs(): string[];
-  upsert(input: CoachInput): Coach;
+  getBySlug(slug: string): Promise<Coach | undefined>;
+  getAllSlugs(): Promise<string[]>;
+  upsert(input: CoachInput): Promise<Coach>;
 }
 
 // ---------------------------------------------------------------------------
@@ -187,10 +187,10 @@ export type EarningInput = {
 
 export interface EarningRepository {
   readonly mode: "live" | "mock";
-  record(input: EarningInput): Earning;
-  getForSubmission(submissionId: string): Earning | undefined;
-  getForCoach(coachSlug: string): Earning[];
-  getTotalForCoach(coachSlug: string): number;
+  record(input: EarningInput): Promise<Earning>;
+  getForSubmission(submissionId: string): Promise<Earning | undefined>;
+  getForCoach(coachSlug: string): Promise<Earning[]>;
+  getTotalForCoach(coachSlug: string): Promise<number>;
 }
 
 // ---------------------------------------------------------------------------
@@ -205,9 +205,9 @@ export interface PlaybackManifestRepository {
   readonly mode: "live" | "mock";
   getForSubmission(
     submissionId: string,
-  ): StoredPlaybackManifest | undefined;
+  ): Promise<StoredPlaybackManifest | undefined>;
   save(
     submissionId: string,
     manifest: LessonPlaybackManifest,
-  ): StoredPlaybackManifest;
+  ): Promise<StoredPlaybackManifest>;
 }

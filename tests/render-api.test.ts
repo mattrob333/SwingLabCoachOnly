@@ -80,9 +80,9 @@ describe("POST /api/submissions/[id]/render", () => {
   });
 
   it("builds a manifest, stores it, and transitions submission to completed", async () => {
-    const sub = createSubmission(validInput());
-    markSubmissionPaid(sub.id);
-    markSubmissionInReview(sub.id);
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
+    await markSubmissionInReview(sub.id);
 
     const token = signSession(createSessionPayload("marcus-reed"));
     const res = await POST(
@@ -96,7 +96,7 @@ describe("POST /api/submissions/[id]/render", () => {
     expect(data.audioLayers).toHaveLength(1);
     expect(data.annotationLayers).toHaveLength(1);
     expect(data.events).toHaveLength(1);
-    expect(getSubmissionById(sub.id)?.status).toBe("completed");
+    expect((await getSubmissionById(sub.id))?.status).toBe("completed");
     expect(RENDER_MANIFESTS).toHaveLength(1);
     expect(RENDER_MANIFESTS[0].videoUrl).toBe(
       "https://example.com/swing.mp4",
@@ -109,9 +109,9 @@ describe("POST /api/submissions/[id]/render", () => {
   });
 
   it("does not double-record an earning on a second render of the same submission", async () => {
-    const sub = createSubmission(validInput());
-    markSubmissionPaid(sub.id);
-    markSubmissionInReview(sub.id);
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
+    await markSubmissionInReview(sub.id);
     const token = signSession(createSessionPayload("marcus-reed"));
 
     await POST(
@@ -129,9 +129,9 @@ describe("POST /api/submissions/[id]/render", () => {
   });
 
   it("returns 401 when not authenticated", async () => {
-    const sub = createSubmission(validInput());
-    markSubmissionPaid(sub.id);
-    markSubmissionInReview(sub.id);
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
+    await markSubmissionInReview(sub.id);
 
     const res = await POST(
       makeRequest({}, validRenderInput()),
@@ -141,9 +141,9 @@ describe("POST /api/submissions/[id]/render", () => {
   });
 
   it("returns 403 when the submission belongs to a different coach", async () => {
-    const sub = createSubmission(validInput());
-    markSubmissionPaid(sub.id);
-    markSubmissionInReview(sub.id);
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
+    await markSubmissionInReview(sub.id);
 
     const token = signSession(createSessionPayload("priya-anand"));
     const res = await POST(
@@ -163,8 +163,8 @@ describe("POST /api/submissions/[id]/render", () => {
   });
 
   it("returns 409 when the submission is not in_review", async () => {
-    const sub = createSubmission(validInput());
-    markSubmissionPaid(sub.id);
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
     // still "paid", not in_review
 
     const token = signSession(createSessionPayload("marcus-reed"));
@@ -176,9 +176,9 @@ describe("POST /api/submissions/[id]/render", () => {
   });
 
   it("returns 400 when the request body has an empty videoUrl", async () => {
-    const sub = createSubmission(validInput());
-    markSubmissionPaid(sub.id);
-    markSubmissionInReview(sub.id);
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
+    await markSubmissionInReview(sub.id);
 
     const token = signSession(createSessionPayload("marcus-reed"));
     const badInput = { ...validRenderInput(), videoUrl: "" };

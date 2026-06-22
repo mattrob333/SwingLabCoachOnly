@@ -21,7 +21,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const manifest = getPlaybackManifestForSubmission(id);
+  const manifest = await getPlaybackManifestForSubmission(id);
   if (!manifest) {
     return NextResponse.json(
       { error: "No playback lesson found for this submission" },
@@ -45,7 +45,7 @@ export async function POST(
     );
   }
 
-  const submission = getSubmissionById(id);
+  const submission = await getSubmissionById(id);
   if (!submission) {
     return NextResponse.json({ error: "Submission not found" }, { status: 404 });
   }
@@ -73,16 +73,16 @@ export async function POST(
       coachSlug: submission.coachSlug,
       parentEmail: submission.parentEmail,
     });
-    const stored = savePlaybackManifest(id, manifest);
+    const stored = await savePlaybackManifest(id, manifest);
 
     if (submission.status === "in_review") {
-      markSubmissionRendering(id);
-      markSubmissionCompleted(id);
+      await markSubmissionRendering(id);
+      await markSubmissionCompleted(id);
     }
 
-    const coach = getCoachBySlug(submission.coachSlug);
+    const coach = await getCoachBySlug(submission.coachSlug);
     if (coach) {
-      recordEarning({
+      await recordEarning({
         submissionId: id,
         coachSlug: coach.slug,
         amountUsd: coach.priceUsd,

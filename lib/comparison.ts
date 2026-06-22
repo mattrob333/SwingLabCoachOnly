@@ -36,16 +36,16 @@ export type ComparisonPair = {
  *   - the follow-up is not linked to the original (followUpFor mismatch)
  *   - either submission has no render manifest (lesson not rendered yet)
  */
-export function getComparisonPair(
+export async function getComparisonPair(
   originalId: string,
   followUpId: string,
-): ComparisonPair {
-  const original = getSubmissionById(originalId);
+): Promise<ComparisonPair> {
+  const original = await getSubmissionById(originalId);
   if (!original) {
     throw new Error(`Original submission not found: ${originalId}`);
   }
 
-  const followUp = getSubmissionById(followUpId);
+  const followUp = await getSubmissionById(followUpId);
   if (!followUp) {
     throw new Error(`Follow-up submission not found: ${followUpId}`);
   }
@@ -85,12 +85,12 @@ export function getComparisonPair(
  * broken by store insertion order (later push = newer) so ordering is
  * deterministic regardless of timestamp resolution.
  */
-export function listComparisonCandidates(
+export async function listComparisonCandidates(
   originalId: string,
-): ComparisonSide[] {
+): Promise<ComparisonSide[]> {
   // getFollowUpsForSubmission already returns newest-first with an
   // insertion-order tiebreak; filtering preserves that order, so no re-sort.
-  return getFollowUpsForSubmission(originalId)
+  return (await getFollowUpsForSubmission(originalId))
     .map((s) => {
       const manifest = getManifestForSubmission(s.id);
       return manifest ? { submission: s, videoUrl: manifest.videoUrl } : null;

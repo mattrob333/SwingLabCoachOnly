@@ -1,28 +1,28 @@
 /**
- * Supabase earning repository stub (Wave 1 Task 5).
+ * Supabase earning repository stub (Wave 1 Task 5 — async since Task 7).
  */
 
 import type { Earning, EarningInput, EarningRepository } from "./types";
 
 function notImpl(method: string): never {
   throw new Error(
-    `[supabase-earnings] ${method} not implemented — Wave 1 Task 6+ will add the schema + impl`,
+    `[supabase-earnings] ${method} not implemented — Wave 1 Slice D will add the impl`,
   );
 }
 
 export class SupabaseEarningRepository implements EarningRepository {
   readonly mode = "live" as const;
 
-  record(_input: EarningInput): Earning {
+  async record(_input: EarningInput): Promise<Earning> {
     notImpl("record");
   }
-  getForSubmission(_submissionId: string): Earning | undefined {
+  async getForSubmission(_submissionId: string): Promise<Earning | undefined> {
     notImpl("getForSubmission");
   }
-  getForCoach(_coachSlug: string): Earning[] {
+  async getForCoach(_coachSlug: string): Promise<Earning[]> {
     notImpl("getForCoach");
   }
-  getTotalForCoach(_coachSlug: string): number {
+  async getTotalForCoach(_coachSlug: string): Promise<number> {
     notImpl("getTotalForCoach");
   }
 }

@@ -1,10 +1,12 @@
 /**
- * In-memory coach repository (Wave 1 Task 5).
+ * In-memory coach repository (Wave 1 Task 5 — async since Task 7).
  *
  * Wraps the existing in-memory coach array (seeded with the two MVP sample
  * coaches) that previously lived in lib/coaches.ts. The array is exported
  * so tests and lib/auth/credentials.ts (which maps over COACHES) can access
  * the same reference the facade re-exports.
+ *
+ * All methods are async to match the repository interface.
  */
 
 import { randomUUID } from "node:crypto";
@@ -71,15 +73,15 @@ function nextAvailableSlug(name: string): string {
 export class InMemoryCoachRepository implements CoachRepository {
   readonly mode = "mock" as const;
 
-  getBySlug(slug: string): Coach | undefined {
+  async getBySlug(slug: string): Promise<Coach | undefined> {
     return COACHES.find((c) => c.slug === slug);
   }
 
-  getAllSlugs(): string[] {
+  async getAllSlugs(): Promise<string[]> {
     return COACHES.map((c) => c.slug);
   }
 
-  upsert(input: CoachInput): Coach {
+  async upsert(input: CoachInput): Promise<Coach> {
     const errors = validateCoachInput(input);
     if (errors.length > 0) {
       throw new Error(`Invalid coach input: ${errors.join("; ")}`);
@@ -87,7 +89,7 @@ export class InMemoryCoachRepository implements CoachRepository {
 
     // Update path: an explicit existingSlug was provided and matches a coach.
     if (input.existingSlug) {
-      const existing = this.getBySlug(input.existingSlug);
+      const existing = await this.getBySlug(input.existingSlug);
       if (existing) {
         existing.name = input.name;
         existing.title = input.title;

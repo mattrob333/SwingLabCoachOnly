@@ -6,8 +6,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getCoachBySlug, getAllCoachSlugs } from "@/lib/coaches";
 
-export function generateStaticParams() {
-  return getAllCoachSlugs().map((slug) => ({ slug }));
+export async function generateStaticParams() {
+  return (await getAllCoachSlugs()).map((slug) => ({ slug }));
 }
 
 export const dynamicParams = false;
@@ -20,7 +20,7 @@ export async function generateMetadata({
   params: Params;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const coach = getCoachBySlug(slug);
+  const coach = await getCoachBySlug(slug);
   if (!coach) return { title: "Coach not found" };
   return {
     title: `${coach.name} — ${coach.title}`,
@@ -30,7 +30,7 @@ export async function generateMetadata({
 
 export default async function CoachProfilePage({ params }: { params: Params }) {
   const { slug } = await params;
-  const coach = getCoachBySlug(slug);
+  const coach = await getCoachBySlug(slug);
   if (!coach) notFound();
 
   return (

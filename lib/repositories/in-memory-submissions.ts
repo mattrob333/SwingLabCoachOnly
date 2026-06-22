@@ -1,11 +1,15 @@
 /**
- * In-memory submission repository (Wave 1 Task 5).
+ * In-memory submission repository (Wave 1 Task 5 — async since Task 7).
  *
  * Wraps the existing in-memory array + file-store persistence logic that
  * previously lived in lib/submissions.ts. The array is exported so tests
  * can reset it (SUBMISSIONS.length = 0) — the same reference the facade
  * in lib/submissions.ts re-exports, so mutations are visible to the
  * singleton instance returned by the factory.
+ *
+ * All methods are async to match the repository interface (which must be
+ * async to support Supabase fetch queries). The in-memory impl is still
+ * synchronous in practice — async just wraps the return in a Promise.
  */
 
 import { randomUUID } from "node:crypto";
@@ -59,7 +63,7 @@ function save(): void {
 export class InMemorySubmissionRepository implements SubmissionRepository {
   readonly mode = "mock" as const;
 
-  create(input: SubmissionInput): Submission {
+  async create(input: SubmissionInput): Promise<Submission> {
     load();
     const errors = validateSubmissionInput(input);
     if (errors.length > 0) {
@@ -83,12 +87,12 @@ export class InMemorySubmissionRepository implements SubmissionRepository {
     return submission;
   }
 
-  getById(id: string): Submission | undefined {
+  async getById(id: string): Promise<Submission | undefined> {
     load();
     return SUBMISSIONS.find((s) => s.id === id);
   }
 
-  getFollowUpsFor(originalId: string): Submission[] {
+  async getFollowUpsFor(originalId: string): Promise<Submission[]> {
     load();
     return SUBMISSIONS.map((s, index) => ({ s, index }))
       .filter(({ s }) => s.followUpFor === originalId)
@@ -100,15 +104,15 @@ export class InMemorySubmissionRepository implements SubmissionRepository {
       .map(({ s }) => s);
   }
 
-  getForCoach(coachSlug: string): Submission[] {
+  async getForCoach(coachSlug: string): Promise<Submission[]> {
     load();
     return SUBMISSIONS.filter((s) => s.coachSlug === coachSlug).sort(
       (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
     );
   }
 
-  markPaid(id: string): Submission {
-    const submission = this.getById(id);
+  async markPaid(id: string): Promise<Submission> {
+    const submission = await this.getById(id);
     if (!submission) {
       throw new Error(`Submission not found: ${id}`);
     }
@@ -122,8 +126,8 @@ export class InMemorySubmissionRepository implements SubmissionRepository {
     return submission;
   }
 
-  markInReview(id: string): Submission {
-    const submission = this.getById(id);
+  async markInReview(id: string): Promise<Submission> {
+    const submission = await this.getById(id);
     if (!submission) {
       throw new Error(`Submission not found: ${id}`);
     }
@@ -140,8 +144,8 @@ export class InMemorySubmissionRepository implements SubmissionRepository {
     return submission;
   }
 
-  markRendering(id: string): Submission {
-    const submission = this.getById(id);
+  async markRendering(id: string): Promise<Submission> {
+    const submission = await this.getById(id);
     if (!submission) {
       throw new Error(`Submission not found: ${id}`);
     }
@@ -155,8 +159,8 @@ export class InMemorySubmissionRepository implements SubmissionRepository {
     return submission;
   }
 
-  markCompleted(id: string): Submission {
-    const submission = this.getById(id);
+  async markCompleted(id: string): Promise<Submission> {
+    const submission = await this.getById(id);
     if (!submission) {
       throw new Error(`Submission not found: ${id}`);
     }

@@ -19,14 +19,14 @@ export default async function CoachDashboardPage() {
     notFound();
   }
 
-  const coach = getCoachBySlug(session.coachSlug);
+  const coach = await getCoachBySlug(session.coachSlug);
   if (!coach) {
     notFound();
   }
 
   // Guardrail: payment before review — only show submissions that are past
   // the pending_payment stage.
-  const allSubs = getSubmissionsForCoach(coach.slug);
+  const allSubs = await getSubmissionsForCoach(coach.slug);
   const visibleSubs = allSubs.filter((s) => s.status !== "pending_payment");
   const pendingCount = visibleSubs.filter(
     (s) => s.status === "paid" || s.status === "in_review",

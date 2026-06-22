@@ -20,7 +20,7 @@ export default async function PayPage({
     notFound();
   }
 
-  const submission = getSubmissionById(submissionId);
+  const submission = await getSubmissionById(submissionId);
   if (!submission) {
     notFound();
   }
@@ -41,7 +41,7 @@ export default async function PayPage({
     );
   }
 
-  const coach = getCoachBySlug(submission.coachSlug);
+  const coach = await getCoachBySlug(submission.coachSlug);
   if (!coach) {
     notFound();
   }

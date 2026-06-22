@@ -40,12 +40,12 @@ function validInput(): SubmissionInput {
   };
 }
 
-function completeSubmission(): string {
-  const sub = createSubmission(validInput());
-  markSubmissionPaid(sub.id);
-  markSubmissionInReview(sub.id);
-  markSubmissionRendering(sub.id);
-  markSubmissionCompleted(sub.id);
+async function completeSubmission(): Promise<string> {
+  const sub = await createSubmission(validInput());
+  await markSubmissionPaid(sub.id);
+  await markSubmissionInReview(sub.id);
+  await markSubmissionRendering(sub.id);
+  await markSubmissionCompleted(sub.id);
   return sub.id;
 }
 
@@ -72,7 +72,7 @@ describe("GET /api/submissions/[id]/lesson-draft", () => {
   });
 
   it("returns the lesson draft for a submission without requiring auth (parent access)", async () => {
-    const id = completeSubmission();
+    const id = await completeSubmission();
     const token = signSession(createSessionPayload("marcus-reed"));
     await generateDraft(id, token);
 
@@ -85,7 +85,7 @@ describe("GET /api/submissions/[id]/lesson-draft", () => {
   });
 
   it("returns 404 when no draft exists for the submission", async () => {
-    const id = completeSubmission();
+    const id = await completeSubmission();
 
     const res = await GET(makeRequest({}), makeParams(id));
     expect(res.status).toBe(404);
@@ -97,7 +97,7 @@ describe("GET /api/submissions/[id]/lesson-draft", () => {
   });
 
   it("returns the draft with all fields", async () => {
-    const id = completeSubmission();
+    const id = await completeSubmission();
     const token = signSession(createSessionPayload("marcus-reed"));
     await generateDraft(id, token);
 

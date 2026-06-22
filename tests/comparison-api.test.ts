@@ -55,10 +55,10 @@ describe("GET /api/comparison", () => {
     });
 
     it("returns completed follow-ups for the original", async () => {
-      const original = createSubmission(validInput());
-      markSubmissionPaid(original.id);
-      const followUp = createSubmission({ ...validInput(), followUpFor: original.id });
-      markSubmissionPaid(followUp.id);
+      const original = await createSubmission(validInput());
+      await markSubmissionPaid(original.id);
+      const followUp = await createSubmission({ ...validInput(), followUpFor: original.id });
+      await markSubmissionPaid(followUp.id);
       seedManifest(original.id, "https://cdn/orig.mp4");
       seedManifest(followUp.id, "https://cdn/follow.mp4");
 
@@ -84,10 +84,10 @@ describe("GET /api/comparison", () => {
 
   describe("pair (?original=X&followUp=Y)", () => {
     it("returns the comparison pair with both video URLs", async () => {
-      const original = createSubmission(validInput());
-      markSubmissionPaid(original.id);
-      const followUp = createSubmission({ ...validInput(), followUpFor: original.id });
-      markSubmissionPaid(followUp.id);
+      const original = await createSubmission(validInput());
+      await markSubmissionPaid(original.id);
+      const followUp = await createSubmission({ ...validInput(), followUpFor: original.id });
+      await markSubmissionPaid(followUp.id);
       seedManifest(original.id, "https://cdn/orig.mp4");
       seedManifest(followUp.id, "https://cdn/follow.mp4");
 
@@ -107,8 +107,8 @@ describe("GET /api/comparison", () => {
     });
 
     it("returns 400 when followUp is missing from the query", async () => {
-      const original = createSubmission(validInput());
-      markSubmissionPaid(original.id);
+      const original = await createSubmission(validInput());
+      await markSubmissionPaid(original.id);
       seedManifest(original.id, "https://cdn/orig.mp4");
 
       const token = signSession(createSessionPayload("marcus-reed"));
@@ -120,11 +120,11 @@ describe("GET /api/comparison", () => {
     });
 
     it("returns 404 when the follow-up is not linked to the original", async () => {
-      const original = createSubmission(validInput());
-      markSubmissionPaid(original.id);
+      const original = await createSubmission(validInput());
+      await markSubmissionPaid(original.id);
       // followUp points to a different original
-      const followUp = createSubmission({ ...validInput(), followUpFor: "other" });
-      markSubmissionPaid(followUp.id);
+      const followUp = await createSubmission({ ...validInput(), followUpFor: "other" });
+      await markSubmissionPaid(followUp.id);
       seedManifest(original.id, "https://cdn/orig.mp4");
       seedManifest(followUp.id, "https://cdn/follow.mp4");
 
@@ -139,10 +139,10 @@ describe("GET /api/comparison", () => {
     });
 
     it("returns 404 when the original has no render manifest", async () => {
-      const original = createSubmission(validInput());
-      markSubmissionPaid(original.id);
-      const followUp = createSubmission({ ...validInput(), followUpFor: original.id });
-      markSubmissionPaid(followUp.id);
+      const original = await createSubmission(validInput());
+      await markSubmissionPaid(original.id);
+      const followUp = await createSubmission({ ...validInput(), followUpFor: original.id });
+      await markSubmissionPaid(followUp.id);
       seedManifest(followUp.id, "https://cdn/follow.mp4");
 
       const token = signSession(createSessionPayload("marcus-reed"));

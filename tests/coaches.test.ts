@@ -12,21 +12,21 @@ describe("coaches data", () => {
     for (const s of slugs) expect(s.length).toBeGreaterThan(0);
   });
 
-  it("getCoachBySlug returns the matching coach", () => {
+  it("getCoachBySlug returns the matching coach", async () => {
     const first = COACHES[0];
-    expect(getCoachBySlug(first.slug)).toBe(first);
+    expect(await getCoachBySlug(first.slug)).toBe(first);
   });
 
-  it("getCoachBySlug returns undefined for unknown slug", () => {
-    expect(getCoachBySlug("does-not-exist")).toBeUndefined();
+  it("getCoachBySlug returns undefined for unknown slug", async () => {
+    expect(await getCoachBySlug("does-not-exist")).toBeUndefined();
   });
 
-  it("getCoachBySlug is case-sensitive", () => {
+  it("getCoachBySlug is case-sensitive", async () => {
     const upper = COACHES[0].slug.toUpperCase();
-    expect(getCoachBySlug(upper)).toBeUndefined();
+    expect(await getCoachBySlug(upper)).toBeUndefined();
   });
 
-  it("getAllCoachSlugs matches the coaches array", () => {
-    expect(getAllCoachSlugs()).toEqual(COACHES.map((c) => c.slug));
+  it("getAllCoachSlugs matches the coaches array", async () => {
+    expect(await getAllCoachSlugs()).toEqual(COACHES.map((c) => c.slug));
   });
 });

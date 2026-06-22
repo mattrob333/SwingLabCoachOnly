@@ -27,12 +27,12 @@ export default async function SubmissionDetailPage({
     notFound();
   }
 
-  const coach = getCoachBySlug(session.coachSlug);
+  const coach = await getCoachBySlug(session.coachSlug);
   if (!coach) {
     notFound();
   }
 
-  const submission = getSubmissionById(id);
+  const submission = await getSubmissionById(id);
 
   // Guardrail: payment before review. Don't expose pending_payment submissions
   // to the coach, and don't reveal submissions owned by other coaches.
@@ -45,7 +45,7 @@ export default async function SubmissionDetailPage({
   }
 
   // Phase 10 — follow-up swings with completed lessons available for comparison.
-  const comparisonCandidates = listComparisonCandidates(submission.id);
+  const comparisonCandidates = await listComparisonCandidates(submission.id);
 
   const statusLabel: Record<string, string> = {
     paid: "New — awaiting review",

@@ -43,7 +43,7 @@ export async function POST(
     );
   }
 
-  const submission = getSubmissionById(id);
+  const submission = await getSubmissionById(id);
   if (!submission) {
     return NextResponse.json(
       { error: "Submission not found" },
@@ -81,21 +81,21 @@ export async function POST(
   }
 
   // Transition to rendering
-  markSubmissionRendering(id);
+  await markSubmissionRendering(id);
 
   try {
     const manifest = buildRenderManifest(input);
     RENDER_MANIFESTS.push({ ...manifest, submissionId: id });
 
     // Transition to completed (MVP: immediate)
-    markSubmissionCompleted(id);
+    await markSubmissionCompleted(id);
 
     // Phase 8: record a coach earning for the completed submission. Idempotent
     // per submission, so a retry doesn't double-count. The amount is the
     // coach's listed price (PRD §31 build order #18).
-    const coach = getCoachBySlug(submission.coachSlug);
+    const coach = await getCoachBySlug(submission.coachSlug);
     if (coach) {
-      recordEarning({
+      await recordEarning({
         submissionId: id,
         coachSlug: coach.slug,
         amountUsd: coach.priceUsd,

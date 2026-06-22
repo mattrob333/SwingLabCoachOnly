@@ -23,12 +23,12 @@ export default async function LessonPage({
 }) {
   const { id } = await params;
 
-  const submission = getSubmissionById(id);
+  const submission = await getSubmissionById(id);
   if (!submission) {
     notFound();
   }
 
-  const playbackManifest = getPlaybackManifestForSubmission(id);
+  const playbackManifest = await getPlaybackManifestForSubmission(id);
   const draft = getDraftForSubmission(id);
 
   if (!playbackManifest && !draft) {

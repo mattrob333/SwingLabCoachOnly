@@ -19,7 +19,7 @@ export default async function CoachOnboardingPage() {
   }
 
   // Pre-fill the form if the coach already has a profile record.
-  const existing = getCoachBySlug(session.coachSlug);
+  const existing = await getCoachBySlug(session.coachSlug);
 
   return (
     <Container className="py-12">

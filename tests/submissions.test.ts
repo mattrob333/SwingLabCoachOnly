@@ -62,7 +62,7 @@ describe("createSubmission", () => {
     SUBMISSIONS.length = 0;
   });
 
-  it("creates a submission with a unique id and pending status", () => {
+  it("creates a submission with a unique id and pending status", async () => {
     const input: SubmissionInput = {
       coachSlug: "marcus-reed",
       parentEmail: "parent@example.com",
@@ -70,17 +70,17 @@ describe("createSubmission", () => {
       swingType: "baseball",
       notes: "Help with load.",
     };
-    const sub = createSubmission(input);
+    const sub = await createSubmission(input);
 
     expect(sub.id).toBeTruthy();
     expect(sub.id).toHaveLength(36); // UUID format
     expect(sub.coachSlug).toBe("marcus-reed");
     expect(sub.status).toBe("pending_payment");
     expect(sub.createdAt).toBeInstanceOf(Date);
-    expect(getSubmissionById(sub.id)).toBe(sub);
+    expect(await getSubmissionById(sub.id)).toBe(sub);
   });
 
-  it("creates unique ids for multiple submissions", () => {
+  it("creates unique ids for multiple submissions", async () => {
     const input: SubmissionInput = {
       coachSlug: "marcus-reed",
       parentEmail: "parent@example.com",
@@ -88,13 +88,13 @@ describe("createSubmission", () => {
       swingType: "softball",
       notes: "",
     };
-    const a = createSubmission(input);
-    const b = createSubmission(input);
+    const a = await createSubmission(input);
+    const b = await createSubmission(input);
     expect(a.id).not.toBe(b.id);
   });
 
-  it("throws on invalid input", () => {
-    expect(() =>
+  it("throws on invalid input", async () => {
+    await expect(
       createSubmission({
         coachSlug: "",
         parentEmail: "",
@@ -102,7 +102,7 @@ describe("createSubmission", () => {
         swingType: "",
         notes: "",
       }),
-    ).toThrow();
+    ).rejects.toThrow();
   });
 });
 
@@ -111,7 +111,7 @@ describe("getSubmissionsForCoach", () => {
     SUBMISSIONS.length = 0;
   });
 
-  it("returns only submissions for the given coach slug", () => {
+  it("returns only submissions for the given coach slug", async () => {
     const input: SubmissionInput = {
       coachSlug: "marcus-reed",
       parentEmail: "a@example.com",
@@ -124,20 +124,20 @@ describe("getSubmissionsForCoach", () => {
       coachSlug: "priya-anand",
       parentEmail: "b@example.com",
     };
-    createSubmission(input);
-    createSubmission(input2);
+    await createSubmission(input);
+    await createSubmission(input2);
 
-    const marcusSubs = getSubmissionsForCoach("marcus-reed");
+    const marcusSubs = await getSubmissionsForCoach("marcus-reed");
     expect(marcusSubs).toHaveLength(1);
     expect(marcusSubs[0].coachSlug).toBe("marcus-reed");
 
-    const priyaSubs = getSubmissionsForCoach("priya-anand");
+    const priyaSubs = await getSubmissionsForCoach("priya-anand");
     expect(priyaSubs).toHaveLength(1);
     expect(priyaSubs[0].coachSlug).toBe("priya-anand");
   });
 
-  it("returns an empty array when no submissions exist for a coach", () => {
-    expect(getSubmissionsForCoach("marcus-reed")).toEqual([]);
+  it("returns an empty array when no submissions exist for a coach", async () => {
+    expect(await getSubmissionsForCoach("marcus-reed")).toEqual([]);
   });
 });
 
@@ -146,7 +146,7 @@ describe("markSubmissionPaid", () => {
     SUBMISSIONS.length = 0;
   });
 
-  it("transitions a pending_payment submission to paid", () => {
+  it("transitions a pending_payment submission to paid", async () => {
     const input: SubmissionInput = {
       coachSlug: "marcus-reed",
       parentEmail: "parent@example.com",
@@ -154,21 +154,21 @@ describe("markSubmissionPaid", () => {
       swingType: "baseball",
       notes: "",
     };
-    const sub = createSubmission(input);
+    const sub = await createSubmission(input);
     expect(sub.status).toBe("pending_payment");
 
-    const updated = markSubmissionPaid(sub.id);
+    const updated = await markSubmissionPaid(sub.id);
     expect(updated.status).toBe("paid");
-    expect(getSubmissionById(sub.id)?.status).toBe("paid");
+    expect((await getSubmissionById(sub.id))?.status).toBe("paid");
   });
 
-  it("throws when the submission does not exist", () => {
-    expect(() => markSubmissionPaid("nonexistent-id")).toThrow(
+  it("throws when the submission does not exist", async () => {
+    await expect(markSubmissionPaid("nonexistent-id")).rejects.toThrow(
       "Submission not found",
     );
   });
 
-  it("throws when the submission is already paid", () => {
+  it("throws when the submission is already paid", async () => {
     const input: SubmissionInput = {
       coachSlug: "marcus-reed",
       parentEmail: "parent@example.com",
@@ -176,10 +176,10 @@ describe("markSubmissionPaid", () => {
       swingType: "baseball",
       notes: "",
     };
-    const sub = createSubmission(input);
-    markSubmissionPaid(sub.id);
+    const sub = await createSubmission(input);
+    await markSubmissionPaid(sub.id);
 
-    expect(() => markSubmissionPaid(sub.id)).toThrow("not pending payment");
+    await expect(markSubmissionPaid(sub.id)).rejects.toThrow("not pending payment");
   });
 });
 
@@ -188,7 +188,7 @@ describe("markSubmissionInReview", () => {
     SUBMISSIONS.length = 0;
   });
 
-  it("transitions a paid submission to in_review", () => {
+  it("transitions a paid submission to in_review", async () => {
     const input: SubmissionInput = {
       coachSlug: "marcus-reed",
       parentEmail: "parent@example.com",
@@ -196,21 +196,21 @@ describe("markSubmissionInReview", () => {
       swingType: "baseball",
       notes: "",
     };
-    const sub = createSubmission(input);
-    markSubmissionPaid(sub.id);
+    const sub = await createSubmission(input);
+    await markSubmissionPaid(sub.id);
 
-    const updated = markSubmissionInReview(sub.id);
+    const updated = await markSubmissionInReview(sub.id);
     expect(updated.status).toBe("in_review");
-    expect(getSubmissionById(sub.id)?.status).toBe("in_review");
+    expect((await getSubmissionById(sub.id))?.status).toBe("in_review");
   });
 
-  it("throws when the submission does not exist", () => {
-    expect(() => markSubmissionInReview("nonexistent-id")).toThrow(
+  it("throws when the submission does not exist", async () => {
+    await expect(markSubmissionInReview("nonexistent-id")).rejects.toThrow(
       "Submission not found",
     );
   });
 
-  it("throws when the submission is still pending_payment", () => {
+  it("throws when the submission is still pending_payment", async () => {
     const input: SubmissionInput = {
       coachSlug: "marcus-reed",
       parentEmail: "parent@example.com",
@@ -218,14 +218,14 @@ describe("markSubmissionInReview", () => {
       swingType: "baseball",
       notes: "",
     };
-    const sub = createSubmission(input);
+    const sub = await createSubmission(input);
     // Not paid yet
-    expect(() => markSubmissionInReview(sub.id)).toThrow(
+    await expect(markSubmissionInReview(sub.id)).rejects.toThrow(
       "not paid",
     );
   });
 
-  it("throws when the submission is already in_review", () => {
+  it("throws when the submission is already in_review", async () => {
     const input: SubmissionInput = {
       coachSlug: "marcus-reed",
       parentEmail: "parent@example.com",
@@ -233,11 +233,11 @@ describe("markSubmissionInReview", () => {
       swingType: "baseball",
       notes: "",
     };
-    const sub = createSubmission(input);
-    markSubmissionPaid(sub.id);
-    markSubmissionInReview(sub.id);
+    const sub = await createSubmission(input);
+    await markSubmissionPaid(sub.id);
+    await markSubmissionInReview(sub.id);
 
-    expect(() => markSubmissionInReview(sub.id)).toThrow(
+    await expect(markSubmissionInReview(sub.id)).rejects.toThrow(
       "already in review",
     );
   });
@@ -258,9 +258,9 @@ describe("follow-up submissions (build order #17)", () => {
     };
   }
 
-  it("createSubmission persists followUpFor when provided", () => {
-    const original = createSubmission(validInput());
-    const followUp = createSubmission({
+  it("createSubmission persists followUpFor when provided", async () => {
+    const original = await createSubmission(validInput());
+    const followUp = await createSubmission({
       ...validInput(),
       followUpFor: original.id,
     });
@@ -269,32 +269,32 @@ describe("follow-up submissions (build order #17)", () => {
     expect(followUp.status).toBe("pending_payment");
   });
 
-  it("createSubmission omits followUpFor when not provided", () => {
-    const sub = createSubmission(validInput());
+  it("createSubmission omits followUpFor when not provided", async () => {
+    const sub = await createSubmission(validInput());
     expect(sub.followUpFor).toBeUndefined();
   });
 
-  it("getFollowUpsForSubmission returns linked submissions newest-first", () => {
-    const original = createSubmission(validInput());
+  it("getFollowUpsForSubmission returns linked submissions newest-first", async () => {
+    const original = await createSubmission(validInput());
 
-    const first = createSubmission({
+    const first = await createSubmission({
       ...validInput(),
       followUpFor: original.id,
     });
-    const second = createSubmission({
+    const second = await createSubmission({
       ...validInput(),
       followUpFor: original.id,
     });
     // An unrelated submission should not appear.
-    createSubmission(validInput());
+    await createSubmission(validInput());
 
-    const followUps = getFollowUpsForSubmission(original.id);
+    const followUps = await getFollowUpsForSubmission(original.id);
     expect(followUps).toHaveLength(2);
     expect(followUps[0].id).toBe(second.id);
     expect(followUps[1].id).toBe(first.id);
   });
 
-  it("getFollowUpsForSubmission returns empty array when none exist", () => {
-    expect(getFollowUpsForSubmission("nonexistent-id")).toEqual([]);
+  it("getFollowUpsForSubmission returns empty array when none exist", async () => {
+    expect(await getFollowUpsForSubmission("nonexistent-id")).toEqual([]);
   });
 });

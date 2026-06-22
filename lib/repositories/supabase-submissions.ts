@@ -1,10 +1,10 @@
 /**
- * Supabase submission repository stub (Wave 1 Task 5).
+ * Supabase submission repository stub (Wave 1 Task 5 — async since Task 7).
  *
  * Every method throws "not implemented" — the real schema + queries land in
- * Wave 1 Task 6+ (Supabase Postgres migrations). The factory only returns
- * this impl when `isLive("database")` is true (i.e. the user has added
- * Supabase credentials to .env). Until then the in-memory impl is used.
+ * Wave 1 Slice D (Supabase PostgREST impls). The factory only returns this
+ * impl when `isLive("database")` is true. Methods are async to match the
+ * repository interface.
  */
 
 import type {
@@ -15,35 +15,35 @@ import type {
 
 function notImpl(method: string): never {
   throw new Error(
-    `[supabase-submissions] ${method} not implemented — Wave 1 Task 6+ will add the schema + impl`,
+    `[supabase-submissions] ${method} not implemented — Wave 1 Slice D will add the impl`,
   );
 }
 
 export class SupabaseSubmissionRepository implements SubmissionRepository {
   readonly mode = "live" as const;
 
-  create(_input: SubmissionInput): Submission {
+  async create(_input: SubmissionInput): Promise<Submission> {
     notImpl("create");
   }
-  getById(_id: string): Submission | undefined {
+  async getById(_id: string): Promise<Submission | undefined> {
     notImpl("getById");
   }
-  getFollowUpsFor(_originalId: string): Submission[] {
+  async getFollowUpsFor(_originalId: string): Promise<Submission[]> {
     notImpl("getFollowUpsFor");
   }
-  getForCoach(_coachSlug: string): Submission[] {
+  async getForCoach(_coachSlug: string): Promise<Submission[]> {
     notImpl("getForCoach");
   }
-  markPaid(_id: string): Submission {
+  async markPaid(_id: string): Promise<Submission> {
     notImpl("markPaid");
   }
-  markInReview(_id: string): Submission {
+  async markInReview(_id: string): Promise<Submission> {
     notImpl("markInReview");
   }
-  markRendering(_id: string): Submission {
+  async markRendering(_id: string): Promise<Submission> {
     notImpl("markRendering");
   }
-  markCompleted(_id: string): Submission {
+  async markCompleted(_id: string): Promise<Submission> {
     notImpl("markCompleted");
   }
 }

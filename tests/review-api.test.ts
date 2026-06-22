@@ -42,8 +42,8 @@ describe("POST /api/submissions/[id]/review", () => {
   });
 
   it("transitions a paid submission to in_review for the owning coach", async () => {
-    const sub = createSubmission(validInput());
-    markSubmissionPaid(sub.id);
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
 
     const token = signSession(createSessionPayload("marcus-reed"));
     const res = await POST(
@@ -53,20 +53,20 @@ describe("POST /api/submissions/[id]/review", () => {
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.status).toBe("in_review");
-    expect(getSubmissionById(sub.id)?.status).toBe("in_review");
+    expect((await getSubmissionById(sub.id))?.status).toBe("in_review");
   });
 
   it("returns 401 when not authenticated", async () => {
-    const sub = createSubmission(validInput());
-    markSubmissionPaid(sub.id);
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
 
     const res = await POST(makeRequest({}), makeParams(sub.id));
     expect(res.status).toBe(401);
   });
 
   it("returns 403 when the submission belongs to a different coach", async () => {
-    const sub = createSubmission(validInput());
-    markSubmissionPaid(sub.id);
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
 
     // Signed in as a different coach
     const token = signSession(createSessionPayload("priya-anand"));
@@ -87,7 +87,7 @@ describe("POST /api/submissions/[id]/review", () => {
   });
 
   it("returns 409 when the submission is still pending_payment", async () => {
-    const sub = createSubmission(validInput());
+    const sub = await createSubmission(validInput());
     // Not paid
     const token = signSession(createSessionPayload("marcus-reed"));
     const res = await POST(

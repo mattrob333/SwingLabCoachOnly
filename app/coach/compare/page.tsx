@@ -40,7 +40,7 @@ export default async function ComparePage({
     notFound();
   }
 
-  const original = getSubmissionById(originalId);
+  const original = await getSubmissionById(originalId);
   if (!original || original.coachSlug !== session.coachSlug) {
     notFound();
   }
@@ -49,7 +49,7 @@ export default async function ComparePage({
   if (followUpId) {
     let pair;
     try {
-      pair = getComparisonPair(originalId, followUpId);
+      pair = await getComparisonPair(originalId, followUpId);
     } catch {
       notFound();
     }
@@ -81,7 +81,7 @@ export default async function ComparePage({
   }
 
   // Candidate-list mode
-  const candidates = listComparisonCandidates(originalId);
+  const candidates = await listComparisonCandidates(originalId);
 
   return (
     <Container className="py-12">

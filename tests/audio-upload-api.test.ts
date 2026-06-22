@@ -43,7 +43,7 @@ describe("POST /api/submissions/[id]/audio", () => {
   });
 
   it("requires coach authentication", async () => {
-    const sub = createSubmission(validInput());
+    const sub = await createSubmission(validInput());
     const form = new FormData();
 
     const res = await POST(makeRequest({}, form), makeParams(sub.id));
@@ -52,9 +52,9 @@ describe("POST /api/submissions/[id]/audio", () => {
   });
 
   it("rejects missing audio files", async () => {
-    const sub = createSubmission(validInput());
-    markSubmissionPaid(sub.id);
-    markSubmissionInReview(sub.id);
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
+    await markSubmissionInReview(sub.id);
     const token = signSession(createSessionPayload("marcus-reed"));
     const form = new FormData();
 
@@ -67,9 +67,9 @@ describe("POST /api/submissions/[id]/audio", () => {
   });
 
   it("rejects non-audio uploads", async () => {
-    const sub = createSubmission(validInput());
-    markSubmissionPaid(sub.id);
-    markSubmissionInReview(sub.id);
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
+    await markSubmissionInReview(sub.id);
     const token = signSession(createSessionPayload("marcus-reed"));
     const form = new FormData();
     form.set("audio", new File(["not audio"], "note.txt", { type: "text/plain" }));

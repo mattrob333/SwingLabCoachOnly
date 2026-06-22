@@ -50,7 +50,7 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const submission = getSubmissionById(id);
+  const submission = await getSubmissionById(id);
   if (!submission) {
     return NextResponse.json(
       { error: "Submission not found" },
@@ -83,7 +83,7 @@ export async function POST(
     );
   }
 
-  const submission = getSubmissionById(id);
+  const submission = await getSubmissionById(id);
   if (!submission) {
     return NextResponse.json(
       { error: "Submission not found" },
@@ -143,7 +143,7 @@ export async function PATCH(
     );
   }
 
-  const submission = getSubmissionById(id);
+  const submission = await getSubmissionById(id);
   if (!submission) {
     return NextResponse.json(
       { error: "Submission not found" },

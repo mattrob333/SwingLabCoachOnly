@@ -7,7 +7,10 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
  * (submissions, coaches, earnings, playback manifests). Mirrors the storage
  * adapter factory pattern: mock when env keys absent, live (Supabase stub)
  * when present. The Supabase impls are stubs that throw "not implemented"
- * — Wave 1 Task 6+ will fill them in with the real schema + queries.
+ * — Wave 1 Slice D will fill them in with the real schema + queries.
+ *
+ * All repository methods are async (Wave 1 Task 7) — stub throw tests use
+ * `await expect(...).rejects.toThrow(...)` and facade calls use `await`.
  *
  * Existing tests (submissions.test.ts, coaches.test.ts, earnings.test.ts,
  * lesson-playback-api.test.ts) remain the regression proof that the in-memory
@@ -59,7 +62,7 @@ describe("repository factories (env-gated)", () => {
       const mod = await import("@/lib/repositories");
       mod._resetAllRepositoriesForTests();
       const repo = mod.getSubmissionRepository();
-      expect(() =>
+      await expect(
         repo.create({
           coachSlug: "x",
           parentEmail: "p@e.com",
@@ -67,7 +70,7 @@ describe("repository factories (env-gated)", () => {
           swingType: "baseball",
           notes: "",
         }),
-      ).toThrow(/not.*implemented/i);
+      ).rejects.toThrow(/not.*implemented/i);
     });
 
     it("Supabase stub throws on reads too", async () => {
@@ -75,8 +78,8 @@ describe("repository factories (env-gated)", () => {
       const mod = await import("@/lib/repositories");
       mod._resetAllRepositoriesForTests();
       const repo = mod.getSubmissionRepository();
-      expect(() => repo.getById("any")).toThrow(/not.*implemented/i);
-      expect(() => repo.getForCoach("any")).toThrow(/not.*implemented/i);
+      await expect(repo.getById("any")).rejects.toThrow(/not.*implemented/i);
+      await expect(repo.getForCoach("any")).rejects.toThrow(/not.*implemented/i);
     });
   });
 
@@ -107,7 +110,7 @@ describe("repository factories (env-gated)", () => {
       const mod = await import("@/lib/repositories");
       mod._resetAllRepositoriesForTests();
       const repo = mod.getCoachRepository();
-      expect(() => repo.getBySlug("any")).toThrow(/not.*implemented/i);
+      await expect(repo.getBySlug("any")).rejects.toThrow(/not.*implemented/i);
     });
   });
 
@@ -138,14 +141,14 @@ describe("repository factories (env-gated)", () => {
       const mod = await import("@/lib/repositories");
       mod._resetAllRepositoriesForTests();
       const repo = mod.getEarningRepository();
-      expect(() =>
+      await expect(
         repo.record({
           submissionId: "s1",
           coachSlug: "c1",
           amountUsd: 49,
           parentEmail: "p@e.com",
         }),
-      ).toThrow(/not.*implemented/i);
+      ).rejects.toThrow(/not.*implemented/i);
     });
   });
 
@@ -178,7 +181,7 @@ describe("repository factories (env-gated)", () => {
       const mod = await import("@/lib/repositories");
       mod._resetAllRepositoriesForTests();
       const repo = mod.getPlaybackManifestRepository();
-      expect(() =>
+      await expect(
         repo.save("sub-1", {
           videoUrl: "/v.mp4",
           notes: [],
@@ -186,7 +189,7 @@ describe("repository factories (env-gated)", () => {
           status: "processed",
           version: 1,
         }),
-      ).toThrow(/not.*implemented/i);
+      ).rejects.toThrow(/not.*implemented/i);
     });
   });
 });
@@ -212,7 +215,7 @@ describe("facade delegation (smoke)", () => {
   it("createSubmission delegates through the factory to the in-memory repo", async () => {
     const subMod = await import("@/lib/submissions");
     subMod.SUBMISSIONS.length = 0;
-    const sub = subMod.createSubmission({
+    const sub = await subMod.createSubmission({
       coachSlug: "marcus-reed",
       parentEmail: "parent@example.com",
       playerAge: 12,
@@ -220,24 +223,24 @@ describe("facade delegation (smoke)", () => {
       notes: "smoke",
     });
     expect(sub.status).toBe("pending_payment");
-    expect(subMod.getSubmissionById(sub.id)?.id).toBe(sub.id);
+    expect((await subMod.getSubmissionById(sub.id))?.id).toBe(sub.id);
   });
 
   it("getCoachBySlug delegates through the factory", async () => {
     const coachMod = await import("@/lib/coaches");
-    const coach = coachMod.getCoachBySlug("marcus-reed");
+    const coach = await coachMod.getCoachBySlug("marcus-reed");
     expect(coach?.slug).toBe("marcus-reed");
   });
 
   it("recordEarning delegates through the factory", async () => {
     const earnMod = await import("@/lib/earnings");
     earnMod.EARNINGS.length = 0;
-    const e = earnMod.recordEarning({
+    const e = await earnMod.recordEarning({
       submissionId: "smoke-1",
       coachSlug: "marcus-reed",
       amountUsd: 49,
       parentEmail: "p@e.com",
     });
-    expect(earnMod.getEarningForSubmission("smoke-1")?.id).toBe(e.id);
+    expect((await earnMod.getEarningForSubmission("smoke-1"))?.id).toBe(e.id);
   });
 });
