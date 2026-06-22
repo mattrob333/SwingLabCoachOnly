@@ -1,56 +1,26 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+/**
+ * Playback manifest store facade (Wave 1 Task 5).
+ *
+ * Re-exports the in-memory manifest array (for test reset) and delegates
+ * data-access free functions through the env-gated repository factory.
+ */
+
+import { getPlaybackManifestRepository } from "@/lib/repositories";
 import type { LessonPlaybackManifest } from "@/lib/lesson/playback";
+import type { StoredPlaybackManifest } from "@/lib/repositories/types";
 
-export const PLAYBACK_MANIFESTS: Array<
-  LessonPlaybackManifest & { submissionId: string }
-> = [];
-
-const STORE_PATH = join(process.cwd(), ".swinglab-data", "playback-manifests.json");
-const USE_FILE_STORE = process.env.NODE_ENV !== "test";
-
-function loadManifests(): void {
-  if (!USE_FILE_STORE || !existsSync(STORE_PATH)) return;
-
-  try {
-    const stored = JSON.parse(readFileSync(STORE_PATH, "utf8")) as Array<
-      LessonPlaybackManifest & { submissionId: string }
-    >;
-    PLAYBACK_MANIFESTS.splice(0, PLAYBACK_MANIFESTS.length, ...stored);
-  } catch {
-    PLAYBACK_MANIFESTS.length = 0;
-  }
-}
-
-function saveManifests(): void {
-  if (!USE_FILE_STORE) return;
-
-  mkdirSync(dirname(STORE_PATH), { recursive: true });
-  writeFileSync(STORE_PATH, JSON.stringify(PLAYBACK_MANIFESTS, null, 2), "utf8");
-}
+/** In-memory store. Exported for test reset. */
+export { PLAYBACK_MANIFESTS } from "@/lib/repositories/in-memory-playback";
 
 export function getPlaybackManifestForSubmission(
   submissionId: string,
-): (LessonPlaybackManifest & { submissionId: string }) | undefined {
-  loadManifests();
-  return PLAYBACK_MANIFESTS.find((manifest) => manifest.submissionId === submissionId);
+): StoredPlaybackManifest | undefined {
+  return getPlaybackManifestRepository().getForSubmission(submissionId);
 }
 
 export function savePlaybackManifest(
   submissionId: string,
   manifest: LessonPlaybackManifest,
-): LessonPlaybackManifest & { submissionId: string } {
-  loadManifests();
-
-  const existing = getPlaybackManifestForSubmission(submissionId);
-  if (existing) {
-    Object.assign(existing, manifest);
-    saveManifests();
-    return existing;
-  }
-
-  const stored = { ...manifest, submissionId };
-  PLAYBACK_MANIFESTS.push(stored);
-  saveManifests();
-  return stored;
+): StoredPlaybackManifest {
+  return getPlaybackManifestRepository().save(submissionId, manifest);
 }
