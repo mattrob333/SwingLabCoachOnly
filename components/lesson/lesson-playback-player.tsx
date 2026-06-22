@@ -141,6 +141,34 @@ export function LessonPlaybackPlayer({ manifest }: LessonPlaybackPlayerProps) {
     setActiveNote(note);
   }
 
+  function replayNote() {
+    if (!activeNote) return;
+    const audio = audioRef.current;
+    const video = videoRef.current;
+    if (video) {
+      video.currentTime = activeNote.timecode;
+    }
+    if (audio) {
+      audio.currentTime = 0;
+      void audio.play();
+    }
+  }
+
+  function skipToNextNote() {
+    if (!activeNote) return;
+    const currentIndex = sortedNotes.findIndex(
+      (n) => n.id === activeNote.id,
+    );
+    const nextNote = sortedNotes[currentIndex + 1];
+    if (!nextNote) return;
+    jumpToChapter(nextNote.timecode, nextNote.id);
+  }
+
+  const hasNextNote = activeNote
+    ? sortedNotes.findIndex((n) => n.id === activeNote.id) <
+      sortedNotes.length - 1
+    : false;
+
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -207,8 +235,24 @@ export function LessonPlaybackPlayer({ manifest }: LessonPlaybackPlayerProps) {
         />
         <AnnotationOverlay note={activeNote} />
         {activeNote && (
-          <div className="absolute left-3 top-3 rounded-lg bg-background/90 px-3 py-2 text-sm shadow-sm backdrop-blur">
-            Coach note at {formatTime(activeNote.timecode)}
+          <div className="absolute left-3 top-3 flex flex-wrap items-center gap-2 rounded-lg bg-background/90 px-3 py-2 text-sm shadow-sm backdrop-blur">
+            <span>Coach note at {formatTime(activeNote.timecode)}</span>
+            <button
+              type="button"
+              onClick={replayNote}
+              className="rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary hover:bg-primary/20"
+            >
+              ↻ Replay
+            </button>
+            {hasNextNote && (
+              <button
+                type="button"
+                onClick={skipToNextNote}
+                className="rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary hover:bg-primary/20"
+              >
+                Next →
+              </button>
+            )}
           </div>
         )}
         <audio ref={audioRef} onEnded={onAudioEnded} />
