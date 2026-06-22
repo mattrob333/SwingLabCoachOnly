@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 1 Foundation COMPLETE (schema + storage + env + repositories + async interfaces + Supabase impls). 385 tests. Starting Wave 2 — Workflow.
+**Status:** Wave 2 in progress — Task 2 (Stripe Checkout + webhooks) COMPLETE. 437 tests. Next: Wave 2 Task 3 (inbox ownership enforcement).
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
@@ -19,14 +19,16 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan. North star: ONE coach re
 
 ### Wave Order
 1. [x] Foundation: Supabase schema ✅, storage adapter ✅, env validation ✅, migrate file-stores ✅, extend types ✅, docs ✅, async interfaces ✅, **Supabase PostgREST impls ✅**. **WAVE 1 COMPLETE.**
-2. [~] Workflow: real upload→storage, Stripe Checkout+webhooks, inbox ownership, lesson delivery token + email ← **CURRENT**
+2. [~] Workflow: real upload→storage ✅, Stripe Checkout+webhooks ✅, inbox ownership ← **CURRENT**, lesson delivery token + email
 3. [ ] Review Studio polish: autosave, edit/re-record, transcript edit UI, thumbnails, mobile, recovery
 4. [ ] AI: Deepgram transcription worker, OpenAI packaging (coach voice preserved), approval flow
 5. [ ] Player experience: chapters, thumbnails, transcript, speed, jump-to-note, follow-up CTA, mobile QA
 6. [ ] Hardening: auth/session security, rate limits, file validation, privacy, tests, deploy
 
 ### Next Action (Inner Loop)
-**Wave 2, Task 2 — Stripe Checkout + webhooks** (real payment, env-gated; mock fallback when no STRIPE_* keys). Then Task 3: inbox ownership, Task 4: lesson delivery token + email.
+**Wave 2, Task 3 — Coach inbox ownership enforcement.** Ensure a coach can only see/access their own submissions (not other coaches'). Add auth guard to submission detail + coach dashboard API that verifies the logged-in coach slug matches the submission's coachSlug. Then Task 4: lesson delivery token + email send.
+
+**Wave 2, Task 2 ✅ DONE:** Stripe Checkout + webhooks (real payment, env-gated). Payment adapter layer (lib/payments/): PaymentAdapter interface + MockPaymentAdapter + StripePaymentAdapter (fetch-based, no SDK; HMAC-SHA256 webhook signature verification with 5-min tolerance) + env-gated factory. Pay route wired: live mode creates Stripe Checkout Session and returns { url } for client redirect; mock mode preserves existing synchronous confirm + markPaid contract. Webhook route (POST /api/stripe/webhook): verifies signature, processes checkout.session.completed → markSubmissionPaid, replay-safe (idempotent on already-paid). PaymentForm updated for live-mode redirect. 31 new tests (25 adapter + 6 webhook). Commits 635404d + bf2b6ef. 437 tests green.
 
 **Wave 2, Task 1 ✅ DONE (repaired by interactive fix):** Real parent upload → durable storage via env-gated storage adapter + VideoAsset record on upload. The autonomous tick was cut off by the iteration cap mid-write, leaving lib/video-assets.ts broken (missing getVideoAssetRepository import + type-only re-exports not in local scope). Repaired interactively, commit 8ffd2a9. 406 tests green.
 
@@ -73,11 +75,11 @@ lib/repositories/
 - 360 tests across 40 files, all green; typecheck ✓ lint ✓ build ✓ (24 routes)
 
 ## Open Issues
-- **Stripe is mock** → Wave 2 real Checkout + webhooks (next task after upload)
+- **Stripe is mock** → Wave 2 real Checkout + webhooks ✅ DONE (adapter layer + webhook route built, flips live when STRIPE_* keys added)
 - **No transcription yet** → Wave 4 Deepgram
 - **No real AI packaging** → Wave 4 OpenAI
 - **No real upload storage yet** → Wave 2 Task 1 (next action)
 - **No lesson delivery token + email** → Wave 2 Task 4
 - API keys not yet provisioned → adapters run in mock mode until user adds .env
 
-**Last Updated:** 2026-06-21 — Wave 1 Foundation COMPLETE. Async interfaces (Task 7, commit c2856ff) + Supabase PostgREST impls (Slice D, commit 1018a7a) both landed. 385 tests green. Next: Wave 2 Task 1 — real parent upload → durable storage with VideoAsset records.
+**Last Updated:** 2026-06-21 — Wave 2 Task 2 (Stripe Checkout + webhooks) COMPLETE. Payment adapter layer + pay route wiring + webhook route + PaymentForm update. 437 tests green. Next: Wave 2 Task 3 — coach inbox ownership enforcement.
