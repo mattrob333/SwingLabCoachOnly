@@ -17,8 +17,8 @@ This is the living task board. It is updated alongside the code every build tick
 | Wave 2 | Workflow (upload, payment, delivery) | ✅ Complete |
 | Wave 3 | Review Studio polish | ✅ Complete |
 | Wave 4 | AI (Deepgram + OpenAI) | ✅ Complete |
-| Wave 5 | Player experience | 🚧 Next |
-| Wave 6 | Hardening + deploy | ⬜ Not started |
+| Wave 5 | Player experience | ✅ Complete |
+| Wave 6 | Hardening + deploy | 🚧 Next |
 | UX | UX/UI polish (coach-first) | ⬜ Not started |
 
 ---
@@ -75,14 +75,15 @@ Current tools: pen (freehand), line, arrow, circle. Add the following IN ORDER (
 
 Full coach-facing AI loop wired: transcribe → package → coach reviews/edits → coach approves → delivery token + email sent to parent. **WAVE 4 COMPLETE.**
 
-## 🚧 Wave 5 — Player Experience (Next)
-- [ ] Lesson note chapters
-- [ ] Thumbnail navigation
-- [ ] Transcript text display
-- [ ] Speed controls
-- [ ] Replay note / jump-to-next-note
-- [ ] Follow-up submission CTA polish
-- [ ] Mobile QA pass
+## 🚧 Wave 5 — Player Experience (Complete)
+- [x] Lesson note chapters (`lib/lesson/chapters.ts` — `buildChapterList` + `formatChapterTime`)
+- [x] Thumbnail navigation (`LessonChapterList` component with thumbnails)
+- [x] Transcript text display (transcriptEdited → transcriptRaw → transcript fallback)
+- [x] Speed controls (pre-existing: 0.25x, 0.5x, 1x)
+- [x] Jump-to-note (click chapter → seek video + activate note)
+- [x] Replay note + skip-to-next-note buttons in active note overlay
+- [x] Follow-up submission CTA polish (coach name personalization + AI summary section)
+- [x] Mobile QA pass (touch-adequate overlay buttons, scrollable chapter list, responsive layout)
 
 ## ⬜ Wave 6 — Hardening (Not Started)
 - [ ] Auth/session security review
