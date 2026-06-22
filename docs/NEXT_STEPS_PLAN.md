@@ -57,6 +57,36 @@ This lets the build proceed now; the user flips each integration live by adding 
 - Privacy controls (data deletion, link revocation per PRD §25)
 - Expanded test coverage, error monitoring, deploy checks (Vercel)
 
+## UX / UI Polish Workstream (runs ALONGSIDE waves — coach interface first)
+
+A continuous, parallel workstream to make the **coach-facing interface** look professional, fast, and baseball-specific. The inner loop should pick up 1 UX polish task per tick whenever the current wave's next functional task is blocked or the slice is small — keep functional waves moving, but steadily raise visual quality. Coach surfaces are the priority (PRD §32: "the coach should always know the next best action").
+
+**Design language (lock these):**
+- Clean, professional, sport-specific (not generic SaaS / not fitness-app). Confident, focused, low-clutter.
+- Brand: existing SwingLab "clay" primary tokens; ensure consistent light + dark.
+- Typography scale, spacing rhythm, and a small set of reusable shadcn/ui components (Card, Badge, Button variants, Tabs, Dialog, Toast, Skeleton, EmptyState).
+- Fast feel: skeleton loaders, optimistic UI, snappy transitions (no heavy animation).
+- Mobile-first with strong desktop layouts (PRD §21 breakpoints + touch targets).
+
+**Priority polish tasks (coach interface):**
+1. **Design tokens + primitives** — finalize color/spacing/typography tokens; build/standardize shared UI primitives (Card, Badge, Button variants, Tabs, Dialog, Toast/Sonner, Skeleton, EmptyState, Avatar).
+2. **Coach dashboard / inbox** — polished submission cards (player name, age, batting side, thumbnail, status chip, payment badge, parent question preview), status filters as tabs/segmented control, stat cards, empty states, loading skeletons, responsive list↔detail on desktop.
+3. **Submission detail page** — clear hierarchy, video preview framing, player info panel, prominent "Start Review" primary action, secondary actions grouped, status timeline.
+4. **Review Studio chrome** — polished control bar, large touch targets, clear recording indicator, tool palette styling, saved-frames strip, autosave/processing status affordances (coordinate with Wave 3).
+5. **Coach onboarding** — friendly multi-step form, progress indicator, inline validation, review-products editor styling.
+6. **Earnings page** — clean stat cards, payout status, table styling, empty/zero states.
+7. **Lesson approval screen** — readable lesson draft layout, editable sections, drill cards, clear "Send Lesson" CTA.
+8. **Global shell** — refined SiteHeader/nav (coach context), responsive sidebar on desktop, toasts for actions, consistent page headers + breadcrumbs.
+9. **Micro-states everywhere** — loading skeletons, empty states, error states, success toasts, disabled/processing button states.
+10. **Accessibility pass** — semantic landmarks, focus states, aria labels, color contrast, keyboard nav (desktop shortcuts already in PRD §21.7).
+
+**Constraints:**
+- Do NOT regress functionality or tests. Every UX change keeps the quality gate green.
+- Prefer shadcn/ui + Tailwind utility composition over bespoke CSS.
+- Keep it coach-first; parent lesson page polish is Wave 5 (player experience).
+- No heavy dependencies (no large animation/chart libs unless clearly justified).
+- Each polish task ships with at least a render/smoke test where practical.
+
 ## Test Plan
 - Unit: schema validation, storage adapters, note ordering, transcript state transitions, AI packaging guardrails, lesson token expiry
 - API: upload, payment webhook, audio upload, transcription retry, process lesson, email delivery, tokenized lesson access

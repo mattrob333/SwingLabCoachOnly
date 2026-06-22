@@ -25,12 +25,11 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan. North star: ONE coach re
 6. [ ] Hardening: auth/session security, rate limits, file validation, privacy, tests, deploy
 
 ### Next Action (Inner Loop)
-**Wave 2, Task 1 — Real Parent Upload → Durable Storage:** Replace the mock upload flow with a real storage adapter that writes video files to Supabase Storage (when env keys present) or local file store (mock fallback). Create a `VideoAsset` record on upload. Steps:
-1. Create `lib/storage/video-upload.ts` — accepts a file (Buffer/Stream), writes to the storage adapter, returns the storage key + public URL.
-2. Update `app/api/submissions/route.ts` (POST) — use the storage adapter to persist the uploaded video, create a `VideoAsset` record, link `submission.videoUrl` to the storage URL.
-3. Add audit timestamps + coach ownership enforcement (RLS: coach can only see their own submissions).
-4. Tests: mock the storage adapter, verify VideoAsset creation + storage key generation + submission linkage.
-5. Quality gate + commit + push.
+**Wave 2, Task 1 — Real Parent Upload → Durable Storage:** Replace the mock upload flow with a real storage adapter that writes video files to Supabase Storage (when env keys present) or local file store (mock fallback). Create a `VideoAsset` record on upload.
+
+**Build on mock mode** — no API keys provisioned yet. All env-gated adapters run in mock mode; the architecture is built real and flips live when the user adds `.env` keys.
+
+**UX/UI Polish runs ALONGSIDE functional waves** (see docs/NEXT_STEPS_PLAN.md "UX / UI Polish Workstream"). Coach interface first. Pick up 1 polish task per tick when the functional slice is small/blocked — keep functional waves moving but steadily raise visual quality. Start with: design tokens + shared UI primitives (Card, Badge, Tabs, Toast, Skeleton, EmptyState), then coach dashboard/inbox polish.
 
 **Wave 1, Task 7 ✅ DONE:** Async repository interface conversion — all 4 interfaces to `Promise<T>`, all impls/facades/callers updated. 360 tests, commit c2856ff.
 
