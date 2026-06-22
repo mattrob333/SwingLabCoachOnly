@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 3 in progress — lightbox close button mobile touch target COMPLETE. 563 tests. Next: Wave 3 remaining polish items (annotation canvas touch/pointer support).
+**Status:** Wave 3 in progress — annotation canvas toolbar touch targets COMPLETE. 567 tests. Next: Wave 3 remaining mobile polish (toolbar layout audit on small screens, or move to next Wave 3 item).
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
@@ -26,10 +26,10 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan. North star: ONE coach re
 6. [ ] Hardening: auth/session security, rate limits, file validation, privacy, tests, deploy
 
 ### Next Action (Inner Loop)
-**Wave 3 — Review Studio polish.** Thumbnail zoom lightbox COMPLETE: each note's freeze-frame thumbnail is now a clickable button (cursor-zoom-in) that opens a full-size lightbox modal showing the freeze-frame with annotations. Closable via X button (top-right), Escape key, or backdrop click. Notes without a thumbnail show no zoom affordance. 5 new tests (555 total). Commit cf21485.
+**Wave 3 — Review Studio polish.** Annotation canvas toolbar touch targets COMPLETE: tool buttons (Pen/Line/Arrow/Circle) bumped from h-8 w-8 (32px) to h-10 w-10 (40px) on mobile, reverting to sm:h-8 sm:w-8 on desktop. Color swatches bumped from h-6 w-6 (24px) to h-8 w-8 (32px) on mobile, reverting to sm:h-6 sm:w-6. Undo/Clear buttons bumped from h-8 to h-10 on mobile, sm:h-8 on desktop. The drawing canvas itself already used Pointer Events + touch-none + setPointerCapture, so touch drawing was already functional — the gap was toolbar button sizes below the 44px mobile minimum. 4 new tests (567 total). Commit d4ade69.
 
-**Next: Wave 3 remaining polish items.** Pick the smallest next slice:
-1. **Mobile responsiveness** — video player controls ✅ DONE, note card touch targets ✅ DONE, lightbox close button touch target ✅ DONE (this tick: close button bumped from h-8 w-8 to h-10 w-10 on mobile, sm:h-8 sm:w-8 on desktop; position adjusted to -top-2 -right-2 on mobile so the larger button isn't clipped). Next mobile item: annotation canvas touch/pointer support audit.
+**Next: Wave 3 remaining mobile polish.** Pick the smallest next slice:
+1. **Mobile responsiveness** — video player controls ✅ DONE, note card touch targets ✅ DONE, lightbox close button touch target ✅ DONE, annotation canvas toolbar touch targets ✅ DONE (this tick). Next mobile item: annotation toolbar layout audit on small screens (the toolbar wraps on narrow viewports — verify it doesn't overflow or clip), OR move to the next Wave 3 polish item.
 2. **Thumbnails** — retake ✅ DONE, zoom ✅ DONE.
 
 - **Sub-slice D part 2 ✅ DONE (this tick):** Lesson page token verification — `lib/lesson/access.ts` exports `verifyLessonAccess()` (composes `getDeliveryTokenRepository().getByToken` + `verifyDeliveryToken` + submission-id match + idempotent `markViewed`) and `LessonAccessDeniedReason` type. `app/lesson/[id]/page.tsx` now accepts `searchParams.token`, runs the access gate before loading lesson data. Valid → grant + markViewed; missing/expired/revoked/mismatch → access-denied UI; not_found → `notFound()` (404, so probes don't confirm lesson existence). 9 new tests. Commits e0dd214 + 7249fc6. 502 tests.
@@ -91,4 +91,4 @@ lib/repositories/
 - **No lesson delivery token + email** → Wave 2 Task 4
 - API keys not yet provisioned → adapters run in mock mode until user adds .env
 
-**Last Updated:** 2026-06-22 — Wave 3 lightbox close button mobile touch target COMPLETE. Close button on the thumbnail-zoom lightbox bumped from h-8 w-8 (32px) to h-10 w-10 (40px) on mobile, reverting to sm:h-8 sm:w-8 on desktop. Position adjusted from -top-3 -right-3 to -top-2 -right-2 on mobile (sm:-top-3 sm:-right-3 on desktop) so the larger button isn't clipped at the viewport edge. 1 new test, 563 total. Commit 0feb6d9. Next: Wave 3 remaining mobile polish (annotation canvas touch/pointer support).
+**Last Updated:** 2026-06-22 — Wave 3 annotation canvas toolbar touch targets COMPLETE. Tool buttons bumped from h-8 w-8 (32px) to h-10 w-10 (40px) on mobile, sm:h-8 sm:w-8 on desktop. Color swatches bumped from h-6 w-6 (24px) to h-8 w-8 (32px) on mobile, sm:h-6 sm:w-6 on desktop. Undo/Clear buttons bumped from h-8 to h-10 on mobile, sm:h-8 on desktop. The drawing canvas already used Pointer Events + touch-none + setPointerCapture — touch drawing was functional; the gap was toolbar button sizes below 44px mobile minimum. 4 new tests, 567 total. Commit d4ade69. Next: Wave 3 remaining mobile polish (toolbar layout audit on small screens, or next polish item).
