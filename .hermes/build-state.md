@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 3 in progress — autosave slice 2b (hook wiring) + slice 2c (render test) COMPLETE. 528 tests. Next: Wave 3 remaining polish items (edit/re-record, transcript edit UI, thumbnails, mobile, recovery).
+**Status:** Wave 3 in progress — re-record coach note COMPLETE. 534 tests. Next: Wave 3 remaining polish items (transcript edit UI, thumbnails, mobile, recovery).
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
@@ -20,21 +20,19 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan. North star: ONE coach re
 ### Wave Order
 1. [x] Foundation: Supabase schema ✅, storage adapter ✅, env validation ✅, migrate file-stores ✅, extend types ✅, docs ✅, async interfaces ✅, **Supabase PostgREST impls ✅**. **WAVE 1 COMPLETE.**
 2. [x] Workflow: real upload→storage ✅, Stripe Checkout+webhooks ✅, inbox ownership ✅, lesson delivery token + email ✅ (Sub-slice A: email adapter ✅, Sub-slice B: delivery token repository ✅, Sub-slice C: approve→deliver wiring ✅, Sub-slice D: Supabase PostgREST delivery token impl ✅ + lesson page token verification ✅). **WAVE 2 COMPLETE — approve→deliver→view end-to-end loop wired.**
-3. [~] Review Studio polish: autosave (slice 1 ✅ draft-notes storage, slice 2a ✅ useDraftNotesAutosave hook, slice 2b ✅ wire into review-studio-client, slice 2c ✅ render/smoke test), edit/re-record, transcript edit UI, thumbnails, mobile, recovery
+3. [~] Review Studio polish: autosave (slice 1 ✅ draft-notes storage, slice 2a ✅ useDraftNotesAutosave hook, slice 2b ✅ wire into review-studio-client, slice 2c ✅ render/smoke test), re-record coach note ✅, transcript edit UI, thumbnails, mobile, recovery
 4. [ ] AI: Deepgram transcription worker, OpenAI packaging (coach voice preserved), approval flow
 5. [ ] Player experience: chapters, thumbnails, transcript, speed, jump-to-note, follow-up CTA, mobile QA
 6. [ ] Hardening: auth/session security, rate limits, file validation, privacy, tests, deploy
 
 ### Next Action (Inner Loop)
-**Wave 3 — Review Studio polish.** Autosave feature COMPLETE (slices 1, 2a, 2b, 2c all done): `lib/review/draft-notes.ts` (storage), `components/review/use-draft-notes-autosave.ts` (hook), wired into `components/review/review-studio-client.tsx` (restore on mount, "Autosaved [time]" indicator near Coach Notes header, `clearDraftNotes()` on successful Process Lesson), and `tests/review-studio-autosave.test.tsx` (3 render/smoke tests). 528 tests total.
+**Wave 3 — Review Studio polish.** Re-record coach note COMPLETE: VoiceRecorder now exposes a `forwardRef` handle (`VoiceRecorderHandle`) with `startRecording(timecode?)` and `stopRecording()`. Review Studio adds a Re-record button (RotateCcw icon) to each note card that seeks the video to the note's timecode and imperatively triggers recording at that timecode. When the new segment finalizes, `handleSegmentFinalized` detects `reRecordNoteId` is set and replaces the note's `audioUrl` + `audioDuration` in-place — preserving id, timecode, annotations, transcript, and thumbnail. No new note is created. All Re-record/Delete buttons disable while re-recording is active. 6 new tests (534 total). Commits db5a271 + 6e0f3b0.
 
 **Next: Wave 3 remaining polish items.** Pick the smallest next slice:
-1. **Edit/re-record a coach note** — allow deleting and re-recording an individual voice segment (currently you can delete a note but not re-record its audio in-place). Decompose: add a "Re-record" button to each note card that clears the audio and re-enters recording mode at that timecode.
-2. **Transcript edit UI polish** — the textarea already exists but could use character count / "edited" indicator.
-3. **Mobile responsiveness** — audit the Review Studio layout on narrow viewports (the grid `sm:grid-cols-[160px_minmax(0,1fr)]` may need stacking).
-4. **Recovery states** — empty state when video fails to load, error boundary for annotation canvas.
-
-Start with #1 (edit/re-record) as it's the highest-value UX gap per the PRD build order. Decompose into: (a) add re-record button to note card, (b) wire to VoiceRecorder to re-enter recording at the note's timecode, (c) test.
+1. **Transcript edit UI polish** — the textarea already exists but could use character count / "edited" indicator.
+2. **Mobile responsiveness** — audit the Review Studio layout on narrow viewports (the grid `sm:grid-cols-[160px_minmax(0,1fr)]` may need stacking).
+3. **Recovery states** — empty state when video fails to load, error boundary for annotation canvas.
+4. **Thumbnails** — auto-capture is implemented but could add a "retake thumbnail" button.
 
 - **Sub-slice D part 2 ✅ DONE (this tick):** Lesson page token verification — `lib/lesson/access.ts` exports `verifyLessonAccess()` (composes `getDeliveryTokenRepository().getByToken` + `verifyDeliveryToken` + submission-id match + idempotent `markViewed`) and `LessonAccessDeniedReason` type. `app/lesson/[id]/page.tsx` now accepts `searchParams.token`, runs the access gate before loading lesson data. Valid → grant + markViewed; missing/expired/revoked/mismatch → access-denied UI; not_found → `notFound()` (404, so probes don't confirm lesson existence). 9 new tests. Commits e0dd214 + 7249fc6. 502 tests.
 - **Sub-slice D part 1 ✅ DONE:** Supabase PostgREST delivery token impl — filled `lib/repositories/supabase-delivery-tokens.ts` stub with real fetch() queries against `lesson_delivery_tokens`. Maps snake_case↔camelCase and ISO TIMESTAMPTZ strings↔epoch-ms numbers (matching the VideoAsset epoch-ms pattern, NOT Date objects). `create()` generates id + opaque token + timestamps client-side via `createLessonDeliveryToken()` (mirrors in-memory impl) so the emailed magic-link token is exactly what's stored. `markViewed`/`revoke` PATCH only `viewed_at`/`revoked_at` (never the PK). 406→undefined on `getByToken` not-found. 6 new fetch-mock tests added to `tests/repositories/supabase-impls.test.ts`. Commit 5d58ad3. 493 tests.
@@ -95,4 +93,4 @@ lib/repositories/
 - **No lesson delivery token + email** → Wave 2 Task 4
 - API keys not yet provisioned → adapters run in mock mode until user adds .env
 
-**Last Updated:** 2026-06-22 — Wave 3 autosave slice 2b (hook wiring into review-studio-client) + slice 2c (render/smoke test) COMPLETE. Commits 5b23a16 + e0d58d4. 528 tests green. Next: Wave 3 remaining polish (edit/re-record, transcript UI, mobile, recovery).
+**Last Updated:** 2026-06-22 — Wave 3 re-record coach note COMPLETE. VoiceRecorder forwardRef + useImperativeHandle, Re-record button in note card, in-place audio replacement preserving note identity. 6 new tests, 534 total. Commits db5a271 + 6e0f3b0. Next: Wave 3 remaining polish (transcript UI, mobile, recovery, thumbnails).
