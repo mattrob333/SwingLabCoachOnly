@@ -38,7 +38,7 @@ export type LessonPlaybackManifest = {
   videoUrl: string;
   notes: FreezeFrameNote[];
   createdAt: number;
-  status: "draft" | "processed";
+  status: "draft" | "processed" | "approved";
   submissionId?: string;
   coachSlug?: string;
   parentEmail?: string;
