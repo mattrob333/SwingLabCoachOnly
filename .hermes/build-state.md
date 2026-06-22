@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 6 (Hardening) IN PROGRESS — 816 tests. Tasks 1–4 DONE. Tasks 5–6 remaining. **UX/UI Polish workstream** — task #1 (design tokens + shared primitives) DONE (commit 80b4186), task #2 (coach dashboard/inbox polish) DONE (commit 02298d0). Next: UX task #3 (submission detail page hierarchy) or Wave 6 Task 5 (expanded test coverage).
+**Status:** Wave 6 (Hardening) IN PROGRESS — 816 tests. Tasks 1–4 DONE. Tasks 5–6 remaining. **UX/UI Polish workstream** — task #1 (design tokens + shared primitives) DONE (80b4186), task #2 (coach dashboard/inbox polish) DONE (02298d0), task #3 (submission detail page polish) DONE (abb5111). Next: UX task #4 (Review Studio chrome) or Wave 6 Task 5 (expanded test coverage).
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
@@ -37,7 +37,9 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan.
 ### Next Action (Inner Loop)
 **UX Polish task #1 ✅ DONE (this tick):** Recovered orphaned UX primitive files from prior tick, ran quality gate (793 tests, all green), committed + pushed (80b4186). Design tokens + shared shadcn/ui primitives: Card (with header/title/description/content/footer sub-slots), Badge (cva variants: default/primary/success/warning/destructive/outline), Skeleton (aria-hidden pulsing block), EmptyState (icon+title+description+action for zero-data screens), Avatar (img+onError fallback to initials, sm/default/lg sizes). 14 render/smoke tests. Resolved OPEN course correction about UX workstream never started.
 
-**Next: UX Polish task #3 — Submission detail page hierarchy + status timeline.** OR Wave 6 Task 5 — Expanded test coverage + error monitoring. Interleave as needed.
+**Next: UX Polish task #4 — Review Studio chrome** (control bar, recording indicator, tool palette, saved-frames strip). OR Wave 6 Task 5 — Expanded test coverage + error monitoring. Interleave as needed.
+
+**UX Polish task #3 ✅ DONE (this tick):** Submission detail page polish. Replaced inline status color maps with Badge + statusBadgeVariant (shared from CoachInbox). Replaced all bespoke rounded-xl divs with Card primitive (detail fields, action areas, comparison section, parent notes). Consistent py-8 sm:py-12 page spacing, responsive heading sizes. Pure presentational refactor — 816 tests still green. Commit abb5111.
 
 **UX Polish task #2 ✅ DONE (this tick):** Coach dashboard/inbox polish. New `CoachInbox` client component with filter tabs (All/Active/Completed), count badges, aria-selected state. Uses Card, Badge, and EmptyState primitives. Dashboard header now has Avatar with coach initials. StatCards use Card primitive. 23 tests (10 pure function + 13 component render). Commit 02298d0. 816 tests.
 
