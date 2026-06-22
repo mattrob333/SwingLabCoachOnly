@@ -6,6 +6,8 @@ import { CoachDashboardSkeleton } from "@/app/coach/dashboard/loading";
 import { CoachEarningsSkeleton } from "@/app/coach/earnings/loading";
 import { SubmissionDetailSkeleton } from "@/app/coach/submission/[id]/loading";
 import { LessonApprovalSkeleton } from "@/app/coach/submission/[id]/lesson/loading";
+import { CompareSkeleton } from "@/app/coach/compare/loading";
+import { ReviewStudioSkeleton } from "@/app/coach/review/[id]/loading";
 
 /**
  * Render/smoke tests for route-level loading skeletons (UX Polish task #9 —
@@ -87,6 +89,34 @@ describe("route loading skeletons", () => {
       const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
       // Back link + header + 3 review panel cards with rows + action button.
       expect(skeletons.length).toBeGreaterThanOrEqual(8);
+    });
+  });
+
+  describe("CompareSkeleton", () => {
+    it("renders without crashing", () => {
+      const { container } = render(<CompareSkeleton />);
+      expect(container.firstChild).not.toBeNull();
+    });
+
+    it("uses the shared Skeleton primitive", () => {
+      const { container } = render(<CompareSkeleton />);
+      const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
+      // Back link + header + description + candidate list rows.
+      expect(skeletons.length).toBeGreaterThanOrEqual(5);
+    });
+  });
+
+  describe("ReviewStudioSkeleton", () => {
+    it("renders without crashing", () => {
+      const { container } = render(<ReviewStudioSkeleton />);
+      expect(container.firstChild).not.toBeNull();
+    });
+
+    it("uses the shared Skeleton primitive", () => {
+      const { container } = render(<ReviewStudioSkeleton />);
+      const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
+      // Back link + header + subtitle + video player area.
+      expect(skeletons.length).toBeGreaterThanOrEqual(5);
     });
   });
 });
