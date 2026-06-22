@@ -11,6 +11,8 @@ import type { ReviewEvent } from "@/lib/review/events";
 import type { RecordingSegment } from "@/lib/review/recording";
 import { formatTimecode } from "@/lib/review/timecode";
 import type { FreezeFrameNote } from "@/lib/lesson/playback";
+import { clearDraftNotes } from "@/lib/review/draft-notes";
+import { useDraftNotesAutosave } from "@/components/review/use-draft-notes-autosave";
 
 type ReviewStudioClientProps = {
   submissionId: string;
@@ -136,6 +138,13 @@ export function ReviewStudioClient({
   const [lessonUrl, setLessonUrl] = useState<string | null>(null);
   const videoElementRef = useRef<HTMLVideoElement | null>(null);
 
+  // Wave 3 — autosave: restore draft notes on mount + debounce-save on change.
+  const { savedAt: draftSavedAt } = useDraftNotesAutosave(
+    submissionId,
+    notes,
+    setNotes,
+  );
+
   const assignedAnnotationIds = useMemo(
     () => new Set(notes.flatMap((note) => note.annotations.map((mark) => mark.id))),
     [notes],
@@ -220,6 +229,8 @@ export function ReviewStudioClient({
         throw new Error(data.error ?? "Failed to process lesson");
       }
       setLessonUrl(`/lesson/${submissionId}`);
+      // Draft is committed to the lesson manifest — clear the autosave draft.
+      clearDraftNotes(submissionId);
     } catch (err) {
       setProcessError(err instanceof Error ? err.message : "Failed to process lesson");
     } finally {
@@ -264,6 +275,11 @@ export function ReviewStudioClient({
               move to the next frame. Each recording becomes a freeze-frame
               note in the player lesson.
             </p>
+            {draftSavedAt !== null && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Autosaved {new Date(draftSavedAt).toLocaleTimeString()}
+              </p>
+            )}
           </div>
           <div className="rounded-lg border border-border bg-background px-3 py-2 text-right">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">
