@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { Circle, Eraser, Minus, MousePointer2, Pencil, RotateCcw } from "lucide-react";
+import { Circle, Eraser, Minus, MousePointer2, Pencil, RotateCcw, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createReviewId } from "@/lib/review/ids";
 import { createEvent, type ReviewEvent } from "@/lib/review/events";
@@ -101,6 +101,7 @@ export function AnnotationCanvas({
   const [activeMark, setActiveMark] = useState<AnnotationMark | null>(null);
   const [tool, setTool] = useState<Tool>("arrow");
   const [color, setColor] = useState(COLORS[0]);
+  const [canvasUnavailable, setCanvasUnavailable] = useState(false);
 
   const marksRef = useRef(marks);
   const activeMarkRef = useRef(activeMark);
@@ -146,6 +147,15 @@ export function AnnotationCanvas({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    // Detect environments where the 2D canvas context is unavailable (e.g.
+    // headless browsers without canvas support). When unavailable, show a
+    // fallback message instead of a silent blank canvas.
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      setCanvasUnavailable(true);
+      return;
+    }
 
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
@@ -241,6 +251,20 @@ export function AnnotationCanvas({
     marksRef.current = [];
     setMarks([]);
     onMarksChangeRef.current?.([]);
+  }
+
+  if (canvasUnavailable) {
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-black/40 p-4 text-center">
+        <AlertTriangle className="h-8 w-8 text-muted-foreground" />
+        <p className="text-sm font-medium text-foreground">
+          Annotation drawing isn&rsquo;t available in this browser.
+        </p>
+        <p className="max-w-xs text-xs text-muted-foreground">
+          You can still record voice-over notes and review the swing video.
+        </p>
+      </div>
+    );
   }
 
   return (
