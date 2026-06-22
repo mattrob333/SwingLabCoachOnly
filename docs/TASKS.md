@@ -1,60 +1,112 @@
-# Tasks
+# Tasks / TODO Board
 
-## Task: Bootstrap Repository & Initial Docs
-**User story:** As the project, I need a clean GitHub repo with all required artifacts so engineers can start building the same system.
-**Scope:** Create README, all 16 /docs/ files, .hermes/build-state.md, initial decisions/assumptions.
-**Out of scope:** Actual Next.js code or features.
-**Dependencies:** None
-**Technical notes:** Use the exact required artifacts list from PRD.
-**Acceptance criteria:**
-1. All 16 docs exist in /docs/
-2. README exists with links
-3. Build state file exists
-**Test requirements:** N/A (docs)
-**Failure states:** Missing files
-**Completion definition:** Repo has visible structure on GitHub
+**Last synced:** 2026-06-22 · **Tests:** 681 passing · **Build:** ✅ green · **Commits:** 109
 
-## Task: Initialize Next.js Project (Phase 1)
-**User story:** As a developer, I can run `npm run dev` and see a responsive shell.
-**Scope:** Next.js 15 + TS + Tailwind + shadcn/ui scaffold
-**Dependencies:** Bootstrap task
-**Acceptance criteria:** App runs locally with basic layout matching PRD breakpoints
-**Status:** Pending
+This is the living task board. It is updated alongside the code every build tick. Legend: ✅ done · 🚧 in progress · ⏭️ next · ⬜ not started.
 
-## Task: Sync Engine Core — Phase Model + Frame Mapping (PRD §8–9)
-**User story:** As the Review Studio compare screen, given a normalized scrubber value (0.0–1.0), I can compute the correct frame index for each swing so pro and player line up by movement stage.
-**Scope:** lib/sync/phases.ts (7-phase model, normalized positions, validatePhaseMarkers) + lib/sync/frameMapping.ts (frameForProgress, framesForProgress)
-**Dependencies:** Phase 1 web foundation
-**Acceptance criteria:**
-1. frameForProgress maps 0→stance frame, 1→finish frame; exact phase positions return exact marked frames; in-between progress interpolates linearly (PRD §9.2)
-2. validatePhaseMarkers flags missing required phases, non-monotonic order, negative frames (PRD §6.2.4)
-3. Works with the V1 minimum 5-phase set (stance/load/launch/contact/finish)
-4. Never returns a frame outside [0, maxFrame]
-**Test requirements:** tests/sync-phases.test.ts (8) + tests/sync-frameMapping.test.ts (11) — 19 tests
-**Traceability:** PRD §8 (phase model), §9 (sync engine + §9.2 pseudocode), §21 (non-negotiable: frame-cache renderer, not MP4 seeking)
-**Failure states:** Non-monotonic markers → validation problems list; empty markers → frame 0
-**Status:** ✅ Complete (Round 4)
+> Full plan: [`NEXT_STEPS_PLAN.md`](./NEXT_STEPS_PLAN.md). State file: `.hermes/build-state.md`.
 
-## Task: Phase 2 — Synced Scrubber Spike (M1, PRD §21.1)
-**User story:** As a coach, I drag one master scrubber and both pro/player frame viewers update smoothly with no video seeking.
-**Scope:** Two prebuilt frame sets + phase marker JSON + stacked 1:1 viewer + normalized scrubber consuming frameForProgress (PRD §10, §21.1)
-**Dependencies:** Sync engine core
-**Acceptance criteria:** Dragging scrubber renders cached frames for both swings via framesForProgress; no buffering/loading spinner under normal conditions
-**Status:** Pending (next round)
+---
 
-## Task: Phase 2 — Coach Auth Scaffold (PRD §31 build order #1)
-**User story:** As a coach, I can sign in with my handle + password and reach a protected dashboard; unauthenticated visitors are redirected to login.
-**Scope:** `lib/auth/credentials.ts` (scrypt hashing + coach credential store), `lib/auth/session.ts` (HMAC-signed session tokens), `app/api/auth/login/route.ts`, `app/api/auth/logout/route.ts`, `middleware.ts` (protects /coach/dashboard), `app/coach/login/page.tsx` (form), `components/auth/login-form.tsx`, `app/coach/dashboard/page.tsx` (protected server component).
-**Dependencies:** Phase 1 web foundation.
-**Acceptance criteria:**
-1. `POST /api/auth/login` with valid slug+password sets httpOnly session cookie and returns 200; invalid credentials return 401 without leaking which slugs exist.
-2. `POST /api/auth/logout` clears the cookie and redirects to /coach/login.
-3. Middleware redirects unauthenticated `/coach/dashboard/*` requests to `/coach/login?redirect=...`.
-4. Dashboard server component reads the session cookie and renders the signed-in coach's name; no session → 404.
-5. Sessions are signed (HMAC-SHA256), tamper-proof, and expire after 7 days.
-**Test requirements:** `tests/auth-credentials.test.ts` (11) + `tests/auth-session.test.ts` (7) — 18 new tests.
-**Traceability:** PRD §31 build order #1 (Coach auth scaffold); docs/DECISIONS.md "Phase 2 Coach Auth".
-**Failure states:** Tampered token → null session → redirect to login; expired token → null; wrong password → 401.
-**Status:** ✅ Complete (Round 5)
+## At a Glance
 
-(Additional tasks will be added in future rounds following the exact good task format.)
+| Wave | Name | Status |
+|---|---|---|
+| Scaffold | MVP — all 20 PRD build-order items | ✅ Complete |
+| Wave 1 | Foundation (persistence + storage) | ✅ Complete |
+| Wave 2 | Workflow (upload, payment, delivery) | ✅ Complete |
+| Wave 3 | Review Studio polish | 🚧 ~Complete |
+| Wave 4 | AI (Deepgram + OpenAI) | 🚧 In progress |
+| Wave 5 | Player experience | ⬜ Not started |
+| Wave 6 | Hardening + deploy | ⬜ Not started |
+| UX | UX/UI polish (coach-first) | ⬜ Not started |
+
+---
+
+## ✅ MVP Scaffold (Complete)
+All 20 PRD §31 build-order items: coach auth, onboarding, parent upload, payment/invite-code, coach inbox, submission detail, Review Studio (player + scrubber + mic + annotation + event capture + saved frames), render pipeline, AI lesson draft, drill library, coach approval, lesson delivery, follow-up submission, Stripe earnings, PWA, comparison mode. Plus sync engine (phase model + frame mapping) and freeze-frame lesson playback.
+
+## ✅ Wave 1 — Foundation (Complete)
+- [x] `lib/env.ts` env validation / integration mode detection (12 tests)
+- [x] Storage adapter interface + mock + Supabase impls + factory (13 tests)
+- [x] Extended `FreezeFrameNote` + `LessonPlaybackManifest` types (7 tests)
+- [x] Durable record types: `VideoAsset`, `AudioAsset`, `LessonDeliveryToken`, `AiPackagingJob` (14 tests)
+- [x] Repository interface layer — env-gated factories, all 4 domain stores (23 tests)
+- [x] Supabase Postgres schema migration `0001_initial_schema.sql` (9 tables, RLS, indexes, triggers; 27 tests)
+- [x] Async repository interface conversion (all `Promise<T>`)
+- [x] Real Supabase PostgREST implementations (26 fetch-mock tests)
+
+## ✅ Wave 2 — Workflow (Complete)
+- [x] Real parent upload → durable storage + `VideoAsset` record on upload
+- [x] Stripe Checkout + webhooks (env-gated; HMAC verify; replay-safe; 31 tests)
+- [x] Coach inbox ownership enforcement (cross-coach → 403; test coverage closed)
+- [x] Lesson delivery token + email (approve→deliver→view end-to-end)
+- [x] Lesson page token verification (`lib/lesson/access.ts`; valid/expired/revoked/mismatch/not-found gating; 9 tests)
+
+## 🚧 Wave 3 — Review Studio Polish (~Complete)
+- [x] Draft-note autosave hook + wiring + localStorage recovery
+- [x] Re-record a coach note in place (`VoiceRecorder` forwardRef/imperative handle)
+- [x] Transcript edit UI polish (char count + "Edited" badge via transcriptRaw/transcriptEdited)
+- [x] Video player error recovery state (overlay + Retry + src-change reset)
+- [x] Annotation canvas context-unavailable fallback
+- [x] Retake thumbnail button on note cards (seek + re-capture)
+- [x] Thumbnail zoom/expand lightbox (X / Escape / backdrop close)
+- [x] Mobile touch targets (note cards, lightbox close, annotation toolbar)
+- [x] Annotation toolbar mobile layout fix (no overlap with player controls)
+- [x] `beforeunload` unsaved-changes warning
+- [ ] ⬜ Remaining ergonomics review (mobile QA pass — overlaps Wave 5)
+
+## 🚧 Wave 4 — AI (Deepgram + OpenAI) (In Progress)
+- [x] Transcription adapter layer: types + Mock + Deepgram + env-gated factory (18 tests)
+- [x] Transcription worker route `POST /api/submissions/[id]/transcribe` (auth + ownership; 9 tests)
+- [x] OpenAI packaging adapter layer: types + Mock + OpenAI + factory (guardrail prompt; 36 tests)
+- [x] Packaging worker route `POST /api/submissions/[id]/package` (persists aiSummary + aiNoteTitles; 8 tests)
+- [x] Coach edit AI output `PATCH /api/submissions/[id]/package` (partial updates; validated note IDs; 11 tests)
+- [x] Coach approval route `POST /api/submissions/[id]/approve` (status→approved, triggers delivery+email, idempotent; 9 tests)
+- [ ] ⏭️ **NEXT: Sub-slice 3c — coach-facing UI for reviewing AI output + approve button**
+  - [ ] 3c-i: review UI component (display AI summary + per-note titles; edit → `PATCH /package`)
+  - [ ] 3c-ii: "Approve & Send Lesson" button → `POST /approve`, wiring + render/smoke test
+
+## ⬜ Wave 5 — Player Experience (Not Started)
+- [ ] Lesson note chapters
+- [ ] Thumbnail navigation
+- [ ] Transcript text display
+- [ ] Speed controls
+- [ ] Replay note / jump-to-next-note
+- [ ] Follow-up submission CTA polish
+- [ ] Mobile QA pass
+
+## ⬜ Wave 6 — Hardening (Not Started)
+- [ ] Auth/session security review
+- [ ] Rate limits
+- [ ] File-size / type validation, oversized upload rejection
+- [ ] Privacy controls (data deletion, link revocation per PRD §25)
+- [ ] Expanded test coverage + error monitoring
+- [ ] Deploy checks (Vercel)
+
+## ⬜ UX / UI Polish — Coach Interface First (Not Started)
+- [ ] Design tokens + shared shadcn/ui primitives (Card, Badge, Button variants, Tabs, Dialog, Toast, Skeleton, EmptyState, Avatar)
+- [ ] Coach dashboard / inbox (submission cards, status filter tabs, stat cards, empty states, skeletons, responsive list↔detail)
+- [ ] Submission detail page hierarchy + status timeline
+- [ ] Review Studio chrome (control bar, recording indicator, tool palette, saved-frames strip)
+- [ ] Coach onboarding (multi-step, progress, inline validation)
+- [ ] Earnings page (stat cards, payout status, table, zero states)
+- [ ] Lesson approval screen (readable draft layout, drill cards, "Send Lesson" CTA)
+- [ ] Global shell / nav (coach context, desktop sidebar, toasts, page headers/breadcrumbs)
+- [ ] Micro-states everywhere (loading, empty, error, success toasts, disabled/processing)
+- [ ] Accessibility pass (landmarks, focus states, aria, contrast, keyboard nav)
+
+---
+
+## Pitfalls / Notes for Future Ticks
+- **Commit each green slice before starting the next file.** A tick cut off by the iteration cap leaves an uncommitted, half-written facade that fails typecheck. Keep slices small enough to finish + commit within one tick.
+- All integrations run in **mock mode** until keys are added to `.env` (see README "Going Live").
+- Keep `.hermes/build-state.md` and this board in sync with every commit.
+
+---
+
+## Historical (early bootstrap — done)
+- [x] Bootstrap repo + all 16 `/docs/` artifacts seeded
+- [x] Next.js 16 + React 19 + Tailwind 4 + shadcn scaffold
+- [x] Sync engine core: `lib/sync/phases.ts` + `lib/sync/frameMapping.ts` (19 tests)
+- [x] Coach auth scaffold (PRD §31 #1)

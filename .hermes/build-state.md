@@ -11,9 +11,10 @@
 - **Outer Loop** (cron `30bbeeaeeaf8`) — every 60 min (hourly): Alignment audit against PRD + NEXT_STEPS_PLAN, guardrails, drift detection. Read-only.
 - **Overnight mode (2026-06-21):** intervals doubled (10m / 60m). Inner loop self-pauses both jobs at a genuine terminal point and sends "🛑 SwingLab Loop Stopped" to Telegram. To restart: user says "resume".
 
-## CURRENT WAVE: Wave 1 — Foundation (persistence + storage)
+## CURRENT WAVE: Wave 4 — AI (Deepgram + OpenAI), IN PROGRESS
+(Waves 1–2 COMPLETE; Wave 3 Review Studio polish ~COMPLETE. Next actionable: Sub-slice 3c — coach-facing UI for reviewing AI output + approve button.)
 
-See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan. North star: ONE coach receives a real swing, reviews on mobile, generates an interactive lesson, delivers via secure magic link.
+See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan.
 
 **Guiding principle:** Env-gated adapters — real service when key present, graceful mock fallback when absent. Never block on missing keys.
 
