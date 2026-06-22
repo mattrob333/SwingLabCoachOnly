@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect, useCallback, useSyncExternalStore } from "react";
+import { useRef, useState, useEffect, useCallback, useSyncExternalStore, forwardRef, useImperativeHandle } from "react";
 import { Button } from "@/components/ui/button";
 import { formatTimecode } from "@/lib/review/timecode";
 import {
@@ -28,6 +28,16 @@ function getMediaRecorderSupportSnapshot() {
 function getMediaRecorderSupportServerSnapshot() {
   return false;
 }
+
+export type VoiceRecorderHandle = {
+  /**
+   * Start recording. If `timecode` is provided, the segment is anchored to
+   * that video timecode (used by the re-record flow). Otherwise falls back
+   * to the current playback time.
+   */
+  startRecording: (timecode?: number) => void;
+  stopRecording: () => void;
+};
 
 type VoiceRecorderProps = {
   /**
@@ -57,14 +67,15 @@ type VoiceRecorderProps = {
  * is verified via the build, not unit tests. The segment logic it relies on
  * is unit-tested in tests/recording.test.ts.
  */
-export function VoiceRecorder({
-  currentTime,
-  submissionId,
-  onEvent,
-  onSegmentsChange,
-  onSegmentFinalized,
-  showSegmentList = true,
-}: VoiceRecorderProps) {
+export const VoiceRecorder = forwardRef<VoiceRecorderHandle, VoiceRecorderProps>(
+  function VoiceRecorder({
+    currentTime,
+    submissionId,
+    onEvent,
+    onSegmentsChange,
+    onSegmentFinalized,
+    showSegmentList = true,
+  }: VoiceRecorderProps, ref) {
   const isSupported = useSyncExternalStore(
     subscribeMediaRecorderSupport,
     getMediaRecorderSupportSnapshot,
@@ -95,6 +106,14 @@ export function VoiceRecorder({
   useEffect(() => {
     segmentsRef.current = segments;
   }, [segments]);
+
+  // Expose imperative start/stop so the parent can trigger re-recording at a
+  // specific timecode. The handle is recreated when currentTime changes to
+  // avoid a stale closure on the fallback path (no explicit timecode passed).
+  useImperativeHandle(ref, () => ({
+    startRecording: (timecode?: number) => { void startRecording(timecode); },
+    stopRecording: () => stopRecording(),
+  }), [currentTime]);
 
   async function uploadAudio(blob: Blob, mimeType: string): Promise<string> {
     const extension = mimeType.includes("ogg")
@@ -156,7 +175,8 @@ export function VoiceRecorder({
     streamRef.current = null;
   }, [submissionId]);
 
-  async function startRecording() {
+  async function startRecording(forcedTime?: number) {
+    const time = forcedTime ?? currentTime;
     setError(null);
     try {
       if (typeof navigator.mediaDevices?.getUserMedia !== "function") {
@@ -177,13 +197,13 @@ export function VoiceRecorder({
       };
       recorder.onstop = handleStop;
 
-      // Anchor the segment to the current video timecode.
-      activeSegmentRef.current = createSegment(currentTime);
+      // Anchor the segment to the video timecode.
+      activeSegmentRef.current = createSegment(time);
       recordStartRef.current = Date.now();
 
       recorder.start();
       setIsRecording(true);
-      onEventRef.current?.(createEvent("record_start", currentTime));
+      onEventRef.current?.(createEvent("record_start", time));
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Could not access microphone";
@@ -251,7 +271,7 @@ export function VoiceRecorder({
           <Button
             variant="default"
             size="sm"
-            onClick={startRecording}
+            onClick={() => startRecording()}
             aria-label="Start voiceover recording"
           >
             ● Record
@@ -306,4 +326,5 @@ export function VoiceRecorder({
       )}
     </div>
   );
-}
+  },
+);
