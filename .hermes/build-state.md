@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 3 in progress — transcript edit UI polish COMPLETE. 538 tests. Next: Wave 3 remaining polish items (mobile, recovery, thumbnails).
+**Status:** Wave 3 in progress — video error recovery state COMPLETE. 542 tests. Next: Wave 3 remaining polish items (mobile responsiveness, annotation canvas recovery, thumbnails).
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
@@ -20,17 +20,17 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan. North star: ONE coach re
 ### Wave Order
 1. [x] Foundation: Supabase schema ✅, storage adapter ✅, env validation ✅, migrate file-stores ✅, extend types ✅, docs ✅, async interfaces ✅, **Supabase PostgREST impls ✅**. **WAVE 1 COMPLETE.**
 2. [x] Workflow: real upload→storage ✅, Stripe Checkout+webhooks ✅, inbox ownership ✅, lesson delivery token + email ✅ (Sub-slice A: email adapter ✅, Sub-slice B: delivery token repository ✅, Sub-slice C: approve→deliver wiring ✅, Sub-slice D: Supabase PostgREST delivery token impl ✅ + lesson page token verification ✅). **WAVE 2 COMPLETE — approve→deliver→view end-to-end loop wired.**
-3. [~] Review Studio polish: autosave (slice 1 ✅ draft-notes storage, slice 2a ✅ useDraftNotesAutosave hook, slice 2b ✅ wire into review-studio-client, slice 2c ✅ render/smoke test), re-record coach note ✅, transcript edit UI polish ✅ (char count + Edited badge using transcriptRaw/transcriptEdited fields), mobile, recovery, thumbnails
+3. [~] Review Studio polish: autosave (slice 1 ✅ draft-notes storage, slice 2a ✅ useDraftNotesAutosave hook, slice 2b ✅ wire into review-studio-client, slice 2c ✅ render/smoke test), re-record coach note ✅, transcript edit UI polish ✅ (char count + Edited badge using transcriptRaw/transcriptEdited fields), video error recovery ✅ (error overlay + Retry button + src-change reset), mobile, annotation canvas recovery, thumbnails
 4. [ ] AI: Deepgram transcription worker, OpenAI packaging (coach voice preserved), approval flow
 5. [ ] Player experience: chapters, thumbnails, transcript, speed, jump-to-note, follow-up CTA, mobile QA
 6. [ ] Hardening: auth/session security, rate limits, file validation, privacy, tests, deploy
 
 ### Next Action (Inner Loop)
-**Wave 3 — Review Studio polish.** Transcript edit UI polish COMPLETE: the transcript textarea now displays `transcriptEdited ?? transcript` (preferring the coach-edited value), `updateNoteTranscript` writes to both `transcript` (backward compat with the lesson manifest) and `transcriptEdited` (the canonical edit field), and new notes seed `transcriptRaw: ""` as the edit baseline. Below the textarea: a character count (`N characters`) reflecting the displayed value, and an "Edited" badge (`bg-primary/10`) that appears only when `transcriptEdited` is set AND differs from `transcriptRaw` — unchanged or pending notes show no badge. Forward-compatible with Wave 4 transcription (which will set `transcriptRaw` to the AI output). 4 new render tests (538 total). Commit be5522e.
+**Wave 3 — Review Studio polish.** Video error recovery state COMPLETE: VideoPlayer now listens for the `<video>` element's `error` event. When a video fails to load (broken URL, corrupt file, unsupported codec), an error overlay replaces the blank black box with an AlertCircle icon, a "The video could not be loaded." message, context about possible causes, and a Retry button that calls `video.load()`. Playback controls (Play/Pause/Frame step) are disabled during the error state. The annotation overlay is hidden during error. Error state auto-resets when the `src` prop changes. 4 new tests (542 total). Commit ffd270a.
 
 **Next: Wave 3 remaining polish items.** Pick the smallest next slice:
-1. **Mobile responsiveness** — audit the Review Studio layout on narrow viewports (the grid `sm:grid-cols-[160px_minmax(0,1fr)]` may need stacking).
-2. **Recovery states** — empty state when video fails to load, error boundary for annotation canvas.
+1. **Mobile responsiveness** — audit the Review Studio layout on narrow viewports (the note card grid `sm:grid-cols-[160px_minmax(0,1fr)]` already stacks on mobile; check video player controls wrapping, annotation canvas touch support).
+2. **Annotation canvas recovery** — error boundary or fallback for when the canvas context is unavailable.
 3. **Thumbnails** — auto-capture is implemented but could add a "retake thumbnail" button.
 
 - **Sub-slice D part 2 ✅ DONE (this tick):** Lesson page token verification — `lib/lesson/access.ts` exports `verifyLessonAccess()` (composes `getDeliveryTokenRepository().getByToken` + `verifyDeliveryToken` + submission-id match + idempotent `markViewed`) and `LessonAccessDeniedReason` type. `app/lesson/[id]/page.tsx` now accepts `searchParams.token`, runs the access gate before loading lesson data. Valid → grant + markViewed; missing/expired/revoked/mismatch → access-denied UI; not_found → `notFound()` (404, so probes don't confirm lesson existence). 9 new tests. Commits e0dd214 + 7249fc6. 502 tests.
@@ -92,4 +92,4 @@ lib/repositories/
 - **No lesson delivery token + email** → Wave 2 Task 4
 - API keys not yet provisioned → adapters run in mock mode until user adds .env
 
-**Last Updated:** 2026-06-22 — Wave 3 transcript edit UI polish COMPLETE. Textarea displays transcriptEdited ?? transcript, updateNoteTranscript writes both fields, new notes seed transcriptRaw: "" baseline. Character count + "Edited" badge below textarea (badge shows only when transcriptEdited differs from transcriptRaw). Forward-compatible with Wave 4 transcription. 4 new tests, 538 total. Commit be5522e. Next: Wave 3 remaining polish (mobile, recovery, thumbnails).
+**Last Updated:** 2026-06-22 — Wave 3 video error recovery state COMPLETE. VideoPlayer now handles `<video>` error events with an error overlay (AlertCircle + message + Retry button), disables controls during error, and auto-resets on src change. 4 new tests, 542 total. Commit ffd270a. Next: Wave 3 remaining polish (mobile, annotation canvas recovery, thumbnails).
