@@ -22,7 +22,7 @@ export default async function UploadPage({
   return (
     <Container className="py-12">
       <div className="mb-8 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="text-2xl font-bold tracking-tight">
           {isFollowUp ? "Submit a follow-up swing" : "Upload a swing"}
         </h1>
         <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
@@ -33,7 +33,7 @@ export default async function UploadPage({
       </div>
 
       {isFollowUp && (
-        <div className="mx-auto mb-6 max-w-lg rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+        <div className="mx-auto mb-6 max-w-lg rounded-xl border border-info/30 bg-info/10 p-4 text-sm text-info-foreground">
           Following up on your previous lesson. Your coach will see the link to
           your original review.
         </div>

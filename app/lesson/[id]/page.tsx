@@ -1,5 +1,9 @@
 import { notFound } from "next/navigation";
 import { Container } from "@/components/site/container";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRight } from "lucide-react";
 import { LessonPlaybackPlayer } from "@/components/lesson/lesson-playback-player";
 import { getSubmissionById } from "@/lib/submissions";
 import { getCoachBySlug } from "@/lib/coaches";
@@ -49,7 +53,7 @@ function AccessDenied({
   return (
     <Container className="py-20">
       <div className="mx-auto max-w-md text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">{copy.title}</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{copy.title}</h1>
         <p className="mt-3 text-base text-muted-foreground">{copy.body}</p>
       </div>
     </Container>
@@ -111,7 +115,7 @@ export default async function LessonPage({
             <p className="text-sm font-medium text-muted-foreground">
               Your SwingLab Lesson
             </p>
-            <h1 className="mt-1 text-3xl font-semibold tracking-tight">
+            <h1 className="mt-1 text-3xl font-bold tracking-tight">
               {pageCopy.headerTitle}
             </h1>
             <p className="mt-3 max-w-2xl text-base text-muted-foreground">
@@ -120,29 +124,34 @@ export default async function LessonPage({
           </div>
 
           {pageCopy.showSummarySection && playbackManifest.aiSummary && (
-            <section className="mb-6 rounded-xl border border-border bg-card p-5">
+            <Card className="mb-6 p-5">
               <h2 className="mb-2 text-sm font-semibold text-muted-foreground">
                 Lesson Summary
               </h2>
               <p className="text-sm leading-relaxed">
                 {playbackManifest.aiSummary}
               </p>
-            </section>
+            </Card>
           )}
 
           <LessonPlaybackPlayer manifest={playbackManifest} />
 
-          <section className="mt-8 rounded-xl border border-green-500/30 bg-green-500/5 p-6 text-center">
-            <h2 className="text-lg font-semibold">Ready for a follow-up?</h2>
+          <section className="mt-8 rounded-xl border border-success/30 bg-success/5 p-6 text-center">
+            <h2 className="text-lg font-bold">Ready for a follow-up?</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
               {pageCopy.ctaText}
             </p>
-            <a
-              href={`/upload?followUpFor=${submission.id}`}
-              className="mt-4 inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            <Button
+              variant="default"
+              size="lg"
+              className="mt-4"
+              render={
+                <a href={`/upload?followUpFor=${submission.id}`} />
+              }
             >
               Submit a follow-up swing
-            </a>
+              <ArrowRight className="h-4 w-4 transition-transform group-hover/button:translate-x-0.5" />
+            </Button>
           </section>
         </div>
       </Container>
@@ -158,7 +167,7 @@ export default async function LessonPage({
           <p className="text-sm font-medium text-muted-foreground">
             Your SwingLab Lesson
           </p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">
+          <h1 className="mt-1 text-3xl font-bold tracking-tight">
             {draft.title}
           </h1>
           <p className="mt-3 text-base text-muted-foreground">
@@ -168,13 +177,10 @@ export default async function LessonPage({
 
         {draft.keyPoints.length > 0 && (
           <section className="mb-8">
-            <h2 className="mb-4 text-xl font-semibold">Key Moments</h2>
+            <h2 className="mb-4 text-xl font-bold">Key Moments</h2>
             <div className="space-y-3">
               {draft.keyPoints.map((kp, i) => (
-                <div
-                  key={i}
-                  className="rounded-lg border border-border bg-card p-4"
-                >
+                <Card key={i} className="p-4">
                   <div className="flex items-center justify-between">
                     <h3 className="font-medium">{kp.label}</h3>
                     <span className="text-sm tabular-nums text-muted-foreground">
@@ -184,7 +190,7 @@ export default async function LessonPage({
                   <p className="mt-1 text-sm text-muted-foreground">
                     {kp.description}
                   </p>
-                </div>
+                </Card>
               ))}
             </div>
           </section>
@@ -192,23 +198,18 @@ export default async function LessonPage({
 
         {draft.drills.length > 0 && (
           <section className="mb-8">
-            <h2 className="mb-4 text-xl font-semibold">Practice Drills</h2>
+            <h2 className="mb-4 text-xl font-bold">Practice Drills</h2>
             <div className="space-y-3">
               {draft.drills.map((drill, i) => (
-                <div
-                  key={i}
-                  className="rounded-lg border border-border bg-card p-4"
-                >
+                <Card key={i} className="p-4">
                   <div className="flex items-center justify-between">
                     <h3 className="font-medium">{drill.name}</h3>
-                    <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-                      {drill.category}
-                    </span>
+                    <Badge variant="info">{drill.category}</Badge>
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {drill.description}
                   </p>
-                </div>
+                </Card>
               ))}
             </div>
           </section>
@@ -216,16 +217,16 @@ export default async function LessonPage({
 
         {draft.coachNotes && draft.coachNotes.length > 0 && (
           <section className="mb-8">
-            <h2 className="mb-4 text-xl font-semibold">Coach Notes</h2>
-            <div className="rounded-lg border border-border bg-card p-4">
+            <h2 className="mb-4 text-xl font-bold">Coach Notes</h2>
+            <Card className="p-4">
               <p className="whitespace-pre-wrap text-sm">{draft.coachNotes}</p>
-            </div>
+            </Card>
           </section>
         )}
 
         {draft.status !== "approved" && (
-          <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4">
-            <p className="text-sm text-yellow-700 dark:text-yellow-400">
+          <div className="rounded-lg border border-warning/30 bg-warning/10 p-4">
+            <p className="text-sm text-warning-foreground">
               This lesson is currently in <strong>{draft.status}</strong> status.
               Your coach will finalize it shortly.
             </p>
@@ -233,18 +234,23 @@ export default async function LessonPage({
         )}
 
         {draft.status === "approved" && (
-          <section className="mb-8 rounded-xl border border-green-500/30 bg-green-500/5 p-6 text-center">
-            <h2 className="text-lg font-semibold">Ready for a follow-up?</h2>
+          <section className="mb-8 rounded-xl border border-success/30 bg-success/5 p-6 text-center">
+            <h2 className="text-lg font-bold">Ready for a follow-up?</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
               Submit a new swing and your coach will review your progress against
               this lesson.
             </p>
-            <a
-              href={`/upload?followUpFor=${submission.id}`}
-              className="mt-4 inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            <Button
+              variant="default"
+              size="lg"
+              className="mt-4"
+              render={
+                <a href={`/upload?followUpFor=${submission.id}`} />
+              }
             >
               Submit a follow-up swing
-            </a>
+              <ArrowRight className="h-4 w-4 transition-transform group-hover/button:translate-x-0.5" />
+            </Button>
           </section>
         )}
 
