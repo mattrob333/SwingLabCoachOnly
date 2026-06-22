@@ -5,6 +5,7 @@ import * as React from "react";
 import { CoachDashboardSkeleton } from "@/app/coach/dashboard/loading";
 import { CoachEarningsSkeleton } from "@/app/coach/earnings/loading";
 import { SubmissionDetailSkeleton } from "@/app/coach/submission/[id]/loading";
+import { LessonApprovalSkeleton } from "@/app/coach/submission/[id]/lesson/loading";
 
 /**
  * Render/smoke tests for route-level loading skeletons (UX Polish task #9 —
@@ -72,6 +73,20 @@ describe("route loading skeletons", () => {
       const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
       // Back link + header + status badge + detail fields + action area.
       expect(skeletons.length).toBeGreaterThanOrEqual(6);
+    });
+  });
+
+  describe("LessonApprovalSkeleton", () => {
+    it("renders without crashing", () => {
+      const { container } = render(<LessonApprovalSkeleton />);
+      expect(container.firstChild).not.toBeNull();
+    });
+
+    it("uses the shared Skeleton primitive", () => {
+      const { container } = render(<LessonApprovalSkeleton />);
+      const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
+      // Back link + header + 3 review panel cards with rows + action button.
+      expect(skeletons.length).toBeGreaterThanOrEqual(8);
     });
   });
 });
