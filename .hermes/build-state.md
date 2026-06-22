@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 6 (Hardening) IN PROGRESS — 917 tests. Tasks 1–4 DONE (validation, session, rate-limit, privacy). Tasks 5–6 remaining (expanded test coverage + error monitoring, deploy checks). **UX/UI Polish workstream** — tasks #1–8 DONE, task #9 (micro-states) IN PROGRESS: toast system foundation DONE (9086908) — `lib/toast.ts` external store + `Toaster` component mounted globally, 25 tests. **Toast wiring slices 1–5 DONE:** AiReviewPanel (6 tests), SubmissionDangerActions (13 tests), OnboardingForm (4 tests), LoginForm (4 tests), StartReviewButton (4 tests). Next: continue micro-states toast wiring (lesson-approval-form) OR Wave 6 Task 5 (expanded test coverage + error monitoring).
+**Status:** Wave 6 (Hardening) IN PROGRESS — 925 tests. Tasks 1–4 DONE (validation, session, rate-limit, privacy). Tasks 5–6 remaining (expanded test coverage + error monitoring, deploy checks). **UX/UI Polish workstream** — tasks #1–8 DONE, task #9 (micro-states) IN PROGRESS: toast system foundation DONE (9086908) — `lib/toast.ts` external store + `Toaster` component mounted globally, 25 tests. **Toast wiring slices 1–7 DONE:** AiReviewPanel (6 tests), SubmissionDangerActions (13 tests), OnboardingForm (4 tests), LoginForm (4 tests), StartReviewButton (4 tests), LessonApprovalForm (5 tests, slice 6), ReviewStudioClient process-lesson (3 tests, slice 7). Remaining toast-wiring candidates: voice-recorder (complex MediaRecorder mock), payment-form + upload-form (parent-facing, lower UX priority). Next: Wave 6 Task 5 (expanded test coverage + error monitoring) OR voice-recorder toast slice.
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
@@ -35,9 +35,10 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan.
 6. [ ] Hardening: auth/session security, rate limits, file validation, privacy, tests, deploy
 
 **Next Action (Inner Loop)**
-**Toast wiring slice 5 ✅ DONE (commit fdb5800):** StartReviewButton — error toast on API failure + network error. Success case redirects to Review Studio (no toast). 4 TDD tests, 917 total.
+**Toast wiring slices 6 ✅ DONE (commit 35e312d):** LessonApprovalForm — success toasts for save-notes/approve/reject + error toasts on API failure + network error. 5 TDD tests, 922 total.
+**Toast wiring slice 7 ✅ DONE (commit ed15891):** ReviewStudioClient.processLesson() — success toast on lesson processed + error toasts on API failure + network error. 3 TDD tests, 925 total.
 
-**Next: Continue micro-states toast wiring (lesson-approval-form) OR Wave 6 Task 5 — Expanded test coverage + error monitoring.** Interleave as needed.
+**Next: Wave 6 Task 5 (expanded test coverage + error monitoring) OR voice-recorder toast slice (complex MediaRecorder mock — dedicated tick).** Interleave as needed.
 
 **UX Polish task #7 ✅ DONE (commit f83ffe3):** Lesson approval screen polish. AiReviewPanel: replaced bespoke rounded-xl border divs with Card+CardHeader+CardTitle+CardDescription+CardContent primitives (summary, moment titles, approve sections); "Saved" indicator uses Badge variant=success; moment title rows show timecode as Badge; approved banner uses Card with emerald tint. LessonApprovalForm: replaced bespoke divs with Card primitives (draft preview, approval actions); replaced inline status color map with Badge variants (warning/success/destructive); drill categories use Badge instead of bg-muted span; "Notes saved" indicator uses Badge success. Lesson page consistent py-8 sm:py-12 spacing. 11 render tests (843 total).
 
@@ -108,4 +109,4 @@ lib/repositories/
 - **No transcription yet** → Wave 4 Deepgram ✅ DONE (adapter built, flips live when DEEPGRAM_API_KEY added)
 - **No real AI packaging** → Wave 4 OpenAI ✅ DONE (adapter built, flips live when OPENAI_API_KEY added)
 
-**Last Updated:** 2026-06-22 — **Wave 6 (Hardening) IN PROGRESS + UX Polish task #9 (micro-states) IN PROGRESS.** Waves 1–5 COMPLETE. Wave 6 tasks 1–4 DONE (validation, session, rate-limit, privacy); tasks 5–6 remaining (expanded test coverage + error monitoring, deploy checks). UX Polish tasks #1–8 DONE; task #9 toast system foundation + toast wiring slices 1–5 DONE (AiReviewPanel + SubmissionDangerActions + OnboardingForm + LoginForm + StartReviewButton toasts, 917 tests). Next: continue micro-states toast wiring (lesson-approval-form) OR Wave 6 Task 5.
+**Last Updated:** 2026-06-22 — **Wave 6 (Hardening) IN PROGRESS + UX Polish task #9 (micro-states) IN PROGRESS.** Waves 1–5 COMPLETE. Wave 6 tasks 1–4 DONE (validation, session, rate-limit, privacy); tasks 5–6 remaining (expanded test coverage + error monitoring, deploy checks). UX Polish tasks #1–8 DONE; task #9 toast system foundation + toast wiring slices 1–7 DONE (AiReviewPanel + SubmissionDangerActions + OnboardingForm + LoginForm + StartReviewButton + LessonApprovalForm + ReviewStudioClient process-lesson toasts, 925 tests). Next: Wave 6 Task 5 OR voice-recorder toast slice.
