@@ -32,6 +32,9 @@ export function AiReviewPanel({ submissionId, manifest }: AiReviewPanelProps) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [approved, setApproved] = useState(manifest.status === "approved");
+  const [approving, setApproving] = useState(false);
+  const [approveError, setApproveError] = useState<string | null>(null);
 
   function handleTitleChange(noteId: string, value: string) {
     setNoteTitles((prev) =>
@@ -71,6 +74,31 @@ export function AiReviewPanel({ submissionId, manifest }: AiReviewPanelProps) {
     } catch {
       setError("Network error — please try again.");
       setSaving(false);
+    }
+  }
+
+  async function handleApprove() {
+    setApproving(true);
+    setApproveError(null);
+    try {
+      const res = await fetch(`/api/submissions/${submissionId}/approve`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as {
+          error?: string;
+        };
+        setApproveError(
+          data.error ?? "Failed to approve lesson — please try again.",
+        );
+        setApproving(false);
+        return;
+      }
+      setApproved(true);
+      setApproving(false);
+    } catch {
+      setApproveError("Network error — please try again.");
+      setApproving(false);
     }
   }
 
@@ -138,6 +166,40 @@ export function AiReviewPanel({ submissionId, manifest }: AiReviewPanelProps) {
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}
+        </p>
+      )}
+
+      {/* ── Approve & Send Lesson (Sub-slice 3c-ii) ── */}
+      {approved ? (
+        <div className="rounded-xl border border-green-500/40 bg-green-500/10 p-6">
+          <p className="text-sm font-medium text-green-700 dark:text-green-400">
+            ✓ Lesson approved — the parent has been emailed a secure magic link
+            to view the lesson.
+          </p>
+        </div>
+      ) : (
+        <section className="rounded-xl border border-border bg-card p-6">
+          <h2 className="text-lg font-medium">Approve &amp; send lesson</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Once you&apos;re happy with the summary and moment titles above,
+            approve to deliver the lesson to the parent. They&apos;ll receive a
+            secure magic link by email.
+          </p>
+          <div className="mt-4">
+            <Button
+              onClick={handleApprove}
+              disabled={approving}
+              variant="default"
+            >
+              {approving ? "Approving…" : "Approve & Send Lesson"}
+            </Button>
+          </div>
+        </section>
+      )}
+
+      {approveError && (
+        <p role="alert" className="text-sm text-destructive">
+          {approveError}
         </p>
       )}
     </div>

@@ -163,3 +163,90 @@ describe("AiReviewPanel — coach reviews/edits AI output (Wave 4 Sub-slice 3c-i
     resolveFetch(new Response(JSON.stringify({ ok: true }), { status: 200 }));
   });
 });
+
+describe("AiReviewPanel — approve & send lesson (Wave 4 Sub-slice 3c-ii)", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("renders an Approve & Send Lesson button when manifest is not yet approved", () => {
+    render(<AiReviewPanel submissionId="sub-1" manifest={makeManifest()} />);
+    expect(
+      screen.getByRole("button", { name: /approve & send lesson/i }),
+    ).toBeTruthy();
+  });
+
+  it("does not render the Approve button when manifest is already approved; shows approved banner", () => {
+    render(
+      <AiReviewPanel
+        submissionId="sub-1"
+        manifest={makeManifest({ status: "approved" })}
+      />,
+    );
+    expect(
+      screen.queryByRole("button", { name: /approve & send lesson/i }),
+    ).toBeNull();
+    expect(screen.getByText(/lesson approved/i)).toBeTruthy();
+  });
+
+  it("Approve button POSTs to /approve and shows approved banner on success", async () => {
+    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ status: "approved" }), { status: 200 }),
+    );
+    render(<AiReviewPanel submissionId="sub-1" manifest={makeManifest()} />);
+    fireEvent.click(
+      screen.getByRole("button", { name: /approve & send lesson/i }),
+    );
+    await waitFor(() => {
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+    });
+    const [url, opts] = fetchSpy.mock.calls[0];
+    expect(url).toBe("/api/submissions/sub-1/approve");
+    expect(opts?.method).toBe("POST");
+    expect(screen.getByText(/lesson approved/i)).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: /approve & send lesson/i }),
+    ).toBeNull();
+  });
+
+  it("Approve button shows an error message on fetch failure", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ error: "Manifest not packaged" }), {
+        status: 409,
+      }),
+    );
+    render(<AiReviewPanel submissionId="sub-1" manifest={makeManifest()} />);
+    fireEvent.click(
+      screen.getByRole("button", { name: /approve & send lesson/i }),
+    );
+    await waitFor(() => {
+      expect(screen.getByRole("alert").textContent).toContain(
+        "Manifest not packaged",
+      );
+    });
+    // Approve button should still be present so the coach can retry
+    expect(
+      screen.getByRole("button", { name: /approve & send lesson/i }),
+    ).toBeTruthy();
+  });
+
+  it("Approve button is disabled while approving", async () => {
+    let resolveFetch: (v: Response) => void = () => {};
+    vi.spyOn(global, "fetch").mockReturnValue(
+      new Promise<Response>((resolve) => {
+        resolveFetch = resolve;
+      }),
+    );
+    render(<AiReviewPanel submissionId="sub-1" manifest={makeManifest()} />);
+    const btn = screen.getByRole("button", { name: /approve & send lesson/i });
+    fireEvent.click(btn);
+    await waitFor(() => {
+      expect(btn).toBeDisabled();
+    });
+    resolveFetch(new Response(JSON.stringify({ status: "approved" }), { status: 200 }));
+  });
+});
