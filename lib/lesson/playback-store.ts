@@ -25,3 +25,13 @@ export async function savePlaybackManifest(
 ): Promise<StoredPlaybackManifest> {
   return getPlaybackManifestRepository().save(submissionId, manifest);
 }
+
+/**
+ * Hard-delete the playback manifest for a submission. Idempotent — no error
+ * if no manifest exists. Used by the data-deletion flow (Wave 6 Task 4).
+ */
+export async function deletePlaybackManifestForSubmission(
+  submissionId: string,
+): Promise<void> {
+  return getPlaybackManifestRepository().deleteForSubmission(submissionId);
+}

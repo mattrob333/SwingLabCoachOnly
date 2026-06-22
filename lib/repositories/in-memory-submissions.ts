@@ -173,4 +173,14 @@ export class InMemorySubmissionRepository implements SubmissionRepository {
     save();
     return submission;
   }
+
+  async delete(id: string): Promise<void> {
+    load();
+    const index = SUBMISSIONS.findIndex((s) => s.id === id);
+    if (index === -1) {
+      throw new Error(`Submission not found: ${id}`);
+    }
+    SUBMISSIONS.splice(index, 1);
+    save();
+  }
 }

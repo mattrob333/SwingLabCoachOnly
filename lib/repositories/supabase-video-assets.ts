@@ -123,4 +123,14 @@ export class SupabaseVideoAssetRepository implements VideoAssetRepository {
     });
     return asArray<VideoAssetRow>(result).map(rowToVideoAsset);
   }
+
+  async deleteForSubmission(submissionId: string): Promise<void> {
+    // Idempotent: PostgREST DELETE on zero matching rows is a no-op. Does NOT
+    // delete the underlying storage object — the route handler must call the
+    // storage adapter's delete() first.
+    await postgrestRequest("video_assets", {
+      method: "DELETE",
+      query: { submission_id: `eq.${submissionId}` },
+    });
+  }
 }

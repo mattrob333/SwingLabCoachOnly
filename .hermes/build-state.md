@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 6 (Hardening) IN PROGRESS — 763 tests. Task 1 (file validation) + Task 2 (auth/session hardening) + Task 3 (rate limits) DONE. Next: privacy controls OR expanded test coverage OR Track B UX polish.
+**Status:** Wave 6 (Hardening) IN PROGRESS — 769 tests. Tasks 1–4 (file validation, auth/session, rate limits, link revocation) DONE. Next: data deletion OR expanded test coverage OR Track B UX polish.
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.

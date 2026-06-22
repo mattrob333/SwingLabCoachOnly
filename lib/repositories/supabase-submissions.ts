@@ -208,4 +208,18 @@ export class SupabaseSubmissionRepository implements SubmissionRepository {
     if (!row) throw new Error(`Submission not found: ${id}`);
     return rowToSubmission(row);
   }
+
+  async delete(id: string): Promise<void> {
+    // PostgREST DELETE returns the deleted rows (Prefer: return=representation).
+    // We verify a row was actually deleted and throw if not found — matching
+    // the in-memory impl's contract.
+    const result = await postgrestRequest("submissions", {
+      method: "DELETE",
+      query: { id: `eq.${id}` },
+    });
+    const rows = asArray<SubmissionRow>(result);
+    if (rows.length === 0) {
+      throw new Error(`Submission not found: ${id}`);
+    }
+  }
 }

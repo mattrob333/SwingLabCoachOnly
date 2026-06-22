@@ -132,4 +132,13 @@ export class SupabasePlaybackManifestRepository
     }
     return rowToManifest(row);
   }
+
+  async deleteForSubmission(submissionId: string): Promise<void> {
+    // Idempotent: PostgREST DELETE on zero matching rows is a no-op (returns
+    // empty array with Prefer: return=representation, or 204). No error.
+    await postgrestRequest("playback_manifests", {
+      method: "DELETE",
+      query: { submission_id: `eq.${submissionId}` },
+    });
+  }
 }

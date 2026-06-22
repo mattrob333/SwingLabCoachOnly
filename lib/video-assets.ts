@@ -55,3 +55,14 @@ export async function listVideoAssetsForCoach(
 ): Promise<VideoAsset[]> {
   return getVideoAssetRepository().listForCoach(coachSlug);
 }
+
+/**
+ * Hard-delete all VideoAsset records for a submission. Idempotent — no error
+ * if none exist. Does NOT delete the underlying storage object — callers
+ * must call the storage adapter's `delete()` first.
+ */
+export async function deleteVideoAssetsForSubmission(
+  submissionId: string,
+): Promise<void> {
+  return getVideoAssetRepository().deleteForSubmission(submissionId);
+}

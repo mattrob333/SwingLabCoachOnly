@@ -81,3 +81,12 @@ export async function markSubmissionCompleted(
 ): Promise<Submission> {
   return getSubmissionRepository().markCompleted(id);
 }
+
+/**
+ * Hard-delete a submission record by id. Throws if not found. Does NOT
+ * cascade — callers must delete associated manifests/tokens/video assets
+ * first (see the DELETE /api/submissions/[id] route handler).
+ */
+export async function deleteSubmission(id: string): Promise<void> {
+  return getSubmissionRepository().delete(id);
+}

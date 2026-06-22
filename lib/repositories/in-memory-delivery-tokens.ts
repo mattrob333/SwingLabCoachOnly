@@ -74,4 +74,15 @@ export class InMemoryDeliveryTokenRepository
     token.revokedAt = Date.now();
     return token;
   }
+
+  async deleteForSubmission(submissionId: string): Promise<void> {
+    // Remove all token records matching the submission, in place (preserves
+    // the exported DELIVERY_TOKENS array reference that tests reset).
+    for (let i = DELIVERY_TOKENS.length - 1; i >= 0; i--) {
+      if (DELIVERY_TOKENS[i].submissionId === submissionId) {
+        DELIVERY_TOKENS.splice(i, 1);
+      }
+    }
+    // Idempotent: no error if no tokens existed.
+  }
 }

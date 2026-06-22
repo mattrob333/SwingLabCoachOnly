@@ -63,4 +63,16 @@ export class InMemoryVideoAssetRepository implements VideoAssetRepository {
       })
       .map(({ a }) => a);
   }
+
+  async deleteForSubmission(submissionId: string): Promise<void> {
+    // Remove all VideoAsset records matching the submission. Mutating the
+    // exported array in place keeps the same reference visible to tests
+    // (VIDEO_ASSETS.length = 0 resets) and to the facade re-export.
+    for (let i = VIDEO_ASSETS.length - 1; i >= 0; i--) {
+      if (VIDEO_ASSETS[i].submissionId === submissionId) {
+        VIDEO_ASSETS.splice(i, 1);
+      }
+    }
+    // Idempotent: no error if no assets existed.
+  }
 }

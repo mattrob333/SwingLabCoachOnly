@@ -95,6 +95,12 @@ export interface SubmissionRepository {
   markInReview(id: string): Promise<Submission>;
   markRendering(id: string): Promise<Submission>;
   markCompleted(id: string): Promise<Submission>;
+  /**
+   * Hard-delete a submission record by id. Throws if not found. Does NOT
+   * cascade — callers must delete associated manifests/tokens/video assets
+   * first (see the DELETE /api/submissions/[id] route handler).
+   */
+  delete(id: string): Promise<void>;
 }
 
 // ---------------------------------------------------------------------------
@@ -215,6 +221,11 @@ export interface PlaybackManifestRepository {
     submissionId: string,
     manifest: LessonPlaybackManifest,
   ): Promise<StoredPlaybackManifest>;
+  /**
+   * Hard-delete the playback manifest for a submission. Idempotent — no error
+   * if no manifest exists for the submission.
+   */
+  deleteForSubmission(submissionId: string): Promise<void>;
 }
 
 // ---------------------------------------------------------------------------
@@ -248,6 +259,12 @@ export interface VideoAssetRepository {
   getById(id: string): Promise<VideoAsset | undefined>;
   /** All video assets for a coach, newest-first by uploadedAt (insertion tiebreak). */
   listForCoach(coachSlug: string): Promise<VideoAsset[]>;
+  /**
+   * Hard-delete all VideoAsset records for a submission. Idempotent — no error
+   * if none exist. Does NOT delete the underlying storage object — callers
+   * must call the storage adapter's `delete()` first.
+   */
+  deleteForSubmission(submissionId: string): Promise<void>;
 }
 
 // ---------------------------------------------------------------------------
@@ -276,6 +293,13 @@ export interface DeliveryTokenRepository {
   markViewed(id: string): Promise<LessonDeliveryToken>;
   /** Revoke a token (sets revokedAt). Throws if not found. */
   revoke(id: string): Promise<LessonDeliveryToken>;
+  /**
+   * Hard-delete ALL delivery token records for a submission. Idempotent — no
+   * error if none exist. Used by the data-deletion flow (Wave 6 Task 4);
+   * prefer `revoke()` for the privacy "revoke link" flow which preserves the
+   * audit trail.
+   */
+  deleteForSubmission(submissionId: string): Promise<void>;
 }
 
 // ---------------------------------------------------------------------------

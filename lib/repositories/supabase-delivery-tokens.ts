@@ -140,4 +140,14 @@ export class SupabaseDeliveryTokenRepository
     }
     return rowToToken(row);
   }
+
+  async deleteForSubmission(submissionId: string): Promise<void> {
+    // Idempotent: PostgREST DELETE on zero matching rows is a no-op. Used by
+    // the data-deletion flow (Wave 6 Task 4); prefer revoke() for the
+    // privacy "revoke link" flow which preserves the audit trail.
+    await postgrestRequest("lesson_delivery_tokens", {
+      method: "DELETE",
+      query: { submission_id: `eq.${submissionId}` },
+    });
+  }
 }

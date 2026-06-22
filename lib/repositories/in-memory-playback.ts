@@ -76,4 +76,16 @@ export class InMemoryPlaybackManifestRepository
     save();
     return stored;
   }
+
+  async deleteForSubmission(submissionId: string): Promise<void> {
+    load();
+    const index = PLAYBACK_MANIFESTS.findIndex(
+      (m) => m.submissionId === submissionId,
+    );
+    if (index !== -1) {
+      PLAYBACK_MANIFESTS.splice(index, 1);
+      save();
+    }
+    // Idempotent: no error if no manifest existed.
+  }
 }
