@@ -18,6 +18,7 @@ import type { FreezeFrameNote, PlaybackAnnotation } from "@/lib/lesson/playback"
 import { clearDraftNotes } from "@/lib/review/draft-notes";
 import { useDraftNotesAutosave } from "@/components/review/use-draft-notes-autosave";
 import { useBeforeUnloadWarning } from "@/components/review/use-before-unload-warning";
+import { showToast } from "@/lib/toast";
 
 type ReviewStudioClientProps = {
   submissionId: string;
@@ -317,8 +318,20 @@ export function ReviewStudioClient({
       setLessonUrl(`/lesson/${submissionId}`);
       // Draft is committed to the lesson manifest — clear the autosave draft.
       clearDraftNotes(submissionId);
+      showToast({
+        title: "Lesson processed",
+        description: "The interactive lesson is ready to review and deliver.",
+        variant: "success",
+      });
     } catch (err) {
-      setProcessError(err instanceof Error ? err.message : "Failed to process lesson");
+      const message =
+        err instanceof Error ? err.message : "Failed to process lesson";
+      setProcessError(message);
+      showToast({
+        title: "Couldn't process lesson",
+        description: message,
+        variant: "error",
+      });
     } finally {
       setProcessing(false);
     }
