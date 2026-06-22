@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
+import { AlertCircle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   formatTimecode,
@@ -48,6 +49,7 @@ export function VideoPlayer({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   // Keep latest onTimeUpdate in a ref so the listener binding (set up once)
   // always calls the freshest callback without re-subscribing.
@@ -97,6 +99,10 @@ export function VideoPlayer({
     function onEnded() {
       setIsPlaying(false);
     }
+    function onVideoError() {
+      setHasError(true);
+      setIsLoaded(false);
+    }
 
     if (video.readyState >= 1 && Number.isFinite(video.duration)) {
       setDuration(video.duration);
@@ -111,6 +117,7 @@ export function VideoPlayer({
     video.addEventListener("play", onPlay);
     video.addEventListener("pause", onPause);
     video.addEventListener("ended", onEnded);
+    video.addEventListener("error", onVideoError);
 
     return () => {
       video.removeEventListener("timeupdate", onTimeUpdate);
@@ -118,9 +125,15 @@ export function VideoPlayer({
       video.removeEventListener("play", onPlay);
       video.removeEventListener("pause", onPause);
       video.removeEventListener("ended", onEnded);
+      video.removeEventListener("error", onVideoError);
       onVideoElementReadyRef.current?.(null);
     };
   }, []);
+
+  // Reset error state when the src prop changes (new video assigned).
+  useEffect(() => {
+    setHasError(false);
+  }, [src]);
 
   const togglePlay = useCallback(() => {
     const video = videoRef.current;
@@ -195,6 +208,15 @@ export function VideoPlayer({
     onEventRef.current?.(createEvent("seek", newTime, { from, to: newTime }));
   }
 
+  function handleRetry() {
+    const video = videoRef.current;
+    if (!video) return;
+    setHasError(false);
+    setIsLoaded(false);
+    // Force the browser to re-attempt loading the source.
+    video.load();
+  }
+
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
@@ -208,9 +230,31 @@ export function VideoPlayer({
           playsInline
           preload="metadata"
         />
-        {overlay && (
+        {overlay && !hasError && (
           <div className="pointer-events-none absolute inset-0">
             {overlay}
+          </div>
+        )}
+        {hasError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/80 p-6 text-center">
+            <AlertCircle className="h-10 w-10 text-destructive" />
+            <p className="text-sm font-medium text-white">
+              The video could not be loaded.
+            </p>
+            <p className="max-w-sm text-xs text-muted-foreground">
+              The file may be missing, corrupted, or in an unsupported format.
+              Check your connection and try again.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleRetry}
+              className="mt-1 gap-2"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Retry
+            </Button>
           </div>
         )}
       </div>
@@ -249,7 +293,7 @@ export function VideoPlayer({
           variant="outline"
           size="sm"
           onClick={stepBackward}
-          disabled={!isLoaded}
+          disabled={!isLoaded || hasError}
           aria-label="Step back one frame"
         >
           ← Frame
@@ -258,7 +302,7 @@ export function VideoPlayer({
           variant="default"
           size="sm"
           onClick={togglePlay}
-          disabled={!isLoaded}
+          disabled={!isLoaded || hasError}
         >
           {isPlaying ? "Pause" : "Play"}
         </Button>
@@ -266,7 +310,7 @@ export function VideoPlayer({
           variant="outline"
           size="sm"
           onClick={stepForward}
-          disabled={!isLoaded}
+          disabled={!isLoaded || hasError}
           aria-label="Step forward one frame"
         >
           Frame →
