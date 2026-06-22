@@ -3,10 +3,12 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/site/container";
 import { Button } from "@/components/ui/button";
 import { LessonApprovalForm } from "@/components/coach/lesson-approval-form";
+import { AiReviewPanel } from "@/components/coach/ai-review-panel";
 import { verifySession, SESSION_COOKIE } from "@/lib/auth/session";
 import { getCoachBySlug } from "@/lib/coaches";
 import { getSubmissionById } from "@/lib/submissions";
 import { getDraftForSubmission } from "@/lib/ai/lesson-draft-store";
+import { getPlaybackManifestForSubmission } from "@/lib/lesson/playback-store";
 
 export const metadata = {
   title: "Review lesson draft",
@@ -52,7 +54,11 @@ export default async function LessonApprovalPage({
   }
 
   const draft = getDraftForSubmission(id);
-  if (!draft) {
+  const manifest = await getPlaybackManifestForSubmission(id);
+
+  // Neither the old lesson draft nor the new playback manifest exists —
+  // the lesson hasn't been generated yet.
+  if (!draft && !manifest) {
     notFound();
   }
 
@@ -68,18 +74,33 @@ export default async function LessonApprovalPage({
 
       <div className="mt-6 mb-8">
         <p className="text-sm font-medium text-muted-foreground">
-          Lesson Draft Review
+          Lesson Review
         </p>
         <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-          Approve Lesson
+          Review &amp; Approve Lesson
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Review the AI-generated draft below. Edit your notes, then approve to
-          deliver the lesson to the parent.
+          Review the AI-generated lesson below. Edit the summary and moment
+          titles, then approve to deliver the lesson to the parent via a secure
+          magic link.
         </p>
       </div>
 
-      <LessonApprovalForm submissionId={submission.id} draft={draft} />
+      {/* Wave 4 — AI review panel (primary flow).
+          Rendered when a packaged playback manifest with AI output exists. */}
+      {manifest && manifest.aiSummary && (
+        <div className="space-y-6">
+          <AiReviewPanel submissionId={submission.id} manifest={manifest} />
+        </div>
+      )}
+
+      {/* Legacy Phase 7 draft approval form (coexists for submissions that
+          used the older lesson-draft flow without a playback manifest). */}
+      {draft && (
+        <div className={manifest && manifest.aiSummary ? "mt-10 border-t border-border pt-8" : ""}>
+          <LessonApprovalForm submissionId={submission.id} draft={draft} />
+        </div>
+      )}
 
       {/* Link to the parent-facing lesson page (preview) */}
       <div className="mt-8 border-t border-border pt-6">
