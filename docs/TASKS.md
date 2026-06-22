@@ -1,6 +1,6 @@
 # Tasks / TODO Board
 
-**Last synced:** 2026-06-22 · **Tests:** 913 passing · **Build:** ✅ green · **Commits:** 139
+**Last synced:** 2026-06-22 · **Tests:** 917 passing · **Build:** ✅ green · **Commits:** 141
 
 This is the living task board. It is updated alongside the code every build tick. Legend: ✅ done · 🚧 in progress · ⏭️ next · ⬜ not started.
 
@@ -102,7 +102,7 @@ Full coach-facing AI loop wired: transcribe → package → coach reviews/edits 
 - [x] Earnings page (Card+EmptyState+Badge primitives, EarningsBreakdown component, "Paid" status badges; 5 render tests, commit 073a0b4, 832 tests)
 - [x] Lesson approval screen (Card+Badge primitives for AiReviewPanel + LessonApprovalForm; Badge for status/saved/drills; 11 render tests, commit f83ffe3, 843 tests)
 - [x] Global shell / nav (CoachTopNav + ConditionalChrome — path-aware chrome switching, mobile hamburger, active-state highlighting; 18 tests, commit 2607c4a, 861 tests)
-- [ ] Micro-states everywhere (loading, empty, error, success toasts, disabled/processing) — toast system foundation DONE (9086908): lib/toast.ts + Toaster + 25 tests; **toast wiring slice 1 DONE (df09cbb):** AiReviewPanel save + approve toasts (6 tests, 892 total); **toast wiring slice 2 DONE (589ff5e):** SubmissionDangerActions — coach-facing UI for revoke-link + delete with two-step confirmation + toast feedback (13 tests, 905 total); **toast wiring slice 3 DONE (d88594a):** OnboardingForm error toasts on API failure + network error (4 tests, 909 total); **toast wiring slice 4 DONE (5fa24cb):** LoginForm error toasts on invalid credentials + network error (4 tests, 913 total).
+- [ ] Micro-states everywhere (loading, empty, error, success toasts, disabled/processing) — toast system foundation DONE (9086908): lib/toast.ts + Toaster + 25 tests; **toast wiring slices 1–5 DONE:** AiReviewPanel (6 tests, 892), SubmissionDangerActions (13 tests, 905), OnboardingForm (4 tests, 909), LoginForm (4 tests, 913), StartReviewButton (4 tests, 917).
 - [ ] Accessibility pass (landmarks, focus states, aria, contrast, keyboard nav)
 
 ---
