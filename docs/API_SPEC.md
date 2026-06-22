@@ -162,6 +162,23 @@ Privacy control (Wave 6 Task 4 — PRD §25). Lets a coach revoke all active del
 - **Response 404:** `{ error: "Submission not found" }`
 - **Auth:** Coach session required (ownership enforced — 403 on cross-coach). NOT rate-limited (privacy control, low abuse surface).
 
+#### DELETE /api/submissions/[id]
+Privacy control (Wave 6 Task 4 — PRD §25). Lets a coach permanently delete a submission AND all of its associated data:
+- the submission record itself
+- the playback manifest (notes, annotations, AI summary)
+- all delivery tokens (magic links) for the submission
+- all VideoAsset records for the submission
+- the underlying video file in storage (best-effort, non-fatal)
+
+This is distinct from the revoke-link flow (which only invalidates magic links but preserves the lesson data for re-delivery). Data deletion is irreversible and removes everything. Cascade strategy: each associated-data deletion is wrapped in its own try/catch so a failure in one cleanup step (e.g. storage adapter down) does not block the others. The submission record is deleted LAST — if any earlier step throws, the submission is preserved so the coach can retry. Storage-file deletion is non-fatal by design (the record deletion is the authoritative "forgotten" signal; orphaned storage objects can be GC'd later).
+
+- **Body:** None
+- **Response 200:** `{ ok: true, submissionId: string }`
+- **Response 401:** `{ error: "Authentication required" }`
+- **Response 403:** `{ error: "Forbidden" }` — cross-coach
+- **Response 404:** `{ error: "Submission not found" }`
+- **Auth:** Coach session required (ownership enforced — 403 on cross-coach). NOT rate-limited (privacy control, low abuse surface).
+
 ### Coach
 
 #### POST /api/coach/onboarding
