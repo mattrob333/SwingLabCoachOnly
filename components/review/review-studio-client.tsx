@@ -13,6 +13,7 @@ import { formatTimecode } from "@/lib/review/timecode";
 import type { FreezeFrameNote, PlaybackAnnotation } from "@/lib/lesson/playback";
 import { clearDraftNotes } from "@/lib/review/draft-notes";
 import { useDraftNotesAutosave } from "@/components/review/use-draft-notes-autosave";
+import { useBeforeUnloadWarning } from "@/components/review/use-before-unload-warning";
 
 type ReviewStudioClientProps = {
   submissionId: string;
@@ -157,6 +158,12 @@ export function ReviewStudioClient({
     notes,
     setNotes,
   );
+
+  // Wave 3 — safe recovery: warn when navigating away with unprocessed notes.
+  // The autosave localStorage draft is the recovery mechanism; this hook is
+  // the "are you sure you want to leave?" guard that prevents accidental
+  // tab-close/navigation from interrupting the review session.
+  useBeforeUnloadWarning(notes.length > 0 && !lessonUrl && !processing);
 
   const assignedAnnotationIds = useMemo(
     () => new Set(notes.flatMap((note) => note.annotations.map((mark) => mark.id))),
