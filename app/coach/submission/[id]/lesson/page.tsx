@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { Container } from "@/components/site/container";
 import { Button } from "@/components/ui/button";
 import { LessonApprovalForm } from "@/components/coach/lesson-approval-form";
@@ -67,16 +68,17 @@ export default async function LessonApprovalPage({
       {/* Back link */}
       <a
         href={`/coach/submission/${submission.id}`}
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-ring/50 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:rounded-md"
       >
-        ← Back to submission
+        <ArrowLeft className="h-3.5 w-3.5" />
+        Back to submission
       </a>
 
       <div className="mt-6 mb-8">
-        <p className="text-sm font-medium text-muted-foreground">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           Lesson Review
         </p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+        <h1 className="mt-1 text-2xl font-bold tracking-tight">
           Review &amp; Approve Lesson
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">

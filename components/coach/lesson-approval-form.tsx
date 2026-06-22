@@ -145,7 +145,7 @@ export function LessonApprovalForm({
               <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Key Moments
               </h3>
-              <ul className="mt-2 space-y-1">
+              <ul className="mt-2 space-y-1.5">
                 {draft.keyPoints.map((kp, i) => (
                   <li key={i} className="text-sm">
                     <span className="font-medium">{kp.label}</span>
@@ -167,7 +167,7 @@ export function LessonApprovalForm({
                 {draft.drills.map((drill, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm">
                     <span className="font-medium">{drill.name}</span>
-                    <Badge variant="default" size="sm">
+                    <Badge variant="outline" size="sm">
                       {drill.category}
                     </Badge>
                   </li>
@@ -192,7 +192,7 @@ export function LessonApprovalForm({
           onChange={(e) => setCoachNotes(e.target.value)}
           rows={5}
           placeholder="Add personal notes for the player/parent — encouragement, focus areas, what to practice before the next swing."
-          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         />
         <div className="flex flex-wrap items-center gap-3">
           <Button type="submit" variant="outline" size="sm" disabled={loading}>

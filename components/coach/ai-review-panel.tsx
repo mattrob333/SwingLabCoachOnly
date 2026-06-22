@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -153,7 +154,7 @@ export function AiReviewPanel({ submissionId, manifest }: AiReviewPanelProps) {
             value={summary}
             onChange={(e) => handleSummaryChange(e.target.value)}
             rows={5}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           />
         </CardContent>
       </Card>
@@ -168,15 +169,15 @@ export function AiReviewPanel({ submissionId, manifest }: AiReviewPanelProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {manifest.notes.map((note, index) => (
-              <div key={note.id} className="space-y-1">
+              <div key={note.id} className="space-y-1.5">
                 <label
                   htmlFor={`title-${note.id}`}
                   className="flex items-center gap-2 text-xs font-medium text-muted-foreground"
                 >
                   <span>Moment {index + 1}</span>
-                  <Badge variant="default" size="sm">
+                  <Badge variant="outline" size="sm">
                     {note.timecode.toFixed(1)}s
                   </Badge>
                 </label>
@@ -187,7 +188,7 @@ export function AiReviewPanel({ submissionId, manifest }: AiReviewPanelProps) {
                     noteTitles.find((t) => t.noteId === note.id)?.title ?? ""
                   }
                   onChange={(e) => handleTitleChange(note.id, e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                 />
               </div>
             ))}
@@ -216,10 +217,11 @@ export function AiReviewPanel({ submissionId, manifest }: AiReviewPanelProps) {
 
       {/* ── Approve & Send Lesson (Sub-slice 3c-ii) ── */}
       {approved ? (
-        <Card className="border-emerald-500/40 bg-emerald-500/10">
+        <Card className="border-success/40 bg-success/10">
           <CardContent className="pt-4 sm:pt-6">
-            <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
-              ✓ Lesson approved — the parent has been emailed a secure magic link
+            <p className="inline-flex items-center gap-2 text-sm font-medium text-success">
+              <Check className="h-4 w-4" aria-hidden="true" />
+              Lesson approved — the parent has been emailed a secure magic link
               to view the lesson.
             </p>
           </CardContent>

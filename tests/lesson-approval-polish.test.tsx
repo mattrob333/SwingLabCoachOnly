@@ -146,6 +146,36 @@ describe("AiReviewPanel — UX polish task #7 (Card + Badge primitives)", () => 
     );
     expect(bannerInCard).toBe(true);
   });
+
+  it("approved banner uses semantic success tokens (not hardcoded emerald)", () => {
+    const { container } = render(
+      <AiReviewPanel
+        submissionId="sub-1"
+        manifest={makeManifest({ status: "approved" })}
+      />,
+    );
+    // Find the approved banner card — it should use bg-success, NOT emerald
+    const cards = container.querySelectorAll('[data-slot="card"]');
+    const bannerCard = Array.from(cards).find((c) =>
+      c.textContent?.toLowerCase().includes("lesson approved"),
+    );
+    expect(bannerCard).toBeTruthy();
+    expect(bannerCard?.className).toContain("bg-success");
+    expect(bannerCard?.className).toContain("border-success");
+    expect(bannerCard?.className).not.toContain("emerald");
+  });
+
+  it("approved banner includes a Check icon (lucide)", () => {
+    const { container } = render(
+      <AiReviewPanel
+        submissionId="sub-1"
+        manifest={makeManifest({ status: "approved" })}
+      />,
+    );
+    // lucide icons render as <svg> elements
+    const svgs = container.querySelectorAll("svg");
+    expect(svgs.length).toBeGreaterThanOrEqual(1);
+  });
 });
 
 // ────────────────────────────────────────────────────────────────────
