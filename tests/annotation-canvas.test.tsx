@@ -85,3 +85,103 @@ describe("AnnotationCanvas — context-unavailable fallback", () => {
     expect(container.textContent).not.toMatch(/not available|unavailable/i);
   });
 });
+
+/**
+ * Wave 3 — Mobile touch targets for the annotation toolbar.
+ *
+ * The drawing itself already uses Pointer Events + `touch-none` + pointer
+ * capture, so touch drawing works. But the toolbar buttons are too small for
+ * touch: tool buttons are h-8 (32px), color swatches are h-6 (24px). These
+ * should be bumped to h-10 (40px) on mobile, reverting to h-8 / h-6 on sm+
+ * screens — matching the pattern established by the note-card and lightbox
+ * touch-target work.
+ */
+describe("AnnotationCanvas — toolbar touch targets (Wave 3)", () => {
+  let originalGetContext: typeof HTMLCanvasElement.prototype.getContext;
+  let originalResizeObserver: typeof global.ResizeObserver;
+
+  beforeEach(() => {
+    originalGetContext = HTMLCanvasElement.prototype.getContext;
+    originalResizeObserver = global.ResizeObserver;
+    global.ResizeObserver = MockResizeObserver as unknown as typeof ResizeObserver;
+
+    const stubCtx = {
+      clearRect: vi.fn(),
+      beginPath: vi.fn(),
+      moveTo: vi.fn(),
+      lineTo: vi.fn(),
+      stroke: vi.fn(),
+      ellipse: vi.fn(),
+      arc: vi.fn(),
+      save: vi.fn(),
+      restore: vi.fn(),
+      set strokeStyle(_: string) {},
+      set lineWidth(_: number) {},
+      set lineJoin(_: CanvasLineJoin) {},
+      set lineCap(_: CanvasLineCap) {},
+    };
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(
+      stubCtx as unknown as CanvasRenderingContext2D,
+    );
+  });
+
+  afterEach(() => {
+    HTMLCanvasElement.prototype.getContext = originalGetContext;
+    global.ResizeObserver = originalResizeObserver;
+    vi.restoreAllMocks();
+  });
+
+  it("tool buttons have h-10 (mobile) + sm:h-8 (desktop) touch targets", () => {
+    const { getByLabelText } = render(
+      <Wrapper>
+        <AnnotationCanvas currentTime={0} />
+      </Wrapper>,
+    );
+
+    for (const label of ["Freehand", "Line", "Arrow", "Circle"]) {
+      const btn = getByLabelText(label);
+      const cls = btn.className;
+      expect(cls, `${label} button should have h-10`).toContain("h-10");
+      expect(cls, `${label} button should have sm:h-8`).toContain("sm:h-8");
+    }
+  });
+
+  it("color swatches have h-8 (mobile) + sm:h-6 (desktop) touch targets", () => {
+    const { getByLabelText } = render(
+      <Wrapper>
+        <AnnotationCanvas currentTime={0} />
+      </Wrapper>,
+    );
+
+    const swatch = getByLabelText("Select #ef4444");
+    const cls = swatch.className;
+    expect(cls).toContain("h-8");
+    expect(cls).toContain("sm:h-6");
+  });
+
+  it("Undo button has h-10 (mobile) + sm:h-8 (desktop)", () => {
+    const { getByLabelText } = render(
+      <Wrapper>
+        <AnnotationCanvas currentTime={0} />
+      </Wrapper>,
+    );
+
+    const btn = getByLabelText("Undo last annotation");
+    const cls = btn.className;
+    expect(cls).toContain("h-10");
+    expect(cls).toContain("sm:h-8");
+  });
+
+  it("Clear button has h-10 (mobile) + sm:h-8 (desktop)", () => {
+    const { getByLabelText } = render(
+      <Wrapper>
+        <AnnotationCanvas currentTime={0} />
+      </Wrapper>,
+    );
+
+    const btn = getByLabelText("Clear annotations");
+    const cls = btn.className;
+    expect(cls).toContain("h-10");
+    expect(cls).toContain("sm:h-8");
+  });
+});

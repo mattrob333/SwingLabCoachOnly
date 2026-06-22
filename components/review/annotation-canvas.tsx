@@ -291,7 +291,7 @@ export function AnnotationCanvas({
               onClick={() => setTool(item.id)}
               aria-label={item.label}
               title={item.label}
-              className="h-8 w-8 px-0"
+              className="h-10 w-10 px-0 sm:h-8 sm:w-8"
             >
               {item.icon}
             </Button>
@@ -306,7 +306,7 @@ export function AnnotationCanvas({
               onClick={() => setColor(c)}
               aria-label={`Select ${c}`}
               title={c}
-              className={`h-6 w-6 rounded-full border-2 ${
+              className={`h-8 w-8 rounded-full border-2 sm:h-6 sm:w-6 ${
                 color === c ? "border-foreground" : "border-background"
               }`}
               style={{ backgroundColor: c }}
@@ -322,7 +322,7 @@ export function AnnotationCanvas({
           disabled={marks.length === 0 && !activeMark}
           aria-label="Undo last annotation"
           title="Undo"
-          className="h-8 gap-1"
+          className="h-10 gap-1 sm:h-8"
         >
           <RotateCcw className="h-4 w-4" />
           Undo
@@ -335,7 +335,7 @@ export function AnnotationCanvas({
           disabled={marks.length === 0 && !activeMark}
           aria-label="Clear annotations"
           title="Clear"
-          className="h-8 gap-1"
+          className="h-10 gap-1 sm:h-8"
         >
           <Eraser className="h-4 w-4" />
           Clear
