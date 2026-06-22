@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { SiteHeader } from "@/components/site/site-header";
-import { SiteFooter } from "@/components/site/site-footer";
+import { ConditionalChrome } from "@/components/site/conditional-chrome";
 import { ServiceWorkerRegistrar } from "@/components/site/service-worker-registrar";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
@@ -35,9 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} flex min-h-dvh flex-col`}>
-        <SiteHeader />
-        <main className="flex flex-1 flex-col">{children}</main>
-        <SiteFooter />
+        <ConditionalChrome>{children}</ConditionalChrome>
         <ServiceWorkerRegistrar />
       </body>
     </html>
