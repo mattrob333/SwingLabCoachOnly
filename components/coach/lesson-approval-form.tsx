@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { showToast } from "@/lib/toast";
 import type { LessonDraft } from "@/lib/ai/lesson-draft";
 
 type LessonApprovalFormProps = {
@@ -47,7 +48,13 @@ export function LessonApprovalForm({
         const data = (await res.json().catch(() => ({}))) as {
           error?: string;
         };
-        setError(data.error ?? "Failed to update lesson draft");
+        const message = data.error ?? "Failed to update lesson draft";
+        setError(message);
+        showToast({
+          title: "Couldn't save changes",
+          description: message,
+          variant: "error",
+        });
         setLoading(false);
         return;
       }
@@ -55,9 +62,36 @@ export function LessonApprovalForm({
       setCoachNotes(notes);
       setSaved(true);
       setLoading(false);
+      // Supplementary success toast — the inline Badge / status change is
+      // the primary UI; the toast confirms the action transacted.
+      if (nextStatus === "approved") {
+        showToast({
+          title: "Lesson approved & sent",
+          description:
+            "The parent has been emailed a secure magic link to view the lesson.",
+          variant: "success",
+        });
+      } else if (nextStatus === "rejected") {
+        showToast({
+          title: "Lesson rejected",
+          description: "The draft stays editable — rework and re-approve anytime.",
+          variant: "success",
+        });
+      } else {
+        showToast({
+          title: "Notes saved",
+          description: "Your coach notes are stored.",
+          variant: "success",
+        });
+      }
       router.refresh();
     } catch {
       setError("Network error — please try again.");
+      showToast({
+        title: "Network error",
+        description: "Couldn't reach the server. Please check your connection and try again.",
+        variant: "error",
+      });
       setLoading(false);
     }
   }
