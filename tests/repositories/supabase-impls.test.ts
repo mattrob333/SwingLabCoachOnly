@@ -977,6 +977,178 @@ describe("Supabase repository impls (PostgREST)", () => {
   });
 
   // ---------------------------------------------------------------------------
+  // Delivery Tokens
+  // ---------------------------------------------------------------------------
+  describe("SupabaseDeliveryTokenRepository", () => {
+    it("create: POST to lesson_delivery_tokens with snake_case body + client-generated id/token, returns mapped token (epoch ms timestamps)", async () => {
+      const { calls } = setupFetchMock([
+        mockResponse({
+          id: "tok_abc",
+          submission_id: "sub-1",
+          token: "t_otoken",
+          parent_email: "parent@example.com",
+          created_at: "2024-05-15T12:00:00.000Z",
+          expires_at: "2024-06-14T12:00:00.000Z",
+          viewed_at: null,
+          revoked_at: null,
+        }),
+      ]);
+      const mod = await import("@/lib/repositories/supabase-delivery-tokens");
+      const repo = new mod.SupabaseDeliveryTokenRepository();
+      const token = await repo.create({
+        submissionId: "sub-1",
+        parentEmail: "parent@example.com",
+        createdAt: 1_715_774_400_000, // 2024-05-15T12:00:00Z
+        ttlDays: 30,
+      });
+      expect(token.id).toBe("tok_abc");
+      expect(token.submissionId).toBe("sub-1");
+      expect(token.token).toBe("t_otoken");
+      expect(token.parentEmail).toBe("parent@example.com");
+      expect(token.createdAt).toBeTypeOf("number");
+      expect(token.viewedAt).toBeUndefined();
+      expect(token.revokedAt).toBeUndefined();
+
+      expect(calls[0].url).toBe(`${SUPABASE_URL}/rest/v1/lesson_delivery_tokens`);
+      expect(calls[0].method).toBe("POST");
+      const body = JSON.parse(calls[0].body ?? "{}");
+      expect(body.submission_id).toBe("sub-1");
+      expect(body.parent_email).toBe("parent@example.com");
+      expect(body.id).toBeTruthy(); // client-generated
+      expect(body.token).toBeTruthy(); // client-generated opaque
+      expect(body.created_at).toBe("2024-05-15T12:00:00.000Z");
+      const MS_PER_DAY = 24 * 60 * 60 * 1000;
+      expect(body.expires_at).toBe(
+        new Date(1_715_774_400_000 + 30 * MS_PER_DAY).toISOString(),
+      );
+      expect(body.viewed_at).toBeUndefined(); // not sent on create
+      expect(body.revoked_at).toBeUndefined();
+    });
+
+    it("getByToken: GET with token=eq filter, maps row (epoch ms + nullable → optional)", async () => {
+      const { calls } = setupFetchMock([
+        mockResponse({
+          id: "tok_1",
+          submission_id: "sub-1",
+          token: "t_abc",
+          parent_email: "p@example.com",
+          created_at: "2026-06-21T10:00:00.000Z",
+          expires_at: "2026-07-21T10:00:00.000Z",
+          viewed_at: "2026-06-21T11:00:00.000Z",
+          revoked_at: null,
+        }),
+      ]);
+      const mod = await import("@/lib/repositories/supabase-delivery-tokens");
+      const repo = new mod.SupabaseDeliveryTokenRepository();
+      const found = await repo.getByToken("t_abc");
+      expect(found?.id).toBe("tok_1");
+      expect(found?.viewedAt).toBeTypeOf("number");
+      expect(found?.revokedAt).toBeUndefined();
+      expect(new Date(found!.createdAt).toISOString()).toBe("2026-06-21T10:00:00.000Z");
+      expect(calls[0].url).toBe(
+        `${SUPABASE_URL}/rest/v1/lesson_delivery_tokens?token=eq.t_abc`,
+      );
+    });
+
+    it("getByToken: 406 → undefined", async () => {
+      setupFetchMock([mockResponse(null, { status: 406 })]);
+      const mod = await import("@/lib/repositories/supabase-delivery-tokens");
+      const repo = new mod.SupabaseDeliveryTokenRepository();
+      expect(await repo.getByToken("missing")).toBeUndefined();
+    });
+
+    it("getBySubmissionId: GET with submission_id=eq + order, returns array (newest first)", async () => {
+      const { calls } = setupFetchMock([
+        mockResponse([
+          {
+            id: "tok_2",
+            submission_id: "sub-1",
+            token: "t_new",
+            parent_email: "p@example.com",
+            created_at: "2026-06-21T11:00:00.000Z",
+            expires_at: "2026-07-21T11:00:00.000Z",
+            viewed_at: null,
+            revoked_at: null,
+          },
+          {
+            id: "tok_1",
+            submission_id: "sub-1",
+            token: "t_old",
+            parent_email: "p@example.com",
+            created_at: "2026-06-21T10:00:00.000Z",
+            expires_at: "2026-07-21T10:00:00.000Z",
+            viewed_at: null,
+            revoked_at: null,
+          },
+        ]),
+      ]);
+      const mod = await import("@/lib/repositories/supabase-delivery-tokens");
+      const repo = new mod.SupabaseDeliveryTokenRepository();
+      const list = await repo.getBySubmissionId("sub-1");
+      expect(list).toHaveLength(2);
+      expect(list[0].id).toBe("tok_2"); // created_at.desc → newest first
+      expect(list[1].token).toBe("t_old");
+      expect(calls[0].url).toBe(
+        `${SUPABASE_URL}/rest/v1/lesson_delivery_tokens?submission_id=eq.sub-1&order=created_at.desc`,
+      );
+    });
+
+    it("markViewed: PATCH with id=eq + viewed_at, returns updated token with viewedAt", async () => {
+      const { calls } = setupFetchMock([
+        mockResponse({
+          id: "tok_1",
+          submission_id: "sub-1",
+          token: "t_abc",
+          parent_email: "p@example.com",
+          created_at: "2026-06-21T10:00:00.000Z",
+          expires_at: "2026-07-21T10:00:00.000Z",
+          viewed_at: "2026-06-22T08:00:00.000Z",
+          revoked_at: null,
+        }),
+      ]);
+      const mod = await import("@/lib/repositories/supabase-delivery-tokens");
+      const repo = new mod.SupabaseDeliveryTokenRepository();
+      const updated = await repo.markViewed("tok_1");
+      expect(updated.viewedAt).toBeTypeOf("number");
+      expect(new Date(updated.viewedAt!).toISOString()).toBe("2026-06-22T08:00:00.000Z");
+      expect(calls[0].method).toBe("PATCH");
+      expect(calls[0].url).toBe(
+        `${SUPABASE_URL}/rest/v1/lesson_delivery_tokens?id=eq.tok_1`,
+      );
+      const body = JSON.parse(calls[0].body ?? "{}");
+      expect(body.viewed_at).toBeTruthy(); // ISO timestamp
+      expect(body.id).toBeUndefined(); // never PATCH the PK
+    });
+
+    it("revoke: PATCH with id=eq + revoked_at, returns updated token with revokedAt", async () => {
+      const { calls } = setupFetchMock([
+        mockResponse({
+          id: "tok_1",
+          submission_id: "sub-1",
+          token: "t_abc",
+          parent_email: "p@example.com",
+          created_at: "2026-06-21T10:00:00.000Z",
+          expires_at: "2026-07-21T10:00:00.000Z",
+          viewed_at: null,
+          revoked_at: "2026-06-22T09:00:00.000Z",
+        }),
+      ]);
+      const mod = await import("@/lib/repositories/supabase-delivery-tokens");
+      const repo = new mod.SupabaseDeliveryTokenRepository();
+      const updated = await repo.revoke("tok_1");
+      expect(updated.revokedAt).toBeTypeOf("number");
+      expect(updated.viewedAt).toBeUndefined();
+      expect(calls[0].method).toBe("PATCH");
+      expect(calls[0].url).toBe(
+        `${SUPABASE_URL}/rest/v1/lesson_delivery_tokens?id=eq.tok_1`,
+      );
+      const body = JSON.parse(calls[0].body ?? "{}");
+      expect(body.revoked_at).toBeTruthy();
+      expect(body.id).toBeUndefined();
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // Cross-cutting: headers always include service-role key
   // ---------------------------------------------------------------------------
   describe("PostgREST headers (all impls)", () => {
