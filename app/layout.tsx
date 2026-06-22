@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ConditionalChrome } from "@/components/site/conditional-chrome";
 import { ServiceWorkerRegistrar } from "@/components/site/service-worker-registrar";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -36,6 +37,7 @@ export default function RootLayout({
       <body className={`${inter.variable} flex min-h-dvh flex-col`}>
         <ConditionalChrome>{children}</ConditionalChrome>
         <ServiceWorkerRegistrar />
+        <Toaster />
       </body>
     </html>
   );
