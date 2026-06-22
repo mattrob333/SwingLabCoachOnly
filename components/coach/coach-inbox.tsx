@@ -140,7 +140,7 @@ export function CoachInbox({ submissions }: { submissions: InboxSubmission[] }) 
       <div
         role="tablist"
         aria-label="Filter submissions"
-        className="flex gap-1 rounded-lg border border-border bg-card p-1"
+        className="inline-flex gap-1 rounded-lg border border-border/70 bg-card p-1 shadow-sm"
       >
         {FILTER_LABELS.map(({ value, label }) => (
           <button
@@ -150,9 +150,9 @@ export function CoachInbox({ submissions }: { submissions: InboxSubmission[] }) 
             aria-selected={filter === value}
             onClick={() => setFilter(value)}
             className={cn(
-              "inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
               filter === value
-                ? "bg-primary text-primary-foreground"
+                ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted",
             )}
           >
@@ -160,7 +160,7 @@ export function CoachInbox({ submissions }: { submissions: InboxSubmission[] }) 
             {counts[value] > 0 && (
               <span
                 className={cn(
-                  "inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold",
+                  "inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold tabular-nums",
                   filter === value
                     ? "bg-primary-foreground/20 text-primary-foreground"
                     : "bg-muted text-muted-foreground",
@@ -205,10 +205,10 @@ function SubmissionCard({ submission }: { submission: InboxSubmission }) {
 
   return (
     <Link href={`/coach/submission/${submission.id}`} className="block">
-      <Card className="cursor-pointer transition-colors hover:border-ring hover:shadow-sm">
+      <Card className="cursor-pointer transition-all duration-200 hover:border-ring/50 hover:shadow-md">
         <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium">
+            <p className="truncate text-sm font-semibold">
               {submission.parentEmail}
             </p>
             <p className="mt-0.5 text-xs text-muted-foreground">
@@ -221,7 +221,7 @@ function SubmissionCard({ submission }: { submission: InboxSubmission }) {
           </Badge>
         </div>
         {submission.notes && (
-          <p className="truncate border-t border-border px-4 py-2 text-xs text-muted-foreground sm:px-6">
+          <p className="truncate border-t border-border/50 px-4 py-2 text-xs text-muted-foreground sm:px-6">
             {submission.notes}
           </p>
         )}

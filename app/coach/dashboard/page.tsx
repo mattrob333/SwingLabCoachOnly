@@ -2,11 +2,13 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/site/container";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { CoachInbox, type InboxSubmission } from "@/components/coach/coach-inbox";
 import { verifySession, SESSION_COOKIE } from "@/lib/auth/session";
 import { getCoachBySlug } from "@/lib/coaches";
 import { getSubmissionsForCoach } from "@/lib/submissions";
+import { cn } from "@/lib/utils";
 
 export const metadata = {
   title: "Coach dashboard",
@@ -58,27 +60,38 @@ export default async function CoachDashboardPage() {
         <div className="flex items-center gap-3">
           <Avatar fallback={initials} size="lg" />
           <div>
-            <p className="text-xs text-muted-foreground">Signed in as</p>
-            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Coach
+            </p>
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
               {coach.name}
             </h1>
             <p className="text-sm text-muted-foreground">{coach.title}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <a
-            href="/coach/onboarding"
-            className="inline-flex h-9 items-center justify-center rounded-lg border border-border bg-background px-2.5 text-sm font-medium hover:bg-muted"
-          >
-            Edit profile
-          </a>
-        </div>
+        <Button
+          variant="outline"
+          size="lg"
+          render={
+            <a href="/coach/onboarding">
+              Edit profile
+            </a>
+          }
+        />
       </div>
 
       {/* Stat cards */}
       <section className="mt-8 grid gap-4 sm:grid-cols-3">
-        <StatCard label="Pending reviews" value={String(pendingCount)} />
-        <StatCard label="Completed" value={String(completedCount)} />
+        <StatCard
+          label="Pending reviews"
+          value={String(pendingCount)}
+          accent="warning"
+        />
+        <StatCard
+          label="Completed"
+          value={String(completedCount)}
+          accent="success"
+        />
         <StatCard
           label="Avg. turnaround"
           value={
@@ -90,6 +103,7 @@ export default async function CoachDashboardPage() {
                   ? "12h"
                   : "—"
           }
+          accent="info"
         />
       </section>
 
@@ -99,13 +113,32 @@ export default async function CoachDashboardPage() {
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+const accentClasses: Record<string, string> = {
+  warning: "border-l-warning",
+  success: "border-l-success",
+  info: "border-l-info",
+};
+
+function StatCard({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string;
+  accent?: "warning" | "success" | "info";
+}) {
   return (
-    <Card className="p-4">
-      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+    <Card
+      className={cn(
+        "gap-0 border-l-4 p-5",
+        accent ? accentClasses[accent] : undefined,
+      )}
+    >
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
-      <p className="mt-1 text-2xl font-semibold">{value}</p>
+      <p className="mt-2 text-3xl font-bold tracking-tight">{value}</p>
     </Card>
   );
 }
