@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
-import { Camera, CheckCircle2, FileVideo2, Mic, PlaySquare, RotateCcw, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Camera, CheckCircle2, FileVideo2, Mic, PlaySquare, RotateCcw, Trash2, X } from "lucide-react";
 import { AnnotationCanvas, type AnnotationMark } from "@/components/review/annotation-canvas";
 import { VideoPlayer } from "@/components/review/video-player";
 import { VoiceRecorder, type VoiceRecorderHandle } from "@/components/review/voice-recorder";
@@ -137,8 +137,19 @@ export function ReviewStudioClient({
   const [processing, setProcessing] = useState(false);
   const [processError, setProcessError] = useState<string | null>(null);
   const [lessonUrl, setLessonUrl] = useState<string | null>(null);
+  const [zoomedNoteId, setZoomedNoteId] = useState<string | null>(null);
   const videoElementRef = useRef<HTMLVideoElement | null>(null);
   const voiceRecorderRef = useRef<VoiceRecorderHandle>(null);
+
+  // Close the thumbnail lightbox when Escape is pressed.
+  useEffect(() => {
+    if (zoomedNoteId === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setZoomedNoteId(null);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [zoomedNoteId]);
 
   // Wave 3 — autosave: restore draft notes on mount + debounce-save on change.
   const { savedAt: draftSavedAt } = useDraftNotesAutosave(
@@ -368,11 +379,18 @@ export function ReviewStudioClient({
                 <div className="grid gap-4 sm:grid-cols-[160px_minmax(0,1fr)]">
                   <div className="overflow-hidden rounded-lg border border-border bg-muted">
                     {note.thumbnailUrl ? (
-                      <img
-                        src={note.thumbnailUrl}
-                        alt={`Frozen frame for note ${index + 1}`}
-                        className="aspect-video h-full w-full object-cover"
-                      />
+                      <button
+                        type="button"
+                        onClick={() => setZoomedNoteId(note.id)}
+                        aria-label={`Zoom thumbnail for note ${index + 1}`}
+                        className="group relative block aspect-video h-full w-full cursor-zoom-in"
+                      >
+                        <img
+                          src={note.thumbnailUrl}
+                          alt={`Frozen frame for note ${index + 1}`}
+                          className="aspect-video h-full w-full object-cover"
+                        />
+                      </button>
                     ) : (
                       <div className="flex aspect-video items-center justify-center px-3 text-center text-xs text-muted-foreground">
                         Frozen frame preview will appear on new notes.
@@ -524,6 +542,40 @@ export function ReviewStudioClient({
           </p>
         </details>
       </section>
+
+      {zoomedNoteId !== null && (() => {
+        const note = sortedNotes.find((n) => n.id === zoomedNoteId);
+        if (!note || !note.thumbnailUrl) return null;
+        const idx = sortedNotes.indexOf(note);
+        return (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Zoomed freeze frame for note ${idx + 1}`}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+            onClick={() => setZoomedNoteId(null)}
+          >
+            <div
+              className="relative max-h-[90vh] max-w-[90vw]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={note.thumbnailUrl}
+                alt={`Frozen frame for note ${idx + 1} (zoomed)`}
+                className="max-h-[85vh] max-w-[85vw] rounded-lg object-contain"
+              />
+              <button
+                type="button"
+                onClick={() => setZoomedNoteId(null)}
+                aria-label="Close zoomed image"
+                className="absolute -top-3 -right-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-background text-foreground shadow-md hover:bg-muted"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
