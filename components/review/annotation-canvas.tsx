@@ -280,7 +280,7 @@ export function AnnotationCanvas({
         aria-label="Annotation drawing canvas"
       />
 
-      <div className="pointer-events-auto absolute bottom-2 left-2 flex max-w-[calc(100%-1rem)] flex-wrap items-center gap-2 rounded-lg border border-border bg-background/95 px-2 py-1.5 shadow-sm backdrop-blur max-sm:bottom-auto max-sm:left-2 max-sm:right-2 max-sm:top-[calc(100%+0.5rem)] max-sm:max-w-none">
+      <div className="pointer-events-auto absolute bottom-2 left-2 flex max-w-[calc(100%-1rem)] flex-wrap items-center gap-2 rounded-lg border border-border bg-background/95 px-2 py-1.5 shadow-sm backdrop-blur">
         <div className="flex items-center gap-1">
           {TOOLS.map((item) => (
             <Button
@@ -325,7 +325,7 @@ export function AnnotationCanvas({
           className="h-10 gap-1 sm:h-8"
         >
           <RotateCcw className="h-4 w-4" />
-          Undo
+          <span className="hidden sm:inline">Undo</span>
         </Button>
         <Button
           type="button"
@@ -338,9 +338,9 @@ export function AnnotationCanvas({
           className="h-10 gap-1 sm:h-8"
         >
           <Eraser className="h-4 w-4" />
-          Clear
+          <span className="hidden sm:inline">Clear</span>
         </Button>
-        <span className="ml-1 text-xs text-muted-foreground">
+        <span className="ml-1 hidden text-xs text-muted-foreground sm:inline">
           {marks.length} mark{marks.length === 1 ? "" : "s"}
         </span>
       </div>
