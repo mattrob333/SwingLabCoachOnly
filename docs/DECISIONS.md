@@ -29,3 +29,14 @@
 **Tradeoffs:** No refresh tokens, no magic links yet — acceptable for MVP. Sessions are 7-day, httpOnly, sameSite=lax. Credential store is in-memory (resets on deploy) — fine for MVP demo; real accounts land with Supabase.
 **Swap points:** `lib/auth/credentials.ts` (`verifyCoachCredentials`, `coachExists`) and `lib/auth/session.ts` (`signSession`, `verifySession`).
 **Date:** 2026-06-21
+
+## 2026-06-21 — Async Repository Interfaces (PENDING)
+**Decision:** Convert the four repository interfaces from synchronous to async before filling in Supabase impls with real PostgREST queries.
+**Context:** Wave 1 Task 5 introduced the repository interface layer with synchronous method signatures (e.g. `create(input: SubmissionInput): Submission`). This was correct for the in-memory impls (which are synchronous array operations) and preserved all 44 existing import sites + 267 tests unchanged. However, real Supabase queries via `fetch()` / PostgREST are inherently async. A synchronous interface cannot call `fetch()` and return the result — `async` functions return `Promise<T>`, not `T`.
+**Options considered:** (a) Keep interfaces sync, use a sync HTTP client (impossible in Node.js — `fetch` is async-only). (b) Make interfaces async and cascade `async`/`await` through facades + callers. (c) Create a separate async interface alongside the sync one (messy, two code paths). (d) Use a sync wrapper like `deasync` (unreliable, blocks the event loop, not production-safe).
+**Chosen direction:** (b) — convert interfaces to async.
+**Reason:** All facade callers are server-side (API route handlers — already async; server components — already async-capable; test files — trivially updated). Client components do NOT call facades directly — they call API routes. This means the cascade is purely additive: add `async` to interfaces/impls/facades, add `await` to ~29 caller files. The in-memory impl change is mechanical (just add the `async` keyword — a sync function made async wraps its return in a Promise). No logic changes needed.
+**Tradeoffs:** Touches ~29 files with ~255 call sites. Test files need `await` added to facade calls. Risk of missing a call site — mitigated by TypeScript (a `Promise<T>` where `T` is expected will fail typecheck). The conversion is a single atomic commit to avoid half-async state.
+**Blocked by:** Nothing — ready to execute as a dedicated tick.
+**Blocks:** Supabase repository impls (Slice D), Wave 2 real upload/storage, all production persistence.
+**Date:** 2026-06-21
