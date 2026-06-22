@@ -416,6 +416,7 @@ export function ReviewStudioClient({
                           type="button"
                           variant="ghost"
                           size="sm"
+                          className="h-10 sm:h-7"
                           onClick={() => retakeThumbnail(note)}
                           disabled={reRecordNoteId !== null}
                           aria-label={`Retake thumbnail for note ${index + 1}`}
@@ -426,6 +427,7 @@ export function ReviewStudioClient({
                           type="button"
                           variant="ghost"
                           size="sm"
+                          className="h-10 sm:h-7"
                           onClick={() => reRecordNote(note)}
                           disabled={reRecordNoteId !== null}
                           aria-label={`Re-record note ${index + 1}`}
@@ -436,6 +438,7 @@ export function ReviewStudioClient({
                           type="button"
                           variant="ghost"
                           size="sm"
+                          className="h-10 sm:h-7"
                           onClick={() => deleteNote(note.id)}
                           disabled={reRecordNoteId !== null}
                           aria-label={`Delete note ${index + 1}`}
