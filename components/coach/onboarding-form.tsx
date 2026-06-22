@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 type OnboardingData = {
   name: string;
@@ -43,6 +44,14 @@ export function OnboardingForm({
   const [data, setData] = useState<OnboardingData>({ ...EMPTY, ...initial });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Inline validation: check required fields for the current step.
+  const stepValid =
+    step === 0
+      ? data.name.trim() !== "" && data.bio.trim() !== ""
+      : step === 1
+        ? data.priceUsd.trim() !== "" && Number(data.priceUsd) > 0
+        : true;
 
   function update<K extends keyof OnboardingData>(
     key: K,
@@ -135,7 +144,8 @@ export function OnboardingForm({
         ))}
       </div>
 
-      <form onSubmit={step < STEPS.length - 1 ? next : submit} className="space-y-4">
+      <Card className="gap-0 p-6">
+        <form onSubmit={step < STEPS.length - 1 ? next : submit} className="space-y-4">
         {step === 0 && (
           <>
             <Field
@@ -238,7 +248,7 @@ export function OnboardingForm({
             <span />
           )}
           {step < STEPS.length - 1 ? (
-            <Button type="submit" variant="default">
+            <Button type="submit" variant="default" disabled={!stepValid}>
               Continue
             </Button>
           ) : (
@@ -247,7 +257,14 @@ export function OnboardingForm({
             </Button>
           )}
         </div>
+
+        {!stepValid && (
+          <p className="text-xs text-muted-foreground">
+            Please complete all required fields to continue.
+          </p>
+        )}
       </form>
+      </Card>
     </div>
   );
 }
