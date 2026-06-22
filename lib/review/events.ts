@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createReviewId } from "@/lib/review/ids";
 
 /**
  * Phase 5 — Review event capture model.
@@ -44,7 +44,7 @@ export function createEvent(
   wallClock: number = Date.now(),
 ): ReviewEvent {
   return {
-    id: randomUUID(),
+    id: createReviewId("evt"),
     type,
     timecode,
     payload: payload ?? null,

@@ -32,7 +32,7 @@ export function PaymentForm({ submissionId, coachName, priceUsd }: PaymentFormPr
         setLoading(false);
         return;
       }
-      router.push(`/submission/${submissionId}`);
+      router.push(`/coach/submission/${submissionId}`);
       router.refresh();
     } catch {
       setError("Network error — please try again.");
@@ -57,7 +57,7 @@ export function PaymentForm({ submissionId, coachName, priceUsd }: PaymentFormPr
         setLoading(false);
         return;
       }
-      router.push(`/submission/${submissionId}`);
+      router.push(`/coach/submission/${submissionId}`);
       router.refresh();
     } catch {
       setError("Network error — please try again.");

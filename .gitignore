@@ -23,6 +23,8 @@
 # misc
 .DS_Store
 *.pem
+.swinglab-data/
+/public/uploads/
 
 # debug
 npm-debug.log*

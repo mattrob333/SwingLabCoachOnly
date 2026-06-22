@@ -21,6 +21,7 @@ function getMediaRecorderSupportSnapshot() {
   return (
     typeof window !== "undefined" &&
     typeof navigator !== "undefined" &&
+    typeof navigator.mediaDevices?.getUserMedia === "function" &&
     typeof window.MediaRecorder !== "undefined"
   );
 }
@@ -34,8 +35,12 @@ type VoiceRecorderProps = {
    * starts so each voiceover segment is anchored to a video timecode.
    */
   currentTime: number;
+  submissionId: string;
   /** Optional callback fired when a review event (record_start/record_stop) occurs. */
   onEvent?: (event: ReviewEvent) => void;
+  onSegmentsChange?: (segments: RecordingSegment[]) => void;
+  onSegmentFinalized?: (segment: RecordingSegment) => void;
+  showSegmentList?: boolean;
 };
 
 /**
@@ -52,7 +57,14 @@ type VoiceRecorderProps = {
  * is verified via the build, not unit tests. The segment logic it relies on
  * is unit-tested in tests/recording.test.ts.
  */
-export function VoiceRecorder({ currentTime, onEvent }: VoiceRecorderProps) {
+export function VoiceRecorder({
+  currentTime,
+  submissionId,
+  onEvent,
+  onSegmentsChange,
+  onSegmentFinalized,
+  showSegmentList = true,
+}: VoiceRecorderProps) {
   const isSupported = useSyncExternalStore(
     subscribeMediaRecorderSupport,
     getMediaRecorderSupportSnapshot,
@@ -61,6 +73,7 @@ export function VoiceRecorder({ currentTime, onEvent }: VoiceRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [segments, setSegments] = useState<RecordingSegment[]>([]);
+  const segmentsRef = useRef<RecordingSegment[]>([]);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -68,26 +81,69 @@ export function VoiceRecorder({ currentTime, onEvent }: VoiceRecorderProps) {
   const recordStartRef = useRef<number>(0);
   const streamRef = useRef<MediaStream | null>(null);
   const onEventRef = useRef(onEvent);
+  const onSegmentsChangeRef = useRef(onSegmentsChange);
+  const onSegmentFinalizedRef = useRef(onSegmentFinalized);
   useEffect(() => {
     onEventRef.current = onEvent;
   }, [onEvent]);
+  useEffect(() => {
+    onSegmentsChangeRef.current = onSegmentsChange;
+  }, [onSegmentsChange]);
+  useEffect(() => {
+    onSegmentFinalizedRef.current = onSegmentFinalized;
+  }, [onSegmentFinalized]);
+  useEffect(() => {
+    segmentsRef.current = segments;
+  }, [segments]);
 
-  const handleStop = useCallback(() => {
+  async function uploadAudio(blob: Blob, mimeType: string): Promise<string> {
+    const extension = mimeType.includes("ogg")
+      ? "ogg"
+      : mimeType.includes("mp4") || mimeType.includes("m4a")
+        ? "m4a"
+        : "webm";
+    const formData = new FormData();
+    formData.set("audio", blob, `voice-note.${extension}`);
+
+    const res = await fetch(`/api/submissions/${submissionId}/audio`, {
+      method: "POST",
+      body: formData,
+    });
+    if (!res.ok) {
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      throw new Error(data.error ?? "Failed to save voice note");
+    }
+    const data = (await res.json()) as { audioUrl: string };
+    return data.audioUrl;
+  }
+
+  const handleStop = useCallback(async () => {
     const recorder = mediaRecorderRef.current;
     const segment = activeSegmentRef.current;
     if (!recorder || !segment) return;
 
     const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
-    const audioBlobUrl = URL.createObjectURL(blob);
     const endTime = segment.startTime + (Date.now() - recordStartRef.current) / 1000;
 
-    const finalized = finalizeSegment(segment, endTime, audioBlobUrl);
-    setSegments((prev) => sortSegmentsByStartTime([...prev, finalized]));
-    onEventRef.current?.(
-      createEvent("record_stop", segment.startTime, {
-        duration: finalized.duration,
-      }),
-    );
+    try {
+      const audioUrl = await uploadAudio(blob, recorder.mimeType);
+      const finalized = finalizeSegment(segment, endTime, audioUrl);
+      const nextSegments = sortSegmentsByStartTime([
+        ...segmentsRef.current,
+        finalized,
+      ]);
+      segmentsRef.current = nextSegments;
+      setSegments(nextSegments);
+      onSegmentsChangeRef.current?.(nextSegments);
+      onSegmentFinalizedRef.current?.(finalized);
+      onEventRef.current?.(
+        createEvent("record_stop", segment.startTime, {
+          duration: finalized.duration,
+        }),
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save voice note");
+    }
 
     // Reset refs
     mediaRecorderRef.current = null;
@@ -98,11 +154,16 @@ export function VoiceRecorder({ currentTime, onEvent }: VoiceRecorderProps) {
     // Release the microphone stream
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
-  }, []);
+  }, [submissionId]);
 
   async function startRecording() {
     setError(null);
     try {
+      if (typeof navigator.mediaDevices?.getUserMedia !== "function") {
+        setError("Microphone capture is not available in this browser.");
+        return;
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
       const recorder = new MediaRecorder(stream);
@@ -140,21 +201,22 @@ export function VoiceRecorder({ currentTime, onEvent }: VoiceRecorderProps) {
   }
 
   function deleteSegment(id: string) {
-    setSegments((prev) => {
-      const target = prev.find((s) => s.id === id);
-      if (target?.audioBlobUrl) {
-        URL.revokeObjectURL(target.audioBlobUrl);
-      }
-      return prev.filter((s) => s.id !== id);
-    });
+    const target = segmentsRef.current.find((s) => s.id === id);
+    if (target?.audioBlobUrl?.startsWith("blob:")) {
+      URL.revokeObjectURL(target.audioBlobUrl);
+    }
+    const nextSegments = segmentsRef.current.filter((s) => s.id !== id);
+    segmentsRef.current = nextSegments;
+    setSegments(nextSegments);
+    onSegmentsChangeRef.current?.(nextSegments);
   }
 
   // Clean up any active stream/recordings on unmount.
   useEffect(() => {
     return () => {
       streamRef.current?.getTracks().forEach((t) => t.stop());
-      segments.forEach((s) => {
-        if (s.audioBlobUrl) URL.revokeObjectURL(s.audioBlobUrl);
+      segmentsRef.current.forEach((s) => {
+        if (s.audioBlobUrl?.startsWith("blob:")) URL.revokeObjectURL(s.audioBlobUrl);
       });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -211,7 +273,7 @@ export function VoiceRecorder({ currentTime, onEvent }: VoiceRecorderProps) {
         )}
       </div>
 
-      {segments.length > 0 && (
+      {showSegmentList && segments.length > 0 && (
         <ul className="mt-4 space-y-2">
           {segments.map((segment) => (
             <li

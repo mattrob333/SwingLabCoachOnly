@@ -15,10 +15,12 @@ type VideoPlayerProps = {
   src: string;
   /** Optional callback fired on each timeupdate with the current playback time. */
   onTimeUpdate?: (currentTime: number) => void;
+  onDurationChange?: (duration: number) => void;
   /** Optional content rendered as an absolute overlay on top of the video frame. */
   overlay?: React.ReactNode;
   /** Optional callback fired when a review event (play/pause/seek) occurs. */
   onEvent?: (event: ReviewEvent) => void;
+  onVideoElementReady?: (video: HTMLVideoElement | null) => void;
 };
 
 /**
@@ -33,7 +35,14 @@ type VideoPlayerProps = {
  * The player is the foundation for the Review Studio: annotation canvas,
  * microphone recording, and review event capture will layer on top of it.
  */
-export function VideoPlayer({ src, onTimeUpdate, overlay, onEvent }: VideoPlayerProps) {
+export function VideoPlayer({
+  src,
+  onTimeUpdate,
+  onDurationChange,
+  overlay,
+  onEvent,
+  onVideoElementReady,
+}: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -49,14 +58,23 @@ export function VideoPlayer({ src, onTimeUpdate, overlay, onEvent }: VideoPlayer
 
   // Same ref pattern for onEvent.
   const onEventRef = useRef(onEvent);
+  const onDurationChangeRef = useRef(onDurationChange);
+  const onVideoElementReadyRef = useRef(onVideoElementReady);
   useEffect(() => {
     onEventRef.current = onEvent;
   }, [onEvent]);
+  useEffect(() => {
+    onDurationChangeRef.current = onDurationChange;
+  }, [onDurationChange]);
+  useEffect(() => {
+    onVideoElementReadyRef.current = onVideoElementReady;
+  }, [onVideoElementReady]);
 
   // Sync state from the video element
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+    onVideoElementReadyRef.current?.(video);
 
     function onTimeUpdate(this: HTMLVideoElement) {
       const t = this.currentTime;
@@ -66,6 +84,7 @@ export function VideoPlayer({ src, onTimeUpdate, overlay, onEvent }: VideoPlayer
     function onLoadedMetadata(this: HTMLVideoElement) {
       setDuration(this.duration);
       setIsLoaded(true);
+      onDurationChangeRef.current?.(this.duration);
     }
     function onPlay(this: HTMLVideoElement) {
       setIsPlaying(true);
@@ -77,6 +96,14 @@ export function VideoPlayer({ src, onTimeUpdate, overlay, onEvent }: VideoPlayer
     }
     function onEnded() {
       setIsPlaying(false);
+    }
+
+    if (video.readyState >= 1 && Number.isFinite(video.duration)) {
+      setDuration(video.duration);
+      setCurrentTime(video.currentTime);
+      setIsLoaded(true);
+      onTimeUpdateRef.current?.(video.currentTime);
+      onDurationChangeRef.current?.(video.duration);
     }
 
     video.addEventListener("timeupdate", onTimeUpdate);
@@ -91,6 +118,7 @@ export function VideoPlayer({ src, onTimeUpdate, overlay, onEvent }: VideoPlayer
       video.removeEventListener("play", onPlay);
       video.removeEventListener("pause", onPause);
       video.removeEventListener("ended", onEnded);
+      onVideoElementReadyRef.current?.(null);
     };
   }, []);
 
@@ -189,7 +217,7 @@ export function VideoPlayer({ src, onTimeUpdate, overlay, onEvent }: VideoPlayer
 
       {/* Scrubber bar (click-to-seek) */}
       <div
-        className="group relative h-8 cursor-pointer select-none px-4 pt-2"
+        className="group relative h-8 cursor-pointer select-none px-4 pt-2 max-sm:mt-24"
         onClick={handleScrubberClick}
       >
         <div className="relative h-1.5 w-full rounded-full bg-muted">

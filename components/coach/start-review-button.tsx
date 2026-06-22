@@ -36,6 +36,7 @@ export function StartReviewButton({ submissionId }: StartReviewButtonProps) {
         setLoading(false);
         return;
       }
+      router.push(`/coach/review/${submissionId}`);
       router.refresh();
     } catch {
       setError("Network error — please try again.");

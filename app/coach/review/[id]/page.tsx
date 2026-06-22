@@ -11,11 +11,6 @@ export const metadata = {
   description: "SwingLab coach review studio.",
 };
 
-/**
- * MVP sample video URL. When the render pipeline (Phase 6) lands, the video
- * URL will come from the submission record (stored during parent upload).
- * For now, this placeholder lets coaches exercise the Review Studio UI.
- */
 const SAMPLE_VIDEO_URL =
   "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 
@@ -73,7 +68,10 @@ export default async function ReviewStudioPage({
       </div>
 
       {/* Video player + voiceover + annotation + event timeline */}
-      <ReviewStudioClient videoUrl={SAMPLE_VIDEO_URL} />
+      <ReviewStudioClient
+        submissionId={submission.id}
+        videoUrl={submission.videoUrl ?? SAMPLE_VIDEO_URL}
+      />
     </Container>
   );
 }

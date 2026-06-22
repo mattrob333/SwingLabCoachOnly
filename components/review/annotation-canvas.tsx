@@ -1,128 +1,174 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
+import { Circle, Eraser, Minus, MousePointer2, Pencil, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  createStroke,
-  addPoint,
-  type Stroke,
-  type Point,
-} from "@/lib/review/strokes";
+import { createReviewId } from "@/lib/review/ids";
 import { createEvent, type ReviewEvent } from "@/lib/review/events";
+import type { Point } from "@/lib/review/strokes";
+
+type Tool = "pen" | "line" | "arrow" | "circle";
+
+export type AnnotationMark = {
+  id: string;
+  tool: Tool;
+  timecode: number;
+  color: string;
+  points: Point[];
+  canvasWidth: number;
+  canvasHeight: number;
+};
 
 type AnnotationCanvasProps = {
-  /**
-   * The video's current playback time (seconds). Captured when a stroke begins
-   * so each annotation is anchored to a video timecode.
-   */
   currentTime: number;
-  /** Optional callback fired when a review event (stroke) occurs. */
   onEvent?: (event: ReviewEvent) => void;
+  onMarksChange?: (marks: AnnotationMark[]) => void;
 };
 
 const COLORS = ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#ffffff"];
+const TOOLS: { id: Tool; label: string; icon: ReactNode }[] = [
+  { id: "pen", label: "Freehand", icon: <Pencil className="h-4 w-4" /> },
+  { id: "line", label: "Line", icon: <Minus className="h-4 w-4" /> },
+  { id: "arrow", label: "Arrow", icon: <MousePointer2 className="h-4 w-4 rotate-45" /> },
+  { id: "circle", label: "Circle", icon: <Circle className="h-4 w-4" /> },
+];
 
-/**
- * Phase 5 — Annotation canvas overlay for the Review Studio.
- *
- * Renders a transparent `<canvas>` absolutely positioned over the video frame.
- * The coach draws freehand with a pen tool; each stroke is anchored to the
- * video timecode at the moment drawing started (via lib/review/strokes.ts).
- *
- * Tools: color picker, undo, clear. Strokes live in component state for MVP;
- * the render pipeline (Phase 6) will persist them.
- *
- * Browser-only: Canvas drawing is not available in jsdom, so this component is
- * verified via the build. The stroke model it relies on is unit-tested in
- * tests/strokes.test.ts.
- */
-export function AnnotationCanvas({ currentTime, onEvent }: AnnotationCanvasProps) {
+function drawArrowHead(
+  ctx: CanvasRenderingContext2D,
+  from: Point,
+  to: Point,
+) {
+  const angle = Math.atan2(to.y - from.y, to.x - from.x);
+  const size = 16;
+  ctx.beginPath();
+  ctx.moveTo(to.x, to.y);
+  ctx.lineTo(to.x - size * Math.cos(angle - Math.PI / 6), to.y - size * Math.sin(angle - Math.PI / 6));
+  ctx.moveTo(to.x, to.y);
+  ctx.lineTo(to.x - size * Math.cos(angle + Math.PI / 6), to.y - size * Math.sin(angle + Math.PI / 6));
+  ctx.stroke();
+}
+
+function drawMark(ctx: CanvasRenderingContext2D, mark: AnnotationMark) {
+  if (mark.points.length === 0) return;
+
+  ctx.strokeStyle = mark.color;
+  ctx.lineWidth = 4;
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+
+  const first = mark.points[0];
+  const last = mark.points[mark.points.length - 1];
+
+  if (mark.tool === "pen") {
+    ctx.beginPath();
+    ctx.moveTo(first.x, first.y);
+    for (const point of mark.points.slice(1)) {
+      ctx.lineTo(point.x, point.y);
+    }
+    ctx.stroke();
+    return;
+  }
+
+  if (mark.tool === "circle") {
+    const x = Math.min(first.x, last.x);
+    const y = Math.min(first.y, last.y);
+    const width = Math.abs(last.x - first.x);
+    const height = Math.abs(last.y - first.y);
+    ctx.beginPath();
+    ctx.ellipse(x + width / 2, y + height / 2, width / 2, height / 2, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    return;
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(first.x, first.y);
+  ctx.lineTo(last.x, last.y);
+  ctx.stroke();
+
+  if (mark.tool === "arrow") {
+    drawArrowHead(ctx, first, last);
+  }
+}
+
+export function AnnotationCanvas({
+  currentTime,
+  onEvent,
+  onMarksChange,
+}: AnnotationCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [strokes, setStrokes] = useState<Stroke[]>([]);
+  const [marks, setMarks] = useState<AnnotationMark[]>([]);
+  const [activeMark, setActiveMark] = useState<AnnotationMark | null>(null);
+  const [tool, setTool] = useState<Tool>("arrow");
   const [color, setColor] = useState(COLORS[0]);
-  const [isDrawing, setIsDrawing] = useState(false);
 
-  // Refs mirror the latest values so event handlers and the resize observer
-  // (set up once) always read fresh state without re-subscribing.
-  const activeStrokeRef = useRef<Stroke | null>(null);
-  const strokesRef = useRef<Stroke[]>([]);
-  const colorRef = useRef(color);
+  const marksRef = useRef(marks);
+  const activeMarkRef = useRef(activeMark);
   const currentTimeRef = useRef(currentTime);
   const onEventRef = useRef(onEvent);
+  const onMarksChangeRef = useRef(onMarksChange);
 
   useEffect(() => {
-    strokesRef.current = strokes;
-  }, [strokes]);
+    marksRef.current = marks;
+  }, [marks]);
   useEffect(() => {
-    colorRef.current = color;
-  }, [color]);
+    activeMarkRef.current = activeMark;
+  }, [activeMark]);
   useEffect(() => {
     currentTimeRef.current = currentTime;
   }, [currentTime]);
   useEffect(() => {
     onEventRef.current = onEvent;
   }, [onEvent]);
-
-  function drawStroke(ctx: CanvasRenderingContext2D, stroke: Stroke) {
-    if (stroke.points.length < 1) return;
-    ctx.strokeStyle = stroke.color;
-    ctx.lineWidth = 3;
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
-    for (let i = 1; i < stroke.points.length; i++) {
-      ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
-    }
-    ctx.stroke();
-  }
+  useEffect(() => {
+    onMarksChangeRef.current = onMarksChange;
+  }, [onMarksChange]);
 
   function redrawAll() {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (const s of strokesRef.current) {
-      drawStroke(ctx, s);
+    for (const mark of marksRef.current) {
+      drawMark(ctx, mark);
     }
-    if (activeStrokeRef.current) {
-      drawStroke(ctx, activeStrokeRef.current);
+    if (activeMarkRef.current) {
+      drawMark(ctx, activeMarkRef.current);
     }
   }
 
-  // Keep a ref to the latest redrawAll so the resize observer (set up once)
-  // can invoke it without capturing a stale closure.
   const redrawRef = useRef(redrawAll);
   useEffect(() => {
     redrawRef.current = redrawAll;
   });
 
-  // Size the canvas to its rendered container and keep it in sync on resize.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
       canvas.width = Math.round(rect.width);
       canvas.height = Math.round(rect.height);
       redrawRef.current();
     };
+
     resize();
-    const ro = new ResizeObserver(resize);
-    ro.observe(canvas);
-    return () => ro.disconnect();
+    const observer = new ResizeObserver(resize);
+    observer.observe(canvas);
+    return () => observer.disconnect();
   }, []);
 
-  // Redraw whenever committed strokes change (undo / clear).
   useEffect(() => {
     redrawAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [strokes]);
+  }, [marks, activeMark]);
 
   function getPoint(e: React.PointerEvent<HTMLCanvasElement>): Point {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
+
     const rect = canvas.getBoundingClientRect();
     return {
       x: (e.clientX - rect.left) * (canvas.width / rect.width),
@@ -134,95 +180,144 @@ export function AnnotationCanvas({ currentTime, onEvent }: AnnotationCanvasProps
     e.preventDefault();
     e.currentTarget.setPointerCapture(e.pointerId);
     const point = getPoint(e);
-    activeStrokeRef.current = addPoint(
-      createStroke(currentTimeRef.current, colorRef.current),
-      point,
-    );
-    setIsDrawing(true);
+    setActiveMark({
+      id: createReviewId("mark"),
+      tool,
+      timecode: currentTimeRef.current,
+      color,
+      points: [point],
+      canvasWidth: canvasRef.current?.width ?? 0,
+      canvasHeight: canvasRef.current?.height ?? 0,
+    });
   }
 
   function onPointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
-    if (!isDrawing || !activeStrokeRef.current) return;
+    if (!activeMarkRef.current) return;
     const point = getPoint(e);
-    activeStrokeRef.current = addPoint(activeStrokeRef.current, point);
-    redrawAll();
+    const next =
+      activeMarkRef.current.tool === "pen"
+        ? { ...activeMarkRef.current, points: [...activeMarkRef.current.points, point] }
+        : { ...activeMarkRef.current, points: [activeMarkRef.current.points[0], point] };
+    setActiveMark(next);
   }
 
-  function onPointerUp() {
-    if (!isDrawing || !activeStrokeRef.current) return;
-    const finished = activeStrokeRef.current;
-    activeStrokeRef.current = null;
-    setIsDrawing(false);
-    if (finished.points.length > 0) {
-      setStrokes((prev) => [...prev, finished]);
-      onEventRef.current?.(
-        createEvent("stroke", finished.timecode, {
-          pointCount: finished.points.length,
-          color: finished.color,
-        }),
-      );
-    }
+  function finishMark() {
+    const finished = activeMarkRef.current;
+    if (!finished) return;
+
+    setActiveMark(null);
+    if (finished.points.length < 2) return;
+
+    const canvas = canvasRef.current;
+    const finishedWithSize = {
+      ...finished,
+      canvasWidth: canvas?.width ?? finished.canvasWidth,
+      canvasHeight: canvas?.height ?? finished.canvasHeight,
+    };
+
+    const nextMarks = [...marksRef.current, finishedWithSize];
+    marksRef.current = nextMarks;
+    setMarks(nextMarks);
+    onMarksChangeRef.current?.(nextMarks);
+    onEventRef.current?.(
+      createEvent("stroke", finishedWithSize.timecode, {
+        tool: finishedWithSize.tool,
+        pointCount: finishedWithSize.points.length,
+        color: finishedWithSize.color,
+      }),
+    );
   }
 
   function undo() {
-    setStrokes((prev) => prev.slice(0, -1));
+    setActiveMark(null);
+    const nextMarks = marksRef.current.slice(0, -1);
+    marksRef.current = nextMarks;
+    setMarks(nextMarks);
+    onMarksChangeRef.current?.(nextMarks);
   }
 
   function clearAll() {
-    setStrokes([]);
+    setActiveMark(null);
+    marksRef.current = [];
+    setMarks([]);
+    onMarksChangeRef.current?.([]);
   }
 
   return (
     <>
-      {/* Drawing surface — fills the video frame overlay */}
       <canvas
         ref={canvasRef}
         className="h-full w-full cursor-crosshair touch-none"
         style={{ pointerEvents: "auto" }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
+        onPointerUp={finishMark}
+        onPointerCancel={finishMark}
         aria-label="Annotation drawing canvas"
       />
 
-      {/* Floating toolbar over the bottom of the video */}
-      <div className="pointer-events-auto absolute bottom-2 left-2 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-background/90 px-2 py-1.5 shadow-sm backdrop-blur">
+      <div className="pointer-events-auto absolute bottom-2 left-2 flex max-w-[calc(100%-1rem)] flex-wrap items-center gap-2 rounded-lg border border-border bg-background/95 px-2 py-1.5 shadow-sm backdrop-blur max-sm:bottom-auto max-sm:left-2 max-sm:right-2 max-sm:top-[calc(100%+0.5rem)] max-sm:max-w-none">
+        <div className="flex items-center gap-1">
+          {TOOLS.map((item) => (
+            <Button
+              key={item.id}
+              type="button"
+              variant={tool === item.id ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setTool(item.id)}
+              aria-label={item.label}
+              title={item.label}
+              className="h-8 w-8 px-0"
+            >
+              {item.icon}
+            </Button>
+          ))}
+        </div>
+        <span className="mx-1 h-5 w-px bg-border" />
         <div className="flex items-center gap-1">
           {COLORS.map((c) => (
             <button
               key={c}
               type="button"
               onClick={() => setColor(c)}
-              aria-label={`Select color ${c}`}
-              className={`h-5 w-5 rounded-full border-2 ${
-                color === c ? "border-foreground" : "border-transparent"
+              aria-label={`Select ${c}`}
+              title={c}
+              className={`h-6 w-6 rounded-full border-2 ${
+                color === c ? "border-foreground" : "border-background"
               }`}
               style={{ backgroundColor: c }}
             />
           ))}
         </div>
-        <span className="mx-1 h-4 w-px bg-border" />
+        <span className="mx-1 h-5 w-px bg-border" />
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           onClick={undo}
-          disabled={strokes.length === 0}
-          aria-label="Undo last stroke"
+          disabled={marks.length === 0 && !activeMark}
+          aria-label="Undo last annotation"
+          title="Undo"
+          className="h-8 gap-1"
         >
+          <RotateCcw className="h-4 w-4" />
           Undo
         </Button>
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           onClick={clearAll}
-          disabled={strokes.length === 0}
-          aria-label="Clear all strokes"
+          disabled={marks.length === 0 && !activeMark}
+          aria-label="Clear annotations"
+          title="Clear"
+          className="h-8 gap-1"
         >
+          <Eraser className="h-4 w-4" />
           Clear
         </Button>
         <span className="ml-1 text-xs text-muted-foreground">
-          {strokes.length} stroke{strokes.length === 1 ? "" : "s"}
+          {marks.length} mark{marks.length === 1 ? "" : "s"}
         </span>
       </div>
     </>

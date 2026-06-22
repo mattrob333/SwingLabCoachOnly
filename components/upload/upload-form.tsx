@@ -61,17 +61,20 @@ export function UploadForm({ coaches, followUpFor }: UploadFormProps) {
     }, 200);
 
     try {
+      const formData = new FormData();
+      formData.set("coachSlug", coachSlug);
+      formData.set("parentEmail", parentEmail);
+      formData.set("playerAge", playerAge);
+      formData.set("swingType", swingType);
+      formData.set("notes", notes);
+      formData.set("video", videoFile);
+      if (followUpFor) {
+        formData.set("followUpFor", followUpFor);
+      }
+
       const res = await fetch("/api/submissions", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          coachSlug,
-          parentEmail,
-          playerAge: Number(playerAge),
-          swingType,
-          notes,
-          ...(followUpFor ? { followUpFor } : {}),
-        }),
+        body: formData,
       });
 
       clearInterval(progressInterval);

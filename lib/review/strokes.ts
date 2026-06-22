@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createReviewId } from "@/lib/review/ids";
 
 /**
  * Phase 5 — Stroke model for the annotation canvas overlay.
@@ -37,7 +37,7 @@ export type StrokeBounds = {
  */
 export function createStroke(timecode: number, color = "#000000"): Stroke {
   return {
-    id: randomUUID(),
+    id: createReviewId("stroke"),
     timecode,
     color,
     points: [],

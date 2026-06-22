@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import { Container } from "@/components/site/container";
+import { LessonPlaybackPlayer } from "@/components/lesson/lesson-playback-player";
 import { getSubmissionById } from "@/lib/submissions";
 import { getDraftForSubmission } from "@/lib/ai/lesson-draft-store";
+import { getPlaybackManifestForSubmission } from "@/lib/lesson/playback-store";
 
 export const metadata = {
   title: "Your Lesson",
@@ -26,10 +28,52 @@ export default async function LessonPage({
     notFound();
   }
 
+  const playbackManifest = getPlaybackManifestForSubmission(id);
   const draft = getDraftForSubmission(id);
-  if (!draft) {
+
+  if (!playbackManifest && !draft) {
     notFound();
   }
+
+  if (playbackManifest) {
+    return (
+      <Container className="py-12">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-8">
+            <p className="text-sm font-medium text-muted-foreground">
+              Your SwingLab Lesson
+            </p>
+            <h1 className="mt-1 text-3xl font-semibold tracking-tight">
+              Interactive swing review
+            </h1>
+            <p className="mt-3 max-w-2xl text-base text-muted-foreground">
+              Play the swing. When the video reaches a coach note, it pauses on
+              the marked frame, shows the annotations, plays the voiceover, then
+              continues.
+            </p>
+          </div>
+
+          <LessonPlaybackPlayer manifest={playbackManifest} />
+
+          <section className="mt-8 rounded-xl border border-green-500/30 bg-green-500/5 p-6 text-center">
+            <h2 className="text-lg font-semibold">Ready for a follow-up?</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+              Work on the feedback, then submit a new swing so your coach can
+              review your progress.
+            </p>
+            <a
+              href={`/upload?followUpFor=${submission.id}`}
+              className="mt-4 inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              Submit a follow-up swing
+            </a>
+          </section>
+        </div>
+      </Container>
+    );
+  }
+
+  if (!draft) notFound();
 
   return (
     <Container className="py-12">

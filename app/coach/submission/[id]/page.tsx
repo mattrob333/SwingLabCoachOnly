@@ -155,13 +155,13 @@ export default async function SubmissionDetailPage({
           <div className="rounded-xl border border-border bg-card p-6">
             <h2 className="text-lg font-medium">Review complete</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              This submission has been reviewed and rendered. Review and approve
-              the AI-generated lesson draft to deliver it to the parent.
+              This submission has been processed into an interactive lesson the
+              player can watch.
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
-              <a href={`/coach/submission/${submission.id}/lesson`}>
+              <a href={`/lesson/${submission.id}`}>
                 <Button variant="default" size="lg">
-                  Review lesson draft
+                  Open player lesson
                 </Button>
               </a>
               <a href={`/coach/review/${submission.id}`}>

@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createReviewId } from "@/lib/review/ids";
 
 /**
  * Phase 5 — Recording segment model for coach voiceover during review.
@@ -28,7 +28,7 @@ export type RecordingSegment = {
  */
 export function createSegment(startTime: number): RecordingSegment {
   return {
-    id: randomUUID(),
+    id: createReviewId("rec"),
     startTime,
     duration: 0,
     audioBlobUrl: null,
