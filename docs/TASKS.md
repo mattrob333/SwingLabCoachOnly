@@ -54,7 +54,15 @@ All 20 PRD §31 build-order items: coach auth, onboarding, parent upload, paymen
 - [x] Mobile touch targets (note cards, lightbox close, annotation toolbar)
 - [x] Annotation toolbar mobile layout fix (no overlap with player controls)
 - [x] `beforeunload` unsaved-changes warning
+- [ ] 🔴 **HIGH (user-reported 2026-06-22): Mobile draw-tools overlap the video canvas.** On the coach lesson/review canvas at mobile width (~390px), the white annotation toolbar panel overlaps the bottom of the `<video>`, covering the player's feet / tee base (see attached screenshot). The video frame must NOT be obstructed by the draw tools on mobile.
+  - Acceptance: at 360–430px width, the full video frame (including the player's feet and the bottom of the swing area) is visible and unobstructed; the draw-tools toolbar sits BELOW the video (stacked), not floating over it. Tools remain reachable with large touch targets. No regression on desktop (toolbar may overlay/float on larger screens if intended).
+  - Notes: inspect `components/review/annotation-canvas.tsx` toolbar positioning + the review studio layout. Likely the toolbar is absolutely positioned over the video; on mobile it should reflow to a stacked block under the video (or the video should reserve space so nothing covers the frame). Add a render test asserting the mobile layout class/structure.
 - [ ] ⬜ Remaining ergonomics review (mobile QA pass — overlaps Wave 5)
+
+## ✏️ Draw Tools Backlog (Annotation Canvas)
+Current tools: pen (freehand), line, arrow, circle. Add the following IN ORDER (each TDD-first: extend the `Tool` union in `components/review/annotation-canvas.tsx`, add the toolbar button + icon, implement the canvas draw path, add a draw/render test). Do these AFTER the mobile-overlap fix above so new buttons don't worsen the crowding before the layout is fixed.
+- [ ] **Dotted line** — a dashed/dotted straight line (use `ctx.setLineDash`). New tool id `"dotted-line"`; toolbar button + icon; draw path mirrors `"line"` but dashed; reset dash after stroke. Render/draw test.
+- [ ] **Curved arrow** — an arrow drawn along a curved (arc/quadratic) path with the arrowhead at the end. Very useful for showing rotation / lack of rotation. New tool id `"curved-arrow"`; capture start + control/drag to define curvature; render a quadratic curve + arrowhead at the terminal point; draw test covering the arrowhead orientation along the curve tangent.
 
 ## 🚧 Wave 4 — AI (Deepgram + OpenAI) (In Progress)
 - [x] Transcription adapter layer: types + Mock + Deepgram + env-gated factory (18 tests)

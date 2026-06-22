@@ -4,15 +4,15 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 4 (AI) IN PROGRESS — transcription adapter layer + transcription worker route + OpenAI packaging adapter layer + packaging worker route + coach edit AI output (PATCH /package) + coach approval route (POST /approve) + coach AI review panel (3c-i) COMPLETE. 688 tests. Next: Sub-slice 3c-ii — approve button + wire AiReviewPanel into the lesson page.
+**Status:** Wave 4 (AI) COMPLETE — transcription adapter + worker route, OpenAI packaging adapter + worker route, coach edit AI output (PATCH /package), coach approval route (POST /approve), coach AI review panel (3c-i), approve button + page wiring (3c-ii). 693 tests. Next: Wave 5 — Player experience (chapters, thumbnails, transcript, speed, jump-to-note, follow-up CTA, mobile QA).
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
 - **Outer Loop** (cron `30bbeeaeeaf8`) — every 60 min (hourly): Alignment audit against PRD + NEXT_STEPS_PLAN, guardrails, drift detection. Read-only.
 - **Overnight mode (2026-06-21):** intervals doubled (10m / 60m). Inner loop self-pauses both jobs at a genuine terminal point and sends "🛑 SwingLab Loop Stopped" to Telegram. To restart: user says "resume".
 
-## CURRENT WAVE: Wave 4 — AI (Deepgram + OpenAI), IN PROGRESS
-(Waves 1–2 COMPLETE; Wave 3 Review Studio polish ~COMPLETE. Next actionable: Sub-slice 3c — coach-facing UI for reviewing AI output + approve button.)
+## CURRENT WAVE: Wave 5 — Player Experience (NEXT)
+(Waves 1–4 COMPLETE; Wave 3 Review Studio polish COMPLETE. Wave 4 AI COMPLETE: transcribe → package → coach review/edit → coach approve → delivery token + email.)
 
 See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan.
 
