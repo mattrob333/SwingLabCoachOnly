@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { showToast } from "@/lib/toast";
 
 export function LoginForm() {
   const router = useRouter();
@@ -26,7 +27,13 @@ export function LoginForm() {
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(data.error ?? "Login failed");
+        const message = data.error ?? "Login failed";
+        setError(message);
+        showToast({
+          title: "Login failed",
+          description: message,
+          variant: "error",
+        });
         setLoading(false);
         return;
       }
@@ -34,6 +41,11 @@ export function LoginForm() {
       router.refresh();
     } catch {
       setError("Network error — please try again.");
+      showToast({
+        title: "Network error",
+        description: "Please check your connection and try again.",
+        variant: "error",
+      });
       setLoading(false);
     }
   }
