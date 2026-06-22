@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StartReviewButton } from "@/components/coach/start-review-button";
+import { SubmissionDangerActions } from "@/components/coach/submission-danger-actions";
 import { statusBadgeVariant } from "@/components/coach/coach-inbox";
 import { verifySession, SESSION_COOKIE } from "@/lib/auth/session";
 import { getCoachBySlug } from "@/lib/coaches";
@@ -186,6 +187,15 @@ export default async function SubmissionDetailPage({
           </div>
         </Card>
       )}
+
+      {/* Privacy controls — revoke delivery link + delete submission (PRD §25) */}
+      <div className="mt-6">
+        <SubmissionDangerActions
+          submissionId={submission.id}
+          canRevoke={submission.status === "completed"}
+          canDelete={true}
+        />
+      </div>
     </Container>
   );
 }
