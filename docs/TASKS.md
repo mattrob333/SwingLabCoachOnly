@@ -1,6 +1,6 @@
 # Tasks / TODO Board
 
-**Last synced:** 2026-06-22 · **Tests:** 861 passing · **Build:** ✅ green · **Commits:** 132
+**Last synced:** 2026-06-22 · **Tests:** 886 passing · **Build:** ✅ green · **Commits:** 134
 
 This is the living task board. It is updated alongside the code every build tick. Legend: ✅ done · 🚧 in progress · ⏭️ next · ⬜ not started.
 
@@ -102,7 +102,7 @@ Full coach-facing AI loop wired: transcribe → package → coach reviews/edits 
 - [x] Earnings page (Card+EmptyState+Badge primitives, EarningsBreakdown component, "Paid" status badges; 5 render tests, commit 073a0b4, 832 tests)
 - [x] Lesson approval screen (Card+Badge primitives for AiReviewPanel + LessonApprovalForm; Badge for status/saved/drills; 11 render tests, commit f83ffe3, 843 tests)
 - [x] Global shell / nav (CoachTopNav + ConditionalChrome — path-aware chrome switching, mobile hamburger, active-state highlighting; 18 tests, commit 2607c4a, 861 tests)
-- [ ] Micro-states everywhere (loading, empty, error, success toasts, disabled/processing)
+- [ ] Micro-states everywhere (loading, empty, error, success toasts, disabled/processing) — toast system foundation DONE (9086908): lib/toast.ts + Toaster + 25 tests
 - [ ] Accessibility pass (landmarks, focus states, aria, contrast, keyboard nav)
 
 ---
