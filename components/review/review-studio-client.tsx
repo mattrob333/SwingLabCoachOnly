@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import { CheckCircle2, FileVideo2, Mic, PlaySquare, Trash2 } from "lucide-react";
+import { CheckCircle2, FileVideo2, Mic, PlaySquare, RotateCcw, Trash2 } from "lucide-react";
 import { AnnotationCanvas, type AnnotationMark } from "@/components/review/annotation-canvas";
 import { VideoPlayer } from "@/components/review/video-player";
-import { VoiceRecorder } from "@/components/review/voice-recorder";
+import { VoiceRecorder, type VoiceRecorderHandle } from "@/components/review/voice-recorder";
 import { Button } from "@/components/ui/button";
 import { createReviewId } from "@/lib/review/ids";
 import type { ReviewEvent } from "@/lib/review/events";
@@ -133,10 +133,12 @@ export function ReviewStudioClient({
   const [marks, setMarks] = useState<AnnotationMark[]>([]);
   const [segments, setSegments] = useState<RecordingSegment[]>([]);
   const [notes, setNotes] = useState<FreezeFrameNote[]>([]);
+  const [reRecordNoteId, setReRecordNoteId] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [processError, setProcessError] = useState<string | null>(null);
   const [lessonUrl, setLessonUrl] = useState<string | null>(null);
   const videoElementRef = useRef<HTMLVideoElement | null>(null);
+  const voiceRecorderRef = useRef<VoiceRecorderHandle>(null);
 
   // Wave 3 — autosave: restore draft notes on mount + debounce-save on change.
   const { savedAt: draftSavedAt } = useDraftNotesAutosave(
@@ -173,6 +175,17 @@ export function ReviewStudioClient({
       if (!audioUrl) return;
 
       setNotes((prev) => {
+        // Re-record: replace the target note's audio in-place, keeping its
+        // id, timecode, annotations, transcript, and thumbnail.
+        if (reRecordNoteId) {
+          return prev.map((note) =>
+            note.id === reRecordNoteId
+              ? { ...note, audioUrl, audioDuration: segment.duration }
+              : note,
+          );
+        }
+
+        // Normal: create a new note from the finalized segment.
         const alreadyAssigned = new Set([
           ...assignedAnnotationIds,
           ...prev.flatMap((note) => note.annotations.map((mark) => mark.id)),
@@ -195,13 +208,25 @@ export function ReviewStudioClient({
         };
         return [...prev, note].sort((a, b) => a.timecode - b.timecode);
       });
+      setReRecordNoteId(null);
       setLessonUrl(null);
     },
-    [assignedAnnotationIds, marks],
+    [assignedAnnotationIds, marks, reRecordNoteId],
   );
 
   function deleteNote(id: string) {
     setNotes((prev) => prev.filter((note) => note.id !== id));
+    setLessonUrl(null);
+  }
+
+  function reRecordNote(note: FreezeFrameNote) {
+    // Seek the video to the note's timecode so the new recording is anchored
+    // to the same frame.
+    if (videoElementRef.current) {
+      videoElementRef.current.currentTime = note.timecode;
+    }
+    setReRecordNoteId(note.id);
+    voiceRecorderRef.current?.startRecording(note.timecode);
     setLessonUrl(null);
   }
 
@@ -255,6 +280,7 @@ export function ReviewStudioClient({
       />
 
       <VoiceRecorder
+        ref={voiceRecorderRef}
         submissionId={submissionId}
         currentTime={currentTime}
         onEvent={handleEvent}
@@ -331,15 +357,28 @@ export function ReviewStudioClient({
                           {note.audioDuration.toFixed(1)}s voiceover
                         </p>
                       </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteNote(note.id)}
-                        aria-label={`Delete note ${index + 1}`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => reRecordNote(note)}
+                          disabled={reRecordNoteId !== null}
+                          aria-label={`Re-record note ${index + 1}`}
+                        >
+                          <RotateCcw className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteNote(note.id)}
+                          disabled={reRecordNoteId !== null}
+                          aria-label={`Delete note ${index + 1}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                     <audio
                       controls
