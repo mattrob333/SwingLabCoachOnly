@@ -568,14 +568,14 @@ export function ReviewStudioClient({
         )}
 
         {lessonUrl && (
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-success/30 bg-success/10 p-3 text-sm text-success">
             <span className="inline-flex items-center gap-2 font-medium">
               <CheckCircle2 className="h-4 w-4" />
               Interactive lesson is ready.
             </span>
             <a
               href={lessonUrl}
-              className="inline-flex h-9 items-center justify-center rounded-lg bg-emerald-700 px-3 text-sm font-medium text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+              className="inline-flex h-9 items-center justify-center rounded-lg bg-success px-3 text-sm font-medium text-success-foreground shadow-sm transition-colors hover:bg-success/90 focus-visible:outline-ring/50 focus-visible:ring-2 focus-visible:ring-ring/50"
             >
               Open player lesson
             </a>

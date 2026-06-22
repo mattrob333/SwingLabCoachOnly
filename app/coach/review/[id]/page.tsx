@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { Container } from "@/components/site/container";
+import { Badge } from "@/components/ui/badge";
 import { ReviewStudioClient } from "@/components/review/review-studio-client";
 import { verifySession, SESSION_COOKIE } from "@/lib/auth/session";
 import { getCoachBySlug } from "@/lib/coaches";
@@ -53,16 +55,19 @@ export default async function ReviewStudioPage({
         <div>
           <a
             href={`/coach/submission/${submission.id}`}
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-ring/50 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:rounded-md"
           >
-            ← Back to submission
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to submission
           </a>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-            Review Studio
-          </h1>
+          <div className="mt-2 flex items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight">
+              Review Studio
+            </h1>
+            <Badge variant="info">{submission.swingType}</Badge>
+          </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            {submission.parentEmail} · Age {submission.playerAge} ·{" "}
-            {submission.swingType}
+            {submission.parentEmail} · Age {submission.playerAge}
           </p>
         </div>
       </div>

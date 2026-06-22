@@ -1,7 +1,9 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback, useSyncExternalStore, forwardRef, useImperativeHandle } from "react";
+import { Mic, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { formatTimecode } from "@/lib/review/timecode";
 import {
   createSegment,
@@ -259,8 +261,9 @@ export const VoiceRecorder = forwardRef<VoiceRecorderHandle, VoiceRecorderProps>
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <div className="flex flex-wrap items-center gap-3">
+    <Card className="p-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <Mic className="h-4 w-4 text-primary" />
         <h3 className="text-sm font-semibold">Voiceover</h3>
         <span className="text-xs text-muted-foreground">
           Record narration tied to the video timecode.
@@ -280,8 +283,10 @@ export const VoiceRecorder = forwardRef<VoiceRecorderHandle, VoiceRecorderProps>
             size="sm"
             onClick={() => startRecording()}
             aria-label="Start voiceover recording"
+            className="gap-1.5"
           >
-            ● Record
+            <Mic className="h-4 w-4" />
+            Record
           </Button>
         ) : (
           <Button
@@ -289,12 +294,18 @@ export const VoiceRecorder = forwardRef<VoiceRecorderHandle, VoiceRecorderProps>
             size="sm"
             onClick={stopRecording}
             aria-label="Stop voiceover recording"
+            className="gap-1.5"
           >
-            ■ Stop
+            <Square className="h-3.5 w-3.5" />
+            Stop
           </Button>
         )}
         {isRecording && (
-          <span className="text-xs text-destructive">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive">
+            <span
+              className="h-2 w-2 animate-pulse rounded-full bg-destructive"
+              aria-hidden="true"
+            />
             Recording from {formatTimecode(currentTime)}…
           </span>
         )}
@@ -331,7 +342,7 @@ export const VoiceRecorder = forwardRef<VoiceRecorderHandle, VoiceRecorderProps>
           ))}
         </ul>
       )}
-    </div>
+    </Card>
   );
   },
 );
