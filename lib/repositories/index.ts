@@ -16,6 +16,7 @@ import type {
   PlaybackManifestRepository,
   SubmissionRepository,
   VideoAssetRepository,
+  DeliveryTokenRepository,
 } from "./types";
 import { InMemorySubmissionRepository } from "./in-memory-submissions";
 import { SupabaseSubmissionRepository } from "./supabase-submissions";
@@ -27,12 +28,15 @@ import { InMemoryPlaybackManifestRepository } from "./in-memory-playback";
 import { SupabasePlaybackManifestRepository } from "./supabase-playback";
 import { InMemoryVideoAssetRepository } from "./in-memory-video-assets";
 import { SupabaseVideoAssetRepository } from "./supabase-video-assets";
+import { InMemoryDeliveryTokenRepository } from "./in-memory-delivery-tokens";
+import { SupabaseDeliveryTokenRepository } from "./supabase-delivery-tokens";
 
 let submissionRepo: SubmissionRepository | null = null;
 let coachRepo: CoachRepository | null = null;
 let earningRepo: EarningRepository | null = null;
 let playbackRepo: PlaybackManifestRepository | null = null;
 let videoAssetRepo: VideoAssetRepository | null = null;
+let deliveryTokenRepo: DeliveryTokenRepository | null = null;
 
 export function getSubmissionRepository(): SubmissionRepository {
   if (submissionRepo) return submissionRepo;
@@ -89,6 +93,17 @@ export function getVideoAssetRepository(): VideoAssetRepository {
   return videoAssetRepo;
 }
 
+export function getDeliveryTokenRepository(): DeliveryTokenRepository {
+  if (deliveryTokenRepo) return deliveryTokenRepo;
+  deliveryTokenRepo = isLive("database")
+    ? new SupabaseDeliveryTokenRepository()
+    : new InMemoryDeliveryTokenRepository();
+  if (process.env.NODE_ENV !== "production") {
+    console.log(`[repositories] delivery-tokens: ${deliveryTokenRepo.mode} adapter`);
+  }
+  return deliveryTokenRepo;
+}
+
 /** Test-only: reset all cached repositories so mode switches take effect. */
 export function _resetAllRepositoriesForTests(): void {
   submissionRepo = null;
@@ -96,6 +111,7 @@ export function _resetAllRepositoriesForTests(): void {
   earningRepo = null;
   playbackRepo = null;
   videoAssetRepo = null;
+  deliveryTokenRepo = null;
 }
 
 export type {
@@ -104,6 +120,10 @@ export type {
   PlaybackManifestRepository,
   SubmissionRepository,
   VideoAssetRepository,
+  DeliveryTokenRepository,
+  DeliveryTokenCreateInput,
+  DeliveryTokenVerification,
   VideoAssetRecordInput,
   StoredPlaybackManifest,
 } from "./types";
+export { verifyDeliveryToken } from "./types";

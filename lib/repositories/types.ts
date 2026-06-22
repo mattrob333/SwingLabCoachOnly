@@ -27,6 +27,7 @@ import type { LessonPlaybackManifest } from "@/lib/lesson/playback";
 import type {
   VideoAsset,
   StorageProvider,
+  LessonDeliveryToken,
 } from "@/lib/records";
 
 // ---------------------------------------------------------------------------
@@ -247,5 +248,71 @@ export interface VideoAssetRepository {
   getById(id: string): Promise<VideoAsset | undefined>;
   /** All video assets for a coach, newest-first by uploadedAt (insertion tiebreak). */
   listForCoach(coachSlug: string): Promise<VideoAsset[]>;
+}
+
+// ---------------------------------------------------------------------------
+// Lesson delivery token repository types (Wave 2 Task 4 Sub-slice B)
+// ---------------------------------------------------------------------------
+
+/** Input for creating a delivery token record. */
+export type DeliveryTokenCreateInput = {
+  submissionId: string;
+  parentEmail: string;
+  /** TTL in days (default 30). */
+  ttlDays?: number;
+  /** Override the creation timestamp (epoch ms). Defaults to Date.now(). */
+  createdAt?: number;
+};
+
+export interface DeliveryTokenRepository {
+  readonly mode: "live" | "mock";
+  /** Create and persist a new delivery token. */
+  create(input: DeliveryTokenCreateInput): Promise<LessonDeliveryToken>;
+  /** Look up a token record by its opaque token string. */
+  getByToken(token: string): Promise<LessonDeliveryToken | undefined>;
+  /** All tokens for a submission, newest-first by createdAt (insertion tiebreak). */
+  getBySubmissionId(submissionId: string): Promise<LessonDeliveryToken[]>;
+  /** Mark a token as viewed (sets viewedAt). Throws if not found. */
+  markViewed(id: string): Promise<LessonDeliveryToken>;
+  /** Revoke a token (sets revokedAt). Throws if not found. */
+  revoke(id: string): Promise<LessonDeliveryToken>;
+}
+
+// ---------------------------------------------------------------------------
+// Token verification logic (pure function — no I/O)
+// ---------------------------------------------------------------------------
+
+/** Result of verifying a delivery token. */
+export type DeliveryTokenVerification = {
+  valid: boolean;
+  /** Present only when valid is false. */
+  reason?: "expired" | "revoked";
+};
+
+/**
+ * Verify a delivery token's validity against the current time.
+ *
+ * Returns `undefined` when the token record is null/undefined (i.e. not found
+ * in the store) — the caller should treat this as a 404, distinct from an
+ * invalid-but-found token which is a 403.
+ *
+ * A token is valid when:
+ * - It exists (not null/undefined)
+ * - `expiresAt` is strictly in the future (expiresAt > Date.now())
+ * - `revokedAt` is not set
+ */
+export function verifyDeliveryToken(
+  token: LessonDeliveryToken | null | undefined,
+): DeliveryTokenVerification | undefined {
+  if (token === null || token === undefined) {
+    return undefined;
+  }
+  if (token.revokedAt !== undefined) {
+    return { valid: false, reason: "revoked" };
+  }
+  if (token.expiresAt <= Date.now()) {
+    return { valid: false, reason: "expired" };
+  }
+  return { valid: true };
 }
 
