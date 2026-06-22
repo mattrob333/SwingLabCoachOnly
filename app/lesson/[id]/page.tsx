@@ -2,9 +2,11 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/site/container";
 import { LessonPlaybackPlayer } from "@/components/lesson/lesson-playback-player";
 import { getSubmissionById } from "@/lib/submissions";
+import { getCoachBySlug } from "@/lib/coaches";
 import { getDraftForSubmission } from "@/lib/ai/lesson-draft-store";
 import { getPlaybackManifestForSubmission } from "@/lib/lesson/playback-store";
 import { verifyLessonAccess, type LessonAccessDeniedReason } from "@/lib/lesson/access";
+import { buildLessonPageCopy } from "@/lib/lesson/page-copy";
 
 export const metadata = {
   title: "Your Lesson",
@@ -96,6 +98,12 @@ export default async function LessonPage({
   }
 
   if (playbackManifest) {
+    const coach = await getCoachBySlug(submission.coachSlug);
+    const pageCopy = buildLessonPageCopy({
+      coachName: coach?.name,
+      hasAiSummary: !!playbackManifest.aiSummary,
+    });
+
     return (
       <Container className="py-12">
         <div className="mx-auto max-w-5xl">
@@ -104,22 +112,30 @@ export default async function LessonPage({
               Your SwingLab Lesson
             </p>
             <h1 className="mt-1 text-3xl font-semibold tracking-tight">
-              Interactive swing review
+              {pageCopy.headerTitle}
             </h1>
             <p className="mt-3 max-w-2xl text-base text-muted-foreground">
-              Play the swing. When the video reaches a coach note, it pauses on
-              the marked frame, shows the annotations, plays the voiceover, then
-              continues.
+              {pageCopy.headerSubtitle}
             </p>
           </div>
+
+          {pageCopy.showSummarySection && playbackManifest.aiSummary && (
+            <section className="mb-6 rounded-xl border border-border bg-card p-5">
+              <h2 className="mb-2 text-sm font-semibold text-muted-foreground">
+                Lesson Summary
+              </h2>
+              <p className="text-sm leading-relaxed">
+                {playbackManifest.aiSummary}
+              </p>
+            </section>
+          )}
 
           <LessonPlaybackPlayer manifest={playbackManifest} />
 
           <section className="mt-8 rounded-xl border border-green-500/30 bg-green-500/5 p-6 text-center">
             <h2 className="text-lg font-semibold">Ready for a follow-up?</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Work on the feedback, then submit a new swing so your coach can
-              review your progress.
+              {pageCopy.ctaText}
             </p>
             <a
               href={`/upload?followUpFor=${submission.id}`}
