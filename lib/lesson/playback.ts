@@ -46,6 +46,8 @@ export type LessonPlaybackManifest = {
   processedAt?: number;
   version: number;
   aiSummary?: string;
+  /** AI-generated per-note moment titles (from packaging worker). */
+  aiNoteTitles?: Array<{ noteId: string; title: string }>;
 };
 
 export type LessonPlaybackInput = {
