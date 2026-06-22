@@ -211,4 +211,39 @@ describe("ConditionalChrome", () => {
     expect(screen.getByTestId("desktop-nav")).toBeInTheDocument();
     expect(screen.queryByText("Find a coach")).toBeNull();
   });
+
+  // Accessibility — skip-to-content link + main landmark id
+  it("renders a skip-to-content link pointing to #main-content", () => {
+    mockPathname.current = "/";
+    render(
+      <ConditionalChrome>
+        <div>Page</div>
+      </ConditionalChrome>,
+    );
+    const skipLink = screen.getByText(/skip to content/i);
+    expect(skipLink.tagName).toBe("A");
+    expect(skipLink).toHaveAttribute("href", "#main-content");
+  });
+
+  it("renders main element with id=\"main-content\" on marketing routes", () => {
+    mockPathname.current = "/";
+    render(
+      <ConditionalChrome>
+        <div>Page</div>
+      </ConditionalChrome>,
+    );
+    const main = document.querySelector("main");
+    expect(main).toHaveAttribute("id", "main-content");
+  });
+
+  it("renders main element with id=\"main-content\" on coach routes", () => {
+    mockPathname.current = "/coach/dashboard";
+    render(
+      <ConditionalChrome>
+        <div>Page</div>
+      </ConditionalChrome>,
+    );
+    const main = document.querySelector("main");
+    expect(main).toHaveAttribute("id", "main-content");
+  });
 });
