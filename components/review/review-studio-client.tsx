@@ -422,10 +422,10 @@ export function ReviewStudioClient({
             {sortedNotes.map((note, index) => (
               <article
                 key={note.id}
-                className="rounded-lg border border-border bg-background p-4"
+                className="rounded-lg border border-border/70 bg-background p-4 transition-shadow hover:shadow-md"
               >
                 <div className="grid gap-4 sm:grid-cols-[160px_minmax(0,1fr)]">
-                  <div className="overflow-hidden rounded-lg border border-border bg-muted">
+                  <div className="overflow-hidden rounded-lg border border-border/70 bg-muted/50">
                     {note.thumbnailUrl ? (
                       <button
                         type="button"
@@ -450,10 +450,10 @@ export function ReviewStudioClient({
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        <Badge variant="info" size="sm" className="mb-1">
                           Note {index + 1}
-                        </p>
-                        <h3 className="mt-1 font-medium">
+                        </Badge>
+                        <h3 className="font-medium">
                           Freeze frame at {formatTimecode(note.timecode)}
                         </h3>
                         <p className="mt-1 text-xs text-muted-foreground">

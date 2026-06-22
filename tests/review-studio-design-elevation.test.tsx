@@ -113,4 +113,49 @@ describe("ReviewStudioClient — Phase 7 design elevation", () => {
     const openLink = getByText("Open player lesson");
     expect(openLink.className).toContain("focus-visible:ring");
   });
+
+  it("note cards have hover lift + softer border for premium feel", async () => {
+    store.set(
+      draftNotesKey("sub-1"),
+      JSON.stringify({
+        notes: [makeNote()],
+        savedAt: 1700000001000,
+      }),
+    );
+
+    const { container } = render(
+      <ReviewStudioClient
+        submissionId="sub-1"
+        videoUrl="http://example.com/v.mp4"
+      />,
+    );
+
+    const article = container.querySelector("article");
+    expect(article).not.toBeNull();
+    expect(article?.className).toContain("hover:shadow-md");
+    expect(article?.className).toContain("border-border/70");
+  });
+
+  it("note index renders as a Badge (not plain text)", async () => {
+    store.set(
+      draftNotesKey("sub-1"),
+      JSON.stringify({
+        notes: [makeNote()],
+        savedAt: 1700000001000,
+      }),
+    );
+
+    const { container } = render(
+      <ReviewStudioClient
+        submissionId="sub-1"
+        videoUrl="http://example.com/v.mp4"
+      />,
+    );
+
+    const badges = container.querySelectorAll('[data-slot="badge"]');
+    const noteBadge = Array.from(badges).find((b) =>
+      b.textContent?.includes("Note 1"),
+    );
+    expect(noteBadge).not.toBeUndefined();
+  });
 });

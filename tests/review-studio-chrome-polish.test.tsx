@@ -132,10 +132,11 @@ describe("ReviewStudioClient — Card primitive usage (UX polish task #4)", () =
     );
 
     // Find the "Edited" badge rendered via the Badge primitive
-    const editedBadge = container.querySelector(
-      '[data-slot="badge"]',
+    const badges = container.querySelectorAll('[data-slot="badge"]');
+    const editedBadge = Array.from(badges).find((b) =>
+      b.textContent?.includes("Edited"),
     );
-    expect(editedBadge).not.toBeNull();
+    expect(editedBadge).not.toBeUndefined();
     expect(editedBadge?.textContent).toContain("Edited");
   });
 
