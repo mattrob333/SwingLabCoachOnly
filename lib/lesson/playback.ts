@@ -15,13 +15,21 @@ export type PlaybackAnnotation = {
   canvasHeight?: number;
 };
 
+export type TranscriptStatus = "pending" | "transcribing" | "ready" | "error";
+
 export type FreezeFrameNote = {
   id: string;
   timecode: number;
   audioUrl: string;
   audioDuration: number;
   thumbnailUrl?: string;
+  /** Legacy raw transcript field — preserved for backward compat. Prefer transcriptRaw/transcriptEdited. */
   transcript?: string;
+  transcriptRaw?: string;
+  transcriptEdited?: string;
+  transcriptStatus?: TranscriptStatus;
+  transcriptProvider?: string;
+  transcriptError?: string;
   annotations: PlaybackAnnotation[];
   createdAt: number;
 };
@@ -31,11 +39,23 @@ export type LessonPlaybackManifest = {
   notes: FreezeFrameNote[];
   createdAt: number;
   status: "draft" | "processed";
+  submissionId?: string;
+  coachSlug?: string;
+  parentEmail?: string;
+  deliveryTokenId?: string;
+  processedAt?: number;
+  version: number;
+  aiSummary?: string;
 };
 
 export type LessonPlaybackInput = {
   videoUrl: string;
   notes: FreezeFrameNote[];
+  submissionId?: string;
+  coachSlug?: string;
+  parentEmail?: string;
+  deliveryTokenId?: string;
+  aiSummary?: string;
 };
 
 export function buildLessonPlaybackManifest(
@@ -59,6 +79,7 @@ export function buildLessonPlaybackManifest(
     return {
       ...note,
       annotations: Array.isArray(note.annotations) ? note.annotations : [],
+      transcriptStatus: note.transcriptStatus ?? "pending",
     };
   });
 
@@ -67,5 +88,12 @@ export function buildLessonPlaybackManifest(
     notes: [...notes].sort((a, b) => a.timecode - b.timecode),
     createdAt,
     status: "processed",
+    submissionId: input.submissionId,
+    coachSlug: input.coachSlug,
+    parentEmail: input.parentEmail,
+    deliveryTokenId: input.deliveryTokenId,
+    processedAt: createdAt,
+    version: 1,
+    aiSummary: input.aiSummary,
   };
 }

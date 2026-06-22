@@ -67,7 +67,12 @@ export async function POST(
   }
 
   try {
-    const manifest = buildLessonPlaybackManifest(input);
+    const manifest = buildLessonPlaybackManifest({
+      ...input,
+      submissionId: id,
+      coachSlug: submission.coachSlug,
+      parentEmail: submission.parentEmail,
+    });
     const stored = savePlaybackManifest(id, manifest);
 
     if (submission.status === "in_review") {

@@ -180,6 +180,7 @@ export function ReviewStudioClient({
           audioDuration: segment.duration,
           thumbnailUrl: captureVideoThumbnail(videoElementRef.current, annotations),
           transcript: "",
+          transcriptStatus: "pending",
           annotations,
           createdAt: Date.now(),
         };
