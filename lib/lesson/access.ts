@@ -26,12 +26,16 @@ import {
 } from "@/lib/repositories";
 import type { LessonDeliveryToken } from "@/lib/records";
 
+export type LessonAccessDeniedReason =
+  | "missing"
+  | "not_found"
+  | "expired"
+  | "revoked"
+  | "mismatch";
+
 export type LessonAccessResult =
   | { ok: true; token: LessonDeliveryToken }
-  | {
-      ok: false;
-      reason: "missing" | "not_found" | "expired" | "revoked" | "mismatch";
-    };
+  | { ok: false; reason: LessonAccessDeniedReason };
 
 /**
  * Verify a parent's magic-link access to a lesson.

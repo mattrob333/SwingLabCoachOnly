@@ -4,11 +4,55 @@ import { LessonPlaybackPlayer } from "@/components/lesson/lesson-playback-player
 import { getSubmissionById } from "@/lib/submissions";
 import { getDraftForSubmission } from "@/lib/ai/lesson-draft-store";
 import { getPlaybackManifestForSubmission } from "@/lib/lesson/playback-store";
+import { verifyLessonAccess, type LessonAccessDeniedReason } from "@/lib/lesson/access";
 
 export const metadata = {
   title: "Your Lesson",
   description: "Your personalized swing review lesson from SwingLab.",
 };
+
+/** Human-readable copy for each access-denied reason. */
+const ACCESS_DENIED_COPY: Record<
+  LessonAccessDeniedReason,
+  { title: string; body: string }
+> = {
+  missing: {
+    title: "Access link required",
+    body: "This lesson is private. Use the secure link from your coach's email to view it.",
+  },
+  not_found: {
+    title: "Link not recognized",
+    body: "We couldn't find a lesson for that link. Double-check the link from your coach's email, or request a new one.",
+  },
+  expired: {
+    title: "Link expired",
+    body: "This lesson link has expired. Reply to your coach's email to request a new one.",
+  },
+  revoked: {
+    title: "Link revoked",
+    body: "This lesson link is no longer valid. Reply to your coach's email to request a new one.",
+  },
+  mismatch: {
+    title: "Link not valid for this lesson",
+    body: "The access link doesn't match this lesson. Use the link from your coach's email.",
+  },
+};
+
+function AccessDenied({
+  reason,
+}: {
+  reason: keyof typeof ACCESS_DENIED_COPY;
+}) {
+  const copy = ACCESS_DENIED_COPY[reason];
+  return (
+    <Container className="py-20">
+      <div className="mx-auto max-w-md text-center">
+        <h1 className="text-2xl font-semibold tracking-tight">{copy.title}</h1>
+        <p className="mt-3 text-base text-muted-foreground">{copy.body}</p>
+      </div>
+    </Container>
+  );
+}
 
 function formatTimecode(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -18,10 +62,26 @@ function formatTimecode(seconds: number): string {
 
 export default async function LessonPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ token?: string }>;
 }) {
   const { id } = await params;
+  const { token } = await searchParams;
+
+  // Verify the magic-link token before any lesson data is loaded. A valid
+  // token grants access and is marked viewed (idempotent). Invalid/expired/
+  // revoked/mismatched tokens render an access-denied screen; an unknown
+  // token (not_found) falls through to notFound() (404) so probe requests
+  // for arbitrary ids don't confirm whether a lesson exists.
+  const access = await verifyLessonAccess({ submissionId: id, token });
+  if (!access.ok) {
+    if (access.reason === "not_found") {
+      notFound();
+    }
+    return <AccessDenied reason={access.reason} />;
+  }
 
   const submission = await getSubmissionById(id);
   if (!submission) {
