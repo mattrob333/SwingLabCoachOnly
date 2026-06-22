@@ -1,6 +1,6 @@
 # Tasks / TODO Board
 
-**Last synced:** 2026-06-22 · **Tests:** 832 passing · **Build:** ✅ green · **Commits:** 130
+**Last synced:** 2026-06-22 · **Tests:** 843 passing · **Build:** ✅ green · **Commits:** 131
 
 This is the living task board. It is updated alongside the code every build tick. Legend: ✅ done · 🚧 in progress · ⏭️ next · ⬜ not started.
 
@@ -100,7 +100,7 @@ Full coach-facing AI loop wired: transcribe → package → coach reviews/edits 
 - [x] Review Studio chrome (control bar, recording indicator, tool palette, saved-frames strip) — Card+EmptyState+Badge primitives, dark-mode success banner; 6 render/smoke tests, commit 2258471, 822 tests
 - [x] Coach onboarding (Card wrapper, inline validation, step-gated Continue button, required-fields hint; 5 render tests, commit 735a070, 827 tests)
 - [x] Earnings page (Card+EmptyState+Badge primitives, EarningsBreakdown component, "Paid" status badges; 5 render tests, commit 073a0b4, 832 tests)
-- [ ] Lesson approval screen (readable draft layout, drill cards, "Send Lesson" CTA)
+- [x] Lesson approval screen (Card+Badge primitives for AiReviewPanel + LessonApprovalForm; Badge for status/saved/drills; 11 render tests, commit f83ffe3, 843 tests)
 - [ ] Global shell / nav (coach context, desktop sidebar, toasts, page headers/breadcrumbs)
 - [ ] Micro-states everywhere (loading, empty, error, success toasts, disabled/processing)
 - [ ] Accessibility pass (landmarks, focus states, aria, contrast, keyboard nav)

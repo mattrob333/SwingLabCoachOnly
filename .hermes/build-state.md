@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 6 (Hardening) IN PROGRESS — 832 tests. Tasks 1–4 DONE (validation, session, rate-limit, privacy). Tasks 5–6 remaining (expanded test coverage + error monitoring, deploy checks). **UX/UI Polish workstream** — task #1 (design tokens + shared primitives) DONE (80b4186), task #2 (coach dashboard/inbox polish) DONE (02298d0), task #3 (submission detail page polish) DONE (abb5111), task #4 (Review Studio chrome polish) DONE (2258471), task #5 (coach onboarding polish) DONE (735a070), task #6 (earnings page polish) DONE (073a0b4). Next: UX task #7 (lesson approval screen) OR Wave 6 Task 5 (expanded test coverage + error monitoring).
+**Status:** Wave 6 (Hardening) IN PROGRESS — 843 tests. Tasks 1–4 DONE (validation, session, rate-limit, privacy). Tasks 5–6 remaining (expanded test coverage + error monitoring, deploy checks). **UX/UI Polish workstream** — task #1 (design tokens + shared primitives) DONE (80b4186), task #2 (coach dashboard/inbox polish) DONE (02298d0), task #3 (submission detail page polish) DONE (abb5111), task #4 (Review Studio chrome polish) DONE (2258471), task #5 (coach onboarding polish) DONE (735a070), task #6 (earnings page polish) DONE (073a0b4), task #7 (lesson approval screen polish) DONE (f83ffe3). Next: UX task #8 (global shell / nav) OR Wave 6 Task 5 (expanded test coverage + error monitoring).
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
@@ -37,7 +37,9 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan.
 ### Next Action (Inner Loop)
 **UX Polish task #6 ✅ DONE (commit 073a0b4):** Earnings page polish. Extracted `EarningsBreakdown` presentational component (Card-wrapped table, EmptyState for zero-earnings, Badge variant=success "Paid" per row). Replaced bespoke stat card divs with Card+CardHeader+CardContent primitives. Added Status column with "Paid" badge. Consistent py-8 sm:py-12 page spacing. 5 render tests (832 total).
 
-**Next: UX Polish task #7 — Lesson approval screen** (readable draft layout, drill cards, "Send Lesson" CTA using Card/Badge primitives). OR Wave 6 Task 5 — Expanded test coverage + error monitoring. Interleave as needed.
+**Next: UX Polish task #8 — Global shell / nav** (coach context, desktop sidebar, toasts, page headers/breadcrumbs). OR Wave 6 Task 5 — Expanded test coverage + error monitoring. Interleave as needed.
+
+**UX Polish task #7 ✅ DONE (commit f83ffe3):** Lesson approval screen polish. AiReviewPanel: replaced bespoke rounded-xl border divs with Card+CardHeader+CardTitle+CardDescription+CardContent primitives (summary, moment titles, approve sections); "Saved" indicator uses Badge variant=success; moment title rows show timecode as Badge; approved banner uses Card with emerald tint. LessonApprovalForm: replaced bespoke divs with Card primitives (draft preview, approval actions); replaced inline status color map with Badge variants (warning/success/destructive); drill categories use Badge instead of bg-muted span; "Notes saved" indicator uses Badge success. Lesson page consistent py-8 sm:py-12 spacing. 11 render tests (843 total).
 
 **UX Polish task #3 ✅ DONE (this tick):** Submission detail page polish. Replaced inline status color maps with Badge + statusBadgeVariant (shared from CoachInbox). Replaced all bespoke rounded-xl divs with Card primitive (detail fields, action areas, comparison section, parent notes). Consistent py-8 sm:py-12 page spacing, responsive heading sizes. Pure presentational refactor — 816 tests still green. Commit abb5111.
 
