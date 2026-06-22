@@ -17,7 +17,7 @@ _(none — all resolved)_
 
 ## Resolved Corrections
 
-### [LOW] build-state.md Wave 6 sub-tasks list + Open Issues stale — RESOLVED (commit pending this tick)
+### [LOW] build-state.md Wave 6 sub-tasks list + Open Issues stale — RESOLVED (commit 7192bcb)
 Fixed 2026-06-22. Updated build-state.md line 21 to `[x]` citing commits ce2c097 + b619cfc for privacy controls. Moved all 5 stale "Open Issues" bullets (transcription, AI packaging, upload storage, Stripe, delivery token) to mark each as ✅ DONE with its wave/commit reference. Header status line updated to reflect Tasks 1–4 DONE explicitly. All internal inconsistencies with Wave 4 COMPLETE resolved.
 
 _(history appended below)_

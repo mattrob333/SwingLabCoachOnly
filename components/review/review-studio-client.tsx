@@ -7,6 +7,9 @@ import { AnnotationToolbar, type Tool, COLORS } from "@/components/review/annota
 import { VideoPlayer } from "@/components/review/video-player";
 import { VoiceRecorder, type VoiceRecorderHandle } from "@/components/review/voice-recorder";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { createReviewId } from "@/lib/review/ids";
 import type { ReviewEvent } from "@/lib/review/events";
 import type { RecordingSegment } from "@/lib/review/recording";
@@ -368,7 +371,7 @@ export function ReviewStudioClient({
         showSegmentList={false}
       />
 
-      <section className="rounded-xl border border-border bg-card p-4">
+      <Card className="gap-0 p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="flex items-center gap-2 text-base font-semibold">
@@ -395,12 +398,12 @@ export function ReviewStudioClient({
         </div>
 
         {sortedNotes.length === 0 ? (
-          <div className="mt-4 rounded-lg border border-dashed border-border bg-background p-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              No coach notes yet. Draw on a paused frame, record a short voice
-              note, and it will appear here automatically.
-            </p>
-          </div>
+          <EmptyState
+            className="mt-4"
+            icon={<Mic className="h-6 w-6" />}
+            title="No coach notes yet"
+            description="Draw on a paused frame, record a short voice note, and it will appear here automatically."
+          />
         ) : (
           <div className="mt-4 space-y-3">
             {sortedNotes.map((note, index) => (
@@ -508,9 +511,7 @@ export function ReviewStudioClient({
                       {note.transcriptEdited != null &&
                         note.transcriptEdited !==
                           (note.transcriptRaw ?? "") && (
-                          <span className="rounded bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary">
-                            Edited
-                          </span>
+                          <Badge variant="primary" size="sm">Edited</Badge>
                         )}
                     </div>
                   </div>
@@ -519,9 +520,9 @@ export function ReviewStudioClient({
             ))}
           </div>
         )}
-      </section>
+      </Card>
 
-      <section className="rounded-xl border border-border bg-card p-4">
+      <Card className="gap-0 p-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="flex items-center gap-2 text-base font-semibold">
@@ -552,14 +553,14 @@ export function ReviewStudioClient({
         )}
 
         {lessonUrl && (
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
             <span className="inline-flex items-center gap-2 font-medium">
               <CheckCircle2 className="h-4 w-4" />
               Interactive lesson is ready.
             </span>
             <a
               href={lessonUrl}
-              className="inline-flex h-9 items-center justify-center rounded-lg bg-green-700 px-3 text-sm font-medium text-white hover:bg-green-800"
+              className="inline-flex h-9 items-center justify-center rounded-lg bg-emerald-700 px-3 text-sm font-medium text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
             >
               Open player lesson
             </a>
@@ -576,7 +577,7 @@ export function ReviewStudioClient({
             {segments.length} voice segment{segments.length === 1 ? "" : "s"}
           </p>
         </details>
-      </section>
+      </Card>
 
       {zoomedNoteId !== null && (() => {
         const note = sortedNotes.find((n) => n.id === zoomedNoteId);
