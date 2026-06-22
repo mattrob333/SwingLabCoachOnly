@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 2 in progress — Task 2 (Stripe Checkout + webhooks) COMPLETE. 437 tests. Next: Wave 2 Task 3 (inbox ownership enforcement).
+**Status:** Wave 2 in progress — Task 3 (inbox ownership enforcement) COMPLETE. 439 tests. Next: Wave 2 Task 4 (lesson delivery token + email send).
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
@@ -19,14 +19,16 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan. North star: ONE coach re
 
 ### Wave Order
 1. [x] Foundation: Supabase schema ✅, storage adapter ✅, env validation ✅, migrate file-stores ✅, extend types ✅, docs ✅, async interfaces ✅, **Supabase PostgREST impls ✅**. **WAVE 1 COMPLETE.**
-2. [~] Workflow: real upload→storage ✅, Stripe Checkout+webhooks ✅, inbox ownership ← **CURRENT**, lesson delivery token + email
+2. [~] Workflow: real upload→storage ✅, Stripe Checkout+webhooks ✅, inbox ownership ✅ ← **CURRENT**, lesson delivery token + email
 3. [ ] Review Studio polish: autosave, edit/re-record, transcript edit UI, thumbnails, mobile, recovery
 4. [ ] AI: Deepgram transcription worker, OpenAI packaging (coach voice preserved), approval flow
 5. [ ] Player experience: chapters, thumbnails, transcript, speed, jump-to-note, follow-up CTA, mobile QA
 6. [ ] Hardening: auth/session security, rate limits, file validation, privacy, tests, deploy
 
 ### Next Action (Inner Loop)
-**Wave 2, Task 3 — Coach inbox ownership enforcement.** Ensure a coach can only see/access their own submissions (not other coaches'). Add auth guard to submission detail + coach dashboard API that verifies the logged-in coach slug matches the submission's coachSlug. Then Task 4: lesson delivery token + email send.
+**Wave 2, Task 4 — Lesson delivery token + email send.** When a coach approves/completes a lesson, generate a secure delivery token (magic-link style) and send an email to the parent with a link to view the lesson at /lesson/[id]?token=... The delivery token verifies the parent's right to view the lesson without requiring the parent to sign in. Build an env-gated email adapter (mock logs to console, live uses a real provider when EMAIL_* keys present) mirroring the storage/payment adapter pattern. Add a `LessonDeliveryToken` record type (already scaffolded in Wave 1 Task 4 durable types) — wire the token creation, persistence, and verification. Then Wave 3: Review Studio polish.
+
+**Wave 2, Task 3 ✅ DONE:** Coach inbox ownership enforcement — test coverage complete. Audit found all coach-facing API routes (review, render, lesson-draft, audio, lesson-playback POST) already enforce `submission.coachSlug !== session.coachSlug → 403` in code, and the dashboard + submission detail server components already filter by the session coach's slug. The gap was test coverage: the audio and lesson-playback routes lacked the cross-coach 403 test that review/render/lesson-draft already had. Added the "returns 403 when the submission belongs to a different coach" test to both test files. 439 tests (was 437), commit 9c81ed8.
 
 **Wave 2, Task 2 ✅ DONE:** Stripe Checkout + webhooks (real payment, env-gated). Payment adapter layer (lib/payments/): PaymentAdapter interface + MockPaymentAdapter + StripePaymentAdapter (fetch-based, no SDK; HMAC-SHA256 webhook signature verification with 5-min tolerance) + env-gated factory. Pay route wired: live mode creates Stripe Checkout Session and returns { url } for client redirect; mock mode preserves existing synchronous confirm + markPaid contract. Webhook route (POST /api/stripe/webhook): verifies signature, processes checkout.session.completed → markSubmissionPaid, replay-safe (idempotent on already-paid). PaymentForm updated for live-mode redirect. 31 new tests (25 adapter + 6 webhook). Commits 635404d + bf2b6ef. 437 tests green.
 
@@ -82,4 +84,4 @@ lib/repositories/
 - **No lesson delivery token + email** → Wave 2 Task 4
 - API keys not yet provisioned → adapters run in mock mode until user adds .env
 
-**Last Updated:** 2026-06-21 — Wave 2 Task 2 (Stripe Checkout + webhooks) COMPLETE. Payment adapter layer + pay route wiring + webhook route + PaymentForm update. 437 tests green. Next: Wave 2 Task 3 — coach inbox ownership enforcement.
+**Last Updated:** 2026-06-21 — Wave 2 Task 3 (inbox ownership enforcement) COMPLETE. Cross-coach 403 tests added for audio + lesson-playback routes. 439 tests green. Next: Wave 2 Task 4 — lesson delivery token + email send.
