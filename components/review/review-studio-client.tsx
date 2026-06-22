@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import { CheckCircle2, FileVideo2, Mic, PlaySquare, RotateCcw, Trash2 } from "lucide-react";
+import { Camera, CheckCircle2, FileVideo2, Mic, PlaySquare, RotateCcw, Trash2 } from "lucide-react";
 import { AnnotationCanvas, type AnnotationMark } from "@/components/review/annotation-canvas";
 import { VideoPlayer } from "@/components/review/video-player";
 import { VoiceRecorder, type VoiceRecorderHandle } from "@/components/review/voice-recorder";
@@ -10,7 +10,7 @@ import { createReviewId } from "@/lib/review/ids";
 import type { ReviewEvent } from "@/lib/review/events";
 import type { RecordingSegment } from "@/lib/review/recording";
 import { formatTimecode } from "@/lib/review/timecode";
-import type { FreezeFrameNote } from "@/lib/lesson/playback";
+import type { FreezeFrameNote, PlaybackAnnotation } from "@/lib/lesson/playback";
 import { clearDraftNotes } from "@/lib/review/draft-notes";
 import { useDraftNotesAutosave } from "@/components/review/use-draft-notes-autosave";
 
@@ -25,7 +25,7 @@ function annotationSummary(count: number): string {
 
 function drawThumbnailAnnotation(
   ctx: CanvasRenderingContext2D,
-  mark: AnnotationMark,
+  mark: PlaybackAnnotation,
   scaleX: number,
   scaleY: number,
 ) {
@@ -96,7 +96,7 @@ function drawThumbnailAnnotation(
 
 function captureVideoThumbnail(
   video: HTMLVideoElement | null,
-  annotations: AnnotationMark[],
+  annotations: PlaybackAnnotation[],
 ): string | undefined {
   if (!video || video.videoWidth === 0 || video.videoHeight === 0) return undefined;
   try {
@@ -242,6 +242,37 @@ export function ReviewStudioClient({
     setLessonUrl(null);
   }
 
+  function retakeThumbnail(note: FreezeFrameNote) {
+    const video = videoElementRef.current;
+    if (!video || video.videoWidth === 0) return;
+    video.pause();
+
+    const capture = () => {
+      const newThumb = captureVideoThumbnail(video, note.annotations);
+      if (newThumb) {
+        setNotes((prev) =>
+          prev.map((n) =>
+            n.id === note.id ? { ...n, thumbnailUrl: newThumb } : n,
+          ),
+        );
+      }
+    };
+
+    // If already at the timecode, capture immediately. Otherwise seek first
+    // and capture when the seeked event fires.
+    if (Math.abs(video.currentTime - note.timecode) < 0.1) {
+      capture();
+    } else {
+      const onSeeked = () => {
+        video.removeEventListener("seeked", onSeeked);
+        capture();
+      };
+      video.addEventListener("seeked", onSeeked);
+      video.currentTime = note.timecode;
+    }
+    setLessonUrl(null);
+  }
+
   async function processLesson() {
     setProcessing(true);
     setProcessError(null);
@@ -363,6 +394,16 @@ export function ReviewStudioClient({
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => retakeThumbnail(note)}
+                          disabled={reRecordNoteId !== null}
+                          aria-label={`Retake thumbnail for note ${index + 1}`}
+                        >
+                          <Camera className="h-4 w-4" />
+                        </Button>
                         <Button
                           type="button"
                           variant="ghost"
