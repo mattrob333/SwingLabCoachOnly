@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 6 (Hardening) IN PROGRESS — 822 tests. Tasks 1–4 DONE (validation, session, rate-limit, privacy). Tasks 5–6 remaining (expanded test coverage + error monitoring, deploy checks). **UX/UI Polish workstream** — task #1 (design tokens + shared primitives) DONE (80b4186), task #2 (coach dashboard/inbox polish) DONE (02298d0), task #3 (submission detail page polish) DONE (abb5111), task #4 (Review Studio chrome polish) DONE (2258471). Next: UX task #5 (coach onboarding) OR Wave 6 Task 5 (expanded test coverage + error monitoring).
+**Status:** Wave 6 (Hardening) IN PROGRESS — 832 tests. Tasks 1–4 DONE (validation, session, rate-limit, privacy). Tasks 5–6 remaining (expanded test coverage + error monitoring, deploy checks). **UX/UI Polish workstream** — task #1 (design tokens + shared primitives) DONE (80b4186), task #2 (coach dashboard/inbox polish) DONE (02298d0), task #3 (submission detail page polish) DONE (abb5111), task #4 (Review Studio chrome polish) DONE (2258471), task #5 (coach onboarding polish) DONE (735a070), task #6 (earnings page polish) DONE (073a0b4). Next: UX task #7 (lesson approval screen) OR Wave 6 Task 5 (expanded test coverage + error monitoring).
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
@@ -35,13 +35,9 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan.
 6. [ ] Hardening: auth/session security, rate limits, file validation, privacy, tests, deploy
 
 ### Next Action (Inner Loop)
-**UX Polish task #1 ✅ DONE (this tick):** Recovered orphaned UX primitive files from prior tick, ran quality gate (793 tests, all green), committed + pushed (80b4186). Design tokens + shared shadcn/ui primitives: Card (with header/title/description/content/footer sub-slots), Badge (cva variants: default/primary/success/warning/destructive/outline), Skeleton (aria-hidden pulsing block), EmptyState (icon+title+description+action for zero-data screens), Avatar (img+onError fallback to initials, sm/default/lg sizes). 14 render/smoke tests. Resolved OPEN course correction about UX workstream never started.
+**UX Polish task #6 ✅ DONE (commit 073a0b4):** Earnings page polish. Extracted `EarningsBreakdown` presentational component (Card-wrapped table, EmptyState for zero-earnings, Badge variant=success "Paid" per row). Replaced bespoke stat card divs with Card+CardHeader+CardContent primitives. Added Status column with "Paid" badge. Consistent py-8 sm:py-12 page spacing. 5 render tests (832 total).
 
-**UX Polish task #4 ✅ DONE (this tick):** Review Studio chrome polish. Replaced two `<section>` wrappers (Coach Notes + Process Lesson) with Card primitive. Replaced bespoke empty-notes div with EmptyState primitive (icon + title + description). Replaced bespoke "Edited" span with Badge variant=primary size=sm. Updated success banner to use emerald tokens with dark-mode variants (was bespoke green-* classes without dark mode). 6 render/smoke tests (822 total). Commit 2258471.
-
-**Also this tick:** Resolved OPEN LOW correction (commit 7192bcb) — updated build-state.md Task 4 to `[x]`, marked all 5 stale Open Issues as ✅ DONE with wave/commit references.
-
-**Next: UX Polish task #5 — Coach onboarding** (multi-step form, progress indicator, inline validation, review-products editor styling). OR Wave 6 Task 5 — Expanded test coverage + error monitoring. Interleave as needed.
+**Next: UX Polish task #7 — Lesson approval screen** (readable draft layout, drill cards, "Send Lesson" CTA using Card/Badge primitives). OR Wave 6 Task 5 — Expanded test coverage + error monitoring. Interleave as needed.
 
 **UX Polish task #3 ✅ DONE (this tick):** Submission detail page polish. Replaced inline status color maps with Badge + statusBadgeVariant (shared from CoachInbox). Replaced all bespoke rounded-xl divs with Card primitive (detail fields, action areas, comparison section, parent notes). Consistent py-8 sm:py-12 page spacing, responsive heading sizes. Pure presentational refactor — 816 tests still green. Commit abb5111.
 

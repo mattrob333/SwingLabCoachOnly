@@ -1,6 +1,6 @@
 # Tasks / TODO Board
 
-**Last synced:** 2026-06-22 · **Tests:** 822 passing · **Build:** ✅ green · **Commits:** 128
+**Last synced:** 2026-06-22 · **Tests:** 832 passing · **Build:** ✅ green · **Commits:** 130
 
 This is the living task board. It is updated alongside the code every build tick. Legend: ✅ done · 🚧 in progress · ⏭️ next · ⬜ not started.
 
@@ -98,8 +98,8 @@ Full coach-facing AI loop wired: transcribe → package → coach reviews/edits 
 - [x] Coach dashboard / inbox (CoachInbox client component with filter tabs, Card+Badge+EmptyState primitives, Avatar in header; 23 tests, commit 02298d0, 816 tests)
 - [x] Submission detail page hierarchy + status timeline (Card+Badge primitives, consistent spacing; commit abb5111)
 - [x] Review Studio chrome (control bar, recording indicator, tool palette, saved-frames strip) — Card+EmptyState+Badge primitives, dark-mode success banner; 6 render/smoke tests, commit 2258471, 822 tests
-- [ ] Coach onboarding (multi-step, progress, inline validation)
-- [ ] Earnings page (stat cards, payout status, table, zero states)
+- [x] Coach onboarding (Card wrapper, inline validation, step-gated Continue button, required-fields hint; 5 render tests, commit 735a070, 827 tests)
+- [x] Earnings page (Card+EmptyState+Badge primitives, EarningsBreakdown component, "Paid" status badges; 5 render tests, commit 073a0b4, 832 tests)
 - [ ] Lesson approval screen (readable draft layout, drill cards, "Send Lesson" CTA)
 - [ ] Global shell / nav (coach context, desktop sidebar, toasts, page headers/breadcrumbs)
 - [ ] Micro-states everywhere (loading, empty, error, success toasts, disabled/processing)
