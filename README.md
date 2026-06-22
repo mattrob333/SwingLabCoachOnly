@@ -73,10 +73,13 @@ See [`docs/TASKS.md`](./docs/TASKS.md) for the granular TODO board and [`docs/NE
 ## 🤖 The Build Loop (how this repo is built)
 
 Two cron jobs drive autonomous development (model: GLM 5.2):
-- **Inner Loop** (every 10 min): Check state → `git pull` → run tests → implement the next smallest vertical slice (TDD) → quality gate (`typecheck && lint && test && build`) → commit + push → update state → repeat. Self-pauses both crons at a genuine stopping point.
-- **Outer Loop** (hourly): read-only alignment audit against the PRD, guardrails, and drift. Reports to Telegram.
+- **Inner Loop — builder** (every 10 min): reads course corrections → checks state → `git pull` → runs tests → implements the next smallest vertical slice (TDD) → quality gate (`typecheck && lint && test && build`) → commit + push → updates state. Repeats while work remains. Self-pauses both crons at a genuine stopping point.
+- **Outer Loop — active supervisor** (hourly): runs the real quality gate (doesn't trust self-reports), audits wave alignment + guardrails + drift + stuck-detection, and **actively course-corrects**. It is NOT read-only:
+  - Writes prioritized directives to `.hermes/course-corrections.md`, which the inner loop resolves as **top priority** before normal work.
+  - Fixes trivial/unambiguous breakage directly (stale headers, lint-autofix, doc sync) with a minimal `fix(supervisor):` commit.
+  - On severe issues (shipped guardrail violation, unrecoverable red tests, destructive thrashing): pauses the inner loop and escalates to the user via Telegram.
 
-`.hermes/build-state.md` is the resumable state file the loop reads/writes each tick.
+**Supervisory channel:** `.hermes/course-corrections.md` (outer writes OPEN corrections, inner marks them RESOLVED with commit sha) — kept separate from `.hermes/build-state.md` so the two loops never race on the same file.
 
 ---
 
