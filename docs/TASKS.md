@@ -1,6 +1,6 @@
 # Tasks / TODO Board
 
-**Last synced:** 2026-06-22 · **Tests:** 981 passing · **Build:** ✅ green · **Commits:** 184
+**Last synced:** 2026-06-22 · **Tests:** 984 passing · **Build:** ✅ green · **Commits:** 185
 
 This is the living task board. It is updated alongside the code every build tick. Legend: ✅ done · 🚧 in progress · ⏭️ next · ⬜ not started.
 
@@ -102,7 +102,7 @@ Full coach-facing AI loop wired: transcribe → package → coach reviews/edits 
 - [x] Earnings page (Card+EmptyState+Badge primitives, EarningsBreakdown component, "Paid" status badges; 5 render tests, commit 073a0b4, 832 tests)
 - [x] Lesson approval screen (Card+Badge primitives for AiReviewPanel + LessonApprovalForm; Badge for status/saved/drills; 11 render tests, commit f83ffe3, 843 tests)
 - [x] Global shell / nav (CoachTopNav + ConditionalChrome — path-aware chrome switching, mobile hamburger, active-state highlighting; 18 tests, commit 2607c4a, 861 tests)
-- [ ] Micro-states everywhere (loading, empty, error, success toasts, disabled/processing) — toast system foundation DONE (9086908): lib/toast.ts + Toaster + 25 tests; **toast wiring slices 1–8 DONE:** AiReviewPanel (6 tests, 892), SubmissionDangerActions (13 tests, 905), OnboardingForm (4 tests, 909), LoginForm (4 tests, 913), StartReviewButton (4 tests, 917), LessonApprovalForm (5 tests, 922), ReviewStudioClient process-lesson (3 tests, 925), PaymentForm pay+redeem (6 tests, 981).
+- [ ] Micro-states everywhere (loading, empty, error, success toasts, disabled/processing) — toast system foundation DONE (9086908): lib/toast.ts + Toaster + 25 tests; **toast wiring slices 1–9 DONE:** AiReviewPanel (6 tests, 892), SubmissionDangerActions (13 tests, 905), OnboardingForm (4 tests, 909), LoginForm (4 tests, 913), StartReviewButton (4 tests, 917), LessonApprovalForm (5 tests, 922), ReviewStudioClient process-lesson (3 tests, 925), PaymentForm pay+redeem (6 tests, 981), UploadForm (3 tests, 984). All parent-facing + coach-facing form components now have toast feedback.
 - [~] Accessibility pass (landmarks, focus states, aria, contrast, keyboard nav) — **skip-to-content link + main landmark id DONE (commit 5d43d89, 3 tests, 964 total)**; **focus-visible ring styles on raw buttons DONE (commit dded234, 8 tests, 972 total)** — error boundaries, top nav, inbox tabs, payment toggle, toaster dismiss; **focus-visible on site header/footer links DONE (commit 039f80e, 3 tests, 975 total)**; aria-label audit complete (all icon-only buttons already labeled).
 
 ---
