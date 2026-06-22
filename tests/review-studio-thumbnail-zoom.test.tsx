@@ -143,6 +143,28 @@ describe("ReviewStudioClient — thumbnail zoom (Wave 3)", () => {
     expect(queryByRole("dialog")).toBeNull();
   });
 
+  it("close button has h-10 (mobile touch target) + sm:h-8 (desktop)", async () => {
+    const { ReviewStudioClient } = await import(
+      "@/components/review/review-studio-client"
+    );
+    seedDraft(store, "sub-1", [makeNote()]);
+    const { findByLabelText } = render(
+      <ReviewStudioClient
+        submissionId="sub-1"
+        videoUrl="http://example.com/v.mp4"
+      />,
+    );
+    const btn = await findByLabelText("Zoom thumbnail for note 1");
+    await act(async () => {
+      fireEvent.click(btn);
+    });
+    const closeBtn = await findByLabelText("Close zoomed image");
+    const cls = closeBtn.className;
+    // Mobile: 40px (h-10). Desktop: reverts to 32px (sm:h-8).
+    expect(cls).toContain("h-10");
+    expect(cls).toContain("sm:h-8");
+  });
+
   it("closes the lightbox when the Escape key is pressed", async () => {
     const { ReviewStudioClient } = await import(
       "@/components/review/review-studio-client"
