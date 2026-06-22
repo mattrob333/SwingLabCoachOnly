@@ -240,7 +240,7 @@ export function LessonPlaybackPlayer({ manifest }: LessonPlaybackPlayerProps) {
             <button
               type="button"
               onClick={replayNote}
-              className="rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary hover:bg-primary/20"
+              className="rounded bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20"
             >
               ↻ Replay
             </button>
@@ -248,7 +248,7 @@ export function LessonPlaybackPlayer({ manifest }: LessonPlaybackPlayerProps) {
               <button
                 type="button"
                 onClick={skipToNextNote}
-                className="rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary hover:bg-primary/20"
+                className="rounded bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20"
               >
                 Next →
               </button>
