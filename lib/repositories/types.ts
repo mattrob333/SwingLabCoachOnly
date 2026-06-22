@@ -24,6 +24,10 @@
  */
 
 import type { LessonPlaybackManifest } from "@/lib/lesson/playback";
+import type {
+  VideoAsset,
+  StorageProvider,
+} from "@/lib/records";
 
 // ---------------------------------------------------------------------------
 // Submission types
@@ -211,3 +215,37 @@ export interface PlaybackManifestRepository {
     manifest: LessonPlaybackManifest,
   ): Promise<StoredPlaybackManifest>;
 }
+
+// ---------------------------------------------------------------------------
+// VideoAsset repository types (Wave 2 Task 1)
+// ---------------------------------------------------------------------------
+
+/**
+ * Input for creating a VideoAsset record. Mirrors `CreateVideoAssetInput`
+ * from `lib/records` but is declared here so callers can depend on the
+ * repository contract without importing the records module directly.
+ */
+export type VideoAssetRecordInput = {
+  submissionId: string;
+  coachSlug: string;
+  originalFilename: string;
+  mimeType: string;
+  sizeBytes: number;
+  storageKey: string;
+  storageProvider: StorageProvider;
+  durationSec?: number;
+  uploadedAt?: number;
+};
+
+export interface VideoAssetRepository {
+  readonly mode: "live" | "mock";
+  /** Persist a new VideoAsset record linked to a submission. */
+  create(input: VideoAssetRecordInput): Promise<VideoAsset>;
+  /** Find the (first) video asset linked to a submission. */
+  getForSubmission(submissionId: string): Promise<VideoAsset | undefined>;
+  /** Fetch a VideoAsset by its record id. */
+  getById(id: string): Promise<VideoAsset | undefined>;
+  /** All video assets for a coach, newest-first by uploadedAt (insertion tiebreak). */
+  listForCoach(coachSlug: string): Promise<VideoAsset[]>;
+}
+

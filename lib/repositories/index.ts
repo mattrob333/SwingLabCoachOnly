@@ -15,6 +15,7 @@ import type {
   EarningRepository,
   PlaybackManifestRepository,
   SubmissionRepository,
+  VideoAssetRepository,
 } from "./types";
 import { InMemorySubmissionRepository } from "./in-memory-submissions";
 import { SupabaseSubmissionRepository } from "./supabase-submissions";
@@ -24,11 +25,14 @@ import { InMemoryEarningRepository } from "./in-memory-earnings";
 import { SupabaseEarningRepository } from "./supabase-earnings";
 import { InMemoryPlaybackManifestRepository } from "./in-memory-playback";
 import { SupabasePlaybackManifestRepository } from "./supabase-playback";
+import { InMemoryVideoAssetRepository } from "./in-memory-video-assets";
+import { SupabaseVideoAssetRepository } from "./supabase-video-assets";
 
 let submissionRepo: SubmissionRepository | null = null;
 let coachRepo: CoachRepository | null = null;
 let earningRepo: EarningRepository | null = null;
 let playbackRepo: PlaybackManifestRepository | null = null;
+let videoAssetRepo: VideoAssetRepository | null = null;
 
 export function getSubmissionRepository(): SubmissionRepository {
   if (submissionRepo) return submissionRepo;
@@ -74,12 +78,24 @@ export function getPlaybackManifestRepository(): PlaybackManifestRepository {
   return playbackRepo;
 }
 
+export function getVideoAssetRepository(): VideoAssetRepository {
+  if (videoAssetRepo) return videoAssetRepo;
+  videoAssetRepo = isLive("database")
+    ? new SupabaseVideoAssetRepository()
+    : new InMemoryVideoAssetRepository();
+  if (process.env.NODE_ENV !== "production") {
+    console.log(`[repositories] video-assets: ${videoAssetRepo.mode} adapter`);
+  }
+  return videoAssetRepo;
+}
+
 /** Test-only: reset all cached repositories so mode switches take effect. */
 export function _resetAllRepositoriesForTests(): void {
   submissionRepo = null;
   coachRepo = null;
   earningRepo = null;
   playbackRepo = null;
+  videoAssetRepo = null;
 }
 
 export type {
@@ -87,5 +103,7 @@ export type {
   EarningRepository,
   PlaybackManifestRepository,
   SubmissionRepository,
+  VideoAssetRepository,
+  VideoAssetRecordInput,
   StoredPlaybackManifest,
 } from "./types";

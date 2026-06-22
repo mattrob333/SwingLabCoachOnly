@@ -800,6 +800,183 @@ describe("Supabase repository impls (PostgREST)", () => {
   });
 
   // ---------------------------------------------------------------------------
+  // Video Assets (Wave 2 Task 1)
+  // ---------------------------------------------------------------------------
+  describe("SupabaseVideoAssetRepository", () => {
+    it("create: POST to video_assets with snake_case body, returns mapped VideoAsset", async () => {
+      const { calls } = setupFetchMock([
+        mockResponse({
+          id: "vid_abc",
+          submission_id: "sub-1",
+          coach_slug: "marcus-reed",
+          original_filename: "swing.mp4",
+          mime_type: "video/mp4",
+          size_bytes: 5_000_000,
+          storage_key: "videos/sub-1/abc.mp4",
+          storage_provider: "mock",
+          duration_sec: null,
+          uploaded_at: "2026-06-21T12:00:00.000Z",
+        }),
+      ]);
+      const mod = await import("@/lib/repositories/supabase-video-assets");
+      const repo = new mod.SupabaseVideoAssetRepository();
+      const asset = await repo.create({
+        submissionId: "sub-1",
+        coachSlug: "marcus-reed",
+        originalFilename: "swing.mp4",
+        mimeType: "video/mp4",
+        sizeBytes: 5_000_000,
+        storageKey: "videos/sub-1/abc.mp4",
+        storageProvider: "mock",
+      });
+      expect(asset.id).toBe("vid_abc");
+      expect(asset.submissionId).toBe("sub-1");
+      expect(asset.coachSlug).toBe("marcus-reed");
+      expect(asset.storageProvider).toBe("mock");
+      expect(asset.uploadedAt).toBeTypeOf("number");
+      expect(new Date(asset.uploadedAt).toISOString()).toBe("2026-06-21T12:00:00.000Z");
+      expect(asset.durationSec).toBeUndefined();
+
+      expect(calls[0].url).toBe(`${SUPABASE_URL}/rest/v1/video_assets`);
+      expect(calls[0].method).toBe("POST");
+      const body = JSON.parse(calls[0].body ?? "{}");
+      expect(body.submission_id).toBe("sub-1");
+      expect(body.coach_slug).toBe("marcus-reed");
+      expect(body.size_bytes).toBe(5_000_000);
+      expect(body.storage_key).toBe("videos/sub-1/abc.mp4");
+      expect(body.storage_provider).toBe("mock");
+      expect(body.uploaded_at).toBeTruthy();
+    });
+
+    it("create: includes duration_sec when provided", async () => {
+      const { calls } = setupFetchMock([
+        mockResponse({
+          id: "vid_1",
+          submission_id: "sub-1",
+          coach_slug: "c",
+          original_filename: "f.mp4",
+          mime_type: "video/mp4",
+          size_bytes: 1,
+          storage_key: "k",
+          storage_provider: "mock",
+          duration_sec: 12.5,
+          uploaded_at: "2026-06-21T12:00:00.000Z",
+        }),
+      ]);
+      const mod = await import("@/lib/repositories/supabase-video-assets");
+      const repo = new mod.SupabaseVideoAssetRepository();
+      const asset = await repo.create({
+        submissionId: "sub-1",
+        coachSlug: "c",
+        originalFilename: "f.mp4",
+        mimeType: "video/mp4",
+        sizeBytes: 1,
+        storageKey: "k",
+        storageProvider: "mock",
+        durationSec: 12.5,
+      });
+      expect(asset.durationSec).toBe(12.5);
+      const body = JSON.parse(calls[0].body ?? "{}");
+      expect(body.duration_sec).toBe(12.5);
+    });
+
+    it("getForSubmission: GET with submission_id=eq filter, maps row", async () => {
+      const { calls } = setupFetchMock([
+        mockResponse({
+          id: "vid_1",
+          submission_id: "sub-1",
+          coach_slug: "marcus-reed",
+          original_filename: "swing.mp4",
+          mime_type: "video/mp4",
+          size_bytes: 1000,
+          storage_key: "k",
+          storage_provider: "mock",
+          duration_sec: 2.5,
+          uploaded_at: "2026-06-21T10:00:00.000Z",
+        }),
+      ]);
+      const mod = await import("@/lib/repositories/supabase-video-assets");
+      const repo = new mod.SupabaseVideoAssetRepository();
+      const found = await repo.getForSubmission("sub-1");
+      expect(found?.id).toBe("vid_1");
+      expect(found?.durationSec).toBe(2.5);
+      expect(calls[0].url).toBe(
+        `${SUPABASE_URL}/rest/v1/video_assets?submission_id=eq.sub-1&order=uploaded_at.desc&limit=1`,
+      );
+    });
+
+    it("getForSubmission: 406 → undefined", async () => {
+      setupFetchMock([mockResponse(null, { status: 406 })]);
+      const mod = await import("@/lib/repositories/supabase-video-assets");
+      const repo = new mod.SupabaseVideoAssetRepository();
+      expect(await repo.getForSubmission("missing")).toBeUndefined();
+    });
+
+    it("getById: GET with id=eq filter", async () => {
+      const { calls } = setupFetchMock([
+        mockResponse({
+          id: "vid_x",
+          submission_id: "s",
+          coach_slug: "c",
+          original_filename: "f.mp4",
+          mime_type: "video/mp4",
+          size_bytes: 10,
+          storage_key: "k",
+          storage_provider: "supabase",
+          duration_sec: null,
+          uploaded_at: "2026-06-21T10:00:00.000Z",
+        }),
+      ]);
+      const mod = await import("@/lib/repositories/supabase-video-assets");
+      const repo = new mod.SupabaseVideoAssetRepository();
+      const found = await repo.getById("vid_x");
+      expect(found?.storageProvider).toBe("supabase");
+      expect(calls[0].url).toBe(`${SUPABASE_URL}/rest/v1/video_assets?id=eq.vid_x`);
+    });
+
+    it("listForCoach: GET with coach_slug=eq filter, returns array (snake→camel)", async () => {
+      const { calls } = setupFetchMock([
+        mockResponse([
+          {
+            id: "vid_a",
+            submission_id: "sub-1",
+            coach_slug: "marcus-reed",
+            original_filename: "a.mp4",
+            mime_type: "video/mp4",
+            size_bytes: 100,
+            storage_key: "k1",
+            storage_provider: "mock",
+            duration_sec: null,
+            uploaded_at: "2026-06-21T10:00:00.000Z",
+          },
+          {
+            id: "vid_b",
+            submission_id: "sub-2",
+            coach_slug: "marcus-reed",
+            original_filename: "b.mp4",
+            mime_type: "video/quicktime",
+            size_bytes: 200,
+            storage_key: "k2",
+            storage_provider: "supabase",
+            duration_sec: 10,
+            uploaded_at: "2026-06-21T11:00:00.000Z",
+          },
+        ]),
+      ]);
+      const mod = await import("@/lib/repositories/supabase-video-assets");
+      const repo = new mod.SupabaseVideoAssetRepository();
+      const list = await repo.listForCoach("marcus-reed");
+      expect(list).toHaveLength(2);
+      expect(list[0].id).toBe("vid_a");
+      expect(list[1].storageProvider).toBe("supabase");
+      expect(list[1].durationSec).toBe(10);
+      expect(calls[0].url).toBe(
+        `${SUPABASE_URL}/rest/v1/video_assets?coach_slug=eq.marcus-reed&order=uploaded_at.desc`,
+      );
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // Cross-cutting: headers always include service-role key
   // ---------------------------------------------------------------------------
   describe("PostgREST headers (all impls)", () => {
