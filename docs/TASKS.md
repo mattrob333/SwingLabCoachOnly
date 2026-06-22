@@ -1,6 +1,6 @@
 # Tasks / TODO Board
 
-**Last synced:** 2026-06-22 · **Tests:** 816 passing · **Build:** ✅ green · **Commits:** 125
+**Last synced:** 2026-06-22 · **Tests:** 822 passing · **Build:** ✅ green · **Commits:** 128
 
 This is the living task board. It is updated alongside the code every build tick. Legend: ✅ done · 🚧 in progress · ⏭️ next · ⬜ not started.
 
@@ -97,7 +97,7 @@ Full coach-facing AI loop wired: transcribe → package → coach reviews/edits 
 - [x] Design tokens + shared shadcn/ui primitives (Card, Badge, Skeleton, EmptyState, Avatar) — 14 render/smoke tests, commit 80b4186, 793 tests
 - [x] Coach dashboard / inbox (CoachInbox client component with filter tabs, Card+Badge+EmptyState primitives, Avatar in header; 23 tests, commit 02298d0, 816 tests)
 - [x] Submission detail page hierarchy + status timeline (Card+Badge primitives, consistent spacing; commit abb5111)
-- [ ] Review Studio chrome (control bar, recording indicator, tool palette, saved-frames strip)
+- [x] Review Studio chrome (control bar, recording indicator, tool palette, saved-frames strip) — Card+EmptyState+Badge primitives, dark-mode success banner; 6 render/smoke tests, commit 2258471, 822 tests
 - [ ] Coach onboarding (multi-step, progress, inline validation)
 - [ ] Earnings page (stat cards, payout status, table, zero states)
 - [ ] Lesson approval screen (readable draft layout, drill cards, "Send Lesson" CTA)
