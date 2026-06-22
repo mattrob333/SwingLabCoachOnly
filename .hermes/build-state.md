@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 3 in progress — autosave slice 1 (draft-notes storage module) COMPLETE. 518 tests. Next: autosave slice 2 (React hook + Review Studio wiring: load on mount, debounced save on notes change, "Autosaved" indicator).
+**Status:** Wave 3 in progress — autosave slice 2a (useDraftNotesAutosave hook) COMPLETE. 525 tests. Next: autosave slice 2b (wire hook into review-studio-client.tsx: restore on mount, "Autosaved" indicator, clearDraftNotes on Process Lesson) + slice 2c (render/smoke test).
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
@@ -20,7 +20,7 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan. North star: ONE coach re
 ### Wave Order
 1. [x] Foundation: Supabase schema ✅, storage adapter ✅, env validation ✅, migrate file-stores ✅, extend types ✅, docs ✅, async interfaces ✅, **Supabase PostgREST impls ✅**. **WAVE 1 COMPLETE.**
 2. [x] Workflow: real upload→storage ✅, Stripe Checkout+webhooks ✅, inbox ownership ✅, lesson delivery token + email ✅ (Sub-slice A: email adapter ✅, Sub-slice B: delivery token repository ✅, Sub-slice C: approve→deliver wiring ✅, Sub-slice D: Supabase PostgREST delivery token impl ✅ + lesson page token verification ✅). **WAVE 2 COMPLETE — approve→deliver→view end-to-end loop wired.**
-3. [ ] Review Studio polish: autosave (slice 1 ✅ draft-notes storage, slice 2 next: hook + wiring), edit/re-record, transcript edit UI, thumbnails, mobile, recovery
+3. [ ] Review Studio polish: autosave (slice 1 ✅ draft-notes storage, slice 2a ✅ useDraftNotesAutosave hook, slice 2b next: wire into review-studio-client, slice 2c: render test), edit/re-record, transcript edit UI, thumbnails, mobile, recovery
 4. [ ] AI: Deepgram transcription worker, OpenAI packaging (coach voice preserved), approval flow
 5. [ ] Player experience: chapters, thumbnails, transcript, speed, jump-to-note, follow-up CTA, mobile QA
 6. [ ] Hardening: auth/session security, rate limits, file validation, privacy, tests, deploy
@@ -28,7 +28,7 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan. North star: ONE coach re
 ### Next Action (Inner Loop)
 **Wave 3 — Review Studio polish.** Slice 1 (draft-notes storage module) ✅ DONE this tick: `lib/review/draft-notes.ts` exports `draftNotesKey`, `saveDraftNotes`, `loadDraftNotes`, `clearDraftNotes`, `DRAFT_NOTES_PREFIX`, and `DraftNotesPayload` type. localStorage-backed serialize/deserialize for in-progress FreezeFrameNote[] keyed by submissionId, SSR-safe, validates payload shape on load (rejects corrupted JSON / wrong shape / notes missing required fields). 16 new tests, 518 total. Commit 778f55d.
 
-**Next: autosave slice 2 — React hook + Review Studio wiring.** Decompose into: (1) `useDraftNotesAutosave(submissionId, notes)` hook — load on mount (restore draft → setNotes), debounced save on notes change (500ms), return `{ savedAt, hasDraft }` for UI indicator; (2) wire into `review-studio-client.tsx` — restore draft on mount before user creates notes, show "Autosaved" timestamp near Coach Notes header, clear draft on successful Process Lesson; (3) render/smoke test for the autosave indicator. The hook must handle the React Compiler lint rules (useSyncExternalStore / ref-mirror patterns if needed — see references/react-compiler-browser-api-patterns.md).
+**Next: autosave slice 2b — wire hook into review-studio-client.tsx.** Call `useDraftNotesAutosave(submissionId, notes, setNotes)` in the component. Show "Autosaved [time]" indicator near Coach Notes header when `savedAt` is non-null. Call `clearDraftNotes(submissionId)` on successful Process Lesson. Then slice 2c: render/smoke test for the autosave indicator. The hook is at `components/review/use-draft-notes-autosave.ts` and handles: restore on mount (via `useSyncExternalStore` for SSR-safe localStorage read), debounced 500ms save with `lastSavedNotesRef` dedup, derived `savedAt`/`hasDraft` (no setState-in-effect — React Compiler lint compliant).
 
 - **Sub-slice D part 2 ✅ DONE (this tick):** Lesson page token verification — `lib/lesson/access.ts` exports `verifyLessonAccess()` (composes `getDeliveryTokenRepository().getByToken` + `verifyDeliveryToken` + submission-id match + idempotent `markViewed`) and `LessonAccessDeniedReason` type. `app/lesson/[id]/page.tsx` now accepts `searchParams.token`, runs the access gate before loading lesson data. Valid → grant + markViewed; missing/expired/revoked/mismatch → access-denied UI; not_found → `notFound()` (404, so probes don't confirm lesson existence). 9 new tests. Commits e0dd214 + 7249fc6. 502 tests.
 - **Sub-slice D part 1 ✅ DONE:** Supabase PostgREST delivery token impl — filled `lib/repositories/supabase-delivery-tokens.ts` stub with real fetch() queries against `lesson_delivery_tokens`. Maps snake_case↔camelCase and ISO TIMESTAMPTZ strings↔epoch-ms numbers (matching the VideoAsset epoch-ms pattern, NOT Date objects). `create()` generates id + opaque token + timestamps client-side via `createLessonDeliveryToken()` (mirrors in-memory impl) so the emailed magic-link token is exactly what's stored. `markViewed`/`revoke` PATCH only `viewed_at`/`revoked_at` (never the PK). 406→undefined on `getByToken` not-found. 6 new fetch-mock tests added to `tests/repositories/supabase-impls.test.ts`. Commit 5d58ad3. 493 tests.
@@ -89,4 +89,4 @@ lib/repositories/
 - **No lesson delivery token + email** → Wave 2 Task 4
 - API keys not yet provisioned → adapters run in mock mode until user adds .env
 
-**Last Updated:** 2026-06-22 — Wave 3 autosave slice 1 (draft-notes storage module) COMPLETE. `lib/review/draft-notes.ts` + 16 tests. 518 tests green. Next: autosave slice 2 (React hook + Review Studio wiring).
+**Last Updated:** 2026-06-22 — Wave 3 autosave slice 2a (useDraftNotesAutosave hook) COMPLETE. `components/review/use-draft-notes-autosave.ts` + 7 tests. 525 tests green. Next: autosave slice 2b (wire into review-studio-client.tsx).
