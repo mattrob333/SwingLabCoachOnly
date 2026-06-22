@@ -24,9 +24,11 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan. North star: ONE coach re
 6. [ ] Hardening: auth/session security, rate limits, file validation, privacy, tests, deploy
 
 ### Next Action (Inner Loop)
-**Wave 1, Task 3:** Extend `FreezeFrameNote` type (in `lib/review/recording.ts` or wherever notes live) with new fields: `thumbnailUrl`, `transcriptRaw`, `transcriptEdited`, `transcriptStatus` (`pending|transcribing|ready|error`), `transcriptProvider`, `transcriptError`. Extend `LessonPlaybackManifest` with: `submissionId`, `coachSlug`, `parentEmail`, `deliveryTokenId`, `processedAt`, `version`, `aiSummary`. Update all code that constructs/reads these types. Add type-guard + default-value tests. TDD-first.
-Then: add durable record types (VideoAsset, AudioAsset, LessonDeliveryToken, AiPackagingJob); migrate file-stores to repository interfaces; Supabase schema migrations.
+**Wave 1, Task 5:** Migrate current file-stores (.swinglab-data, public/uploads) into repository interfaces backed by DB+storage with mock fallback retained. Targets: `lib/submissions.ts`, `lib/coaches.ts`, `lib/earnings.ts`, `lib/lesson/playback-store.ts`. Define repository interfaces (e.g. `SubmissionRepository`, `CoachRepository`) with in-memory mock implementations (current behavior) + a Supabase impl stub. Factory selects impl by env. TDD-first — existing store tests should keep passing through the interface.
+Then: Supabase Postgres schema migrations (matching docs/DATA_MODEL.md + new record types); update repo docs (DATA_MODEL, TECH_SPEC, API_SPEC).
 
+**Wave 1, Task 4 ✅ DONE:** durable record types (VideoAsset, AudioAsset, LessonDeliveryToken, AiPackagingJob) in `lib/records/index.ts`, 14 tests, commit 636e25f.
+**Wave 1, Task 3 ✅ DONE:** extended FreezeFrameNote (transcriptRaw, transcriptEdited, transcriptStatus, transcriptProvider, transcriptError) + LessonPlaybackManifest (submissionId, coachSlug, parentEmail, deliveryTokenId, processedAt, version, aiSummary); lesson-playback API propagates submission metadata; review studio marks notes transcriptStatus='pending'. 7 tests, commit eafeae2.
 **Wave 1, Task 2 ✅ DONE:** storage adapter interface + mock/supabase impls + factory (lib/storage/), 13 tests, commit 244af41.
 **Wave 1, Task 1 ✅ DONE:** env validation module (`lib/env.ts`), 12 tests, commit 4824d67.
 
