@@ -85,10 +85,10 @@ Full coach-facing AI loop wired: transcribe → package → coach reviews/edits 
 - [x] Follow-up submission CTA polish (coach name personalization + AI summary section)
 - [x] Mobile QA pass (touch-adequate overlay buttons, scrollable chapter list, responsive layout)
 
-## ⬜ Wave 6 — Hardening (Not Started)
+## 🚧 Wave 6 — Hardening (In Progress)
 - [ ] Auth/session security review
 - [ ] Rate limits
-- [ ] File-size / type validation, oversized upload rejection
+- [x] File-size / type validation, oversized upload rejection — **DONE (commit 2b98f17)**: video MIME allowlist (mp4/quicktime/webm/x-m4v) on /api/submissions POST; 3 hardening tests (oversized video → 400, disallowed video MIME → 400, oversized audio → 400). 746 tests.
 - [ ] Privacy controls (data deletion, link revocation per PRD §25)
 - [ ] Expanded test coverage + error monitoring
 - [ ] Deploy checks (Vercel)

@@ -4,15 +4,23 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 5 (Player Experience) COMPLETE — 743 tests. Next: Wave 6 — Hardening (auth/session, rate limits, file validation, privacy, deploy) OR Track B UX polish.
+**Status:** Wave 6 (Hardening) IN PROGRESS — 746 tests. File-size/type validation hardening DONE (commit 2b98f17). Next: auth/session security review OR rate limits OR privacy controls.
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
 - **Outer Loop** (cron `30bbeeaeeaf8`) — every 60 min (hourly): Alignment audit against PRD + NEXT_STEPS_PLAN, guardrails, drift detection. Read-only.
 - **Overnight mode (2026-06-21):** intervals doubled (10m / 60m). Inner loop self-pauses both jobs at a genuine terminal point and sends "🛑 SwingLab Loop Stopped" to Telegram. To restart: user says "resume".
 
-## CURRENT WAVE: Wave 5 — Player Experience (NEXT)
-(Waves 1–4 COMPLETE; Wave 3 Review Studio polish COMPLETE. Wave 4 AI COMPLETE: transcribe → package → coach review/edit → coach approve → delivery token + email.)
+## CURRENT WAVE: Wave 6 — Hardening (IN PROGRESS)
+(Waves 1–5 COMPLETE. Wave 6 Task 1 — file-size/type validation — DONE.)
+
+### Wave 6 Sub-tasks
+1. [x] File-size / type validation — video MIME allowlist (mp4/quicktime/webm/x-m4v) on /api/submissions POST; oversized video/audio → 400 tests. Commit 2b98f17. 746 tests.
+2. [ ] Auth/session security review — audit session middleware (httpOnly, secure, sameSite, expiry), CSRF protection, test coverage of cross-case.
+3. [ ] Rate limits — protect upload/transcribe/package/approve routes from abuse.
+4. [ ] Privacy controls — data deletion, link revocation (PRD §25).
+5. [ ] Expanded test coverage + error monitoring.
+6. [ ] Deploy checks (Vercel).
 
 See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan.
 
@@ -27,7 +35,9 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan.
 6. [ ] Hardening: auth/session security, rate limits, file validation, privacy, tests, deploy
 
 ### Next Action (Inner Loop)
-**Wave 5 COMPLETE — 743 tests.** All player experience features shipped this tick: `buildChapterList` helper (14 tests), `LessonChapterList` component (10 tests), chapter list wired into `LessonPlaybackPlayer` (5 tests), replay + skip-to-next-note buttons (5 tests), follow-up CTA polish with coach name + AI summary section (6 tests), mobile QA pass (6 tests). Commits: d7e2f81, 600029a, 5608800, 6247592, 1230601, 1a1a8f5.
+**Wave 6 Task 1 ✅ DONE (this tick):** File-size/type validation hardening — added `ALLOWED_VIDEO_MIME_TYPES` allowlist (mp4, quicktime, webm, x-m4v) to `/api/submissions` POST. Previously any `video/*` MIME was accepted and silently re-mapped to `.mp4`, risking mismatched storage. Added 3 Wave 6 hardening tests: oversized video (>250MB) → 400, disallowed video MIME (video/x-flv) → 400, oversized audio (>50MB) → 400. Spoofed `File.size` via `Object.defineProperty` to avoid allocating 250MB of test memory. 746 tests (was 743). Commit 2b98f17.
+
+**Next: Wave 6 Task 2 — Auth/session security review.** Audit session middleware (`lib/auth/session.ts`) for httpOnly, secure, sameSite, expiry, CSRF protection. Per the audit-first pitfall, the invariant is usually already enforced — the real deliverable is test coverage of the cross-case (expired token, tampered token, missing cookie, wrong-coach access). OR pick up a Track B UX polish task.
 
 **Next: Wave 6 — Hardening.** Auth/session security review, rate limits, file-size/type validation, privacy controls (data deletion, link revocation), expanded test coverage, deploy checks (Vercel). OR pick up a Track B UX polish task (design tokens, shared primitives, dashboard/inbox polish — coach interface first).
 
