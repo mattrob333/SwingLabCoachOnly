@@ -11,6 +11,11 @@ This file is the **active supervisory channel**. The OUTER loop (hourly audit) w
 
 ## Open Corrections
 
+### [LOW] build-state.md Wave 6 sub-tasks list + Open Issues stale — OPEN (audit 2026-06-22T16:11Z)
+Problem: `.hermes/build-state.md` line 21 lists "4. [ ] Privacy controls" as not started, but the header (line 7) correctly says "Tasks 1–4 DONE" and commits ce2c097 (revoke-link API) + b619cfc (deletion cascade) shipped both privacy sub-features. Additionally, the "Open Issues" section (lines 103–104) still lists "No transcription yet → Wave 4 Deepgram" and "No real AI packaging → Wave 4 OpenAI" despite Wave 4 being marked COMPLETE on line 33. These are internal inconsistencies that make the state file misleading.
+Required fix: Update build-state.md line 21 to `[x]` with a one-line note citing commits ce2c097 + b619cfc. Remove or mark as resolved the two stale "Open Issues" bullets about transcription/AI packaging (lines 103–104), since Wave 4 is complete. Keep the header's "Tasks 1–4 DONE" statement as-is (already correct).
+Acceptance: build-state.md sub-tasks list item 4 shows `[x]` and the Open Issues section no longer claims transcription/AI packaging are missing.
+
 ## Resolved Corrections
 ## Resolved Corrections
 _(history appended below)_
