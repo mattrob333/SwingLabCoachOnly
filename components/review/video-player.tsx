@@ -261,7 +261,7 @@ export function VideoPlayer({
 
       {/* Scrubber bar (click-to-seek) */}
       <div
-        className="group relative h-8 cursor-pointer select-none px-4 pt-2 max-sm:mt-24"
+        className="group relative h-8 cursor-pointer select-none px-4 pt-2"
         onClick={handleScrubberClick}
       >
         <div className="relative h-1.5 w-full rounded-full bg-muted">
@@ -288,7 +288,7 @@ export function VideoPlayer({
       </div>
 
       {/* Controls */}
-      <div className="flex items-center gap-3 px-4 pb-4">
+      <div className="flex flex-wrap items-center gap-3 px-4 pb-4">
         <Button
           variant="outline"
           size="sm"
@@ -296,7 +296,7 @@ export function VideoPlayer({
           disabled={!isLoaded || hasError}
           aria-label="Step back one frame"
         >
-          ← Frame
+          ← <span className="hidden sm:inline">Frame</span>
         </Button>
         <Button
           variant="default"
@@ -313,7 +313,7 @@ export function VideoPlayer({
           disabled={!isLoaded || hasError}
           aria-label="Step forward one frame"
         >
-          Frame →
+          <span className="hidden sm:inline">Frame</span> →
         </Button>
         <div className="ml-auto font-mono text-sm text-muted-foreground">
           <span className="text-foreground">
@@ -324,7 +324,7 @@ export function VideoPlayer({
         </div>
       </div>
 
-      <div className="border-t border-border px-4 py-2 text-xs text-muted-foreground">
+      <div className="hidden border-t border-border px-4 py-2 text-xs text-muted-foreground sm:block">
         Shortcuts: <kbd className="rounded bg-muted px-1">Space</kbd> play/pause ·{" "}
         <kbd className="rounded bg-muted px-1">←</kbd>{" "}
         <kbd className="rounded bg-muted px-1">→</kbd> step frames
