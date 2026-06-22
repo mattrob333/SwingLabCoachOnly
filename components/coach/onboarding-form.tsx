@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { showToast } from "@/lib/toast";
 
 type OnboardingData = {
   name: string;
@@ -100,9 +101,14 @@ export function OnboardingForm({
           error?: string;
           errors?: string[];
         };
-        setError(
-          body.errors?.join("; ") ?? body.error ?? "Failed to save profile",
-        );
+        const message =
+          body.errors?.join("; ") ?? body.error ?? "Failed to save profile";
+        setError(message);
+        showToast({
+          title: "Failed to save profile",
+          description: message,
+          variant: "error",
+        });
         setLoading(false);
         return;
       }
@@ -111,6 +117,11 @@ export function OnboardingForm({
       router.refresh();
     } catch {
       setError("Network error — please try again.");
+      showToast({
+        title: "Network error",
+        description: "Please check your connection and try again.",
+        variant: "error",
+      });
       setLoading(false);
     }
   }
