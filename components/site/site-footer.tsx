@@ -7,13 +7,13 @@ export function SiteFooter() {
       <Container className="flex flex-col gap-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <p>© {new Date().getFullYear()} SwingLab. All rights reserved.</p>
         <nav className="flex flex-wrap gap-4">
-          <Link href="/coaches" className="hover:text-foreground">
+          <Link href="/coaches" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:rounded">
             Coaches
           </Link>
-          <Link href="/how-it-works" className="hover:text-foreground">
+          <Link href="/how-it-works" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:rounded">
             How it works
           </Link>
-          <Link href="/privacy" className="hover:text-foreground">
+          <Link href="/privacy" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:rounded">
             Privacy
           </Link>
         </nav>

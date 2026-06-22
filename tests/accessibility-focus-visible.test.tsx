@@ -125,4 +125,35 @@ describe("Accessibility: focus-visible rings on raw button elements", () => {
     const dismissBtn = screen.getByLabelText("Dismiss notification");
     expect(dismissBtn.className).toContain("focus-visible:ring");
   });
+
+  // --- Site header / footer links ---
+
+  it("SiteHeader nav links have focus-visible ring", async () => {
+    const { SiteHeader } = await import("@/components/site/site-header");
+    const { container } = render(<SiteHeader />);
+    const nav = container.querySelector("nav");
+    const links = nav?.querySelectorAll("a");
+    expect(links?.length).toBeGreaterThanOrEqual(2);
+    for (const link of links ?? []) {
+      expect(link.className).toContain("focus-visible:ring");
+    }
+  });
+
+  it("SiteHeader coach login link has focus-visible ring", async () => {
+    const { SiteHeader } = await import("@/components/site/site-header");
+    render(<SiteHeader />);
+    const loginLink = screen.getByText("Coach login");
+    expect(loginLink.className).toContain("focus-visible:ring");
+  });
+
+  it("SiteFooter nav links have focus-visible ring", async () => {
+    const { SiteFooter } = await import("@/components/site/site-footer");
+    const { container } = render(<SiteFooter />);
+    const nav = container.querySelector("nav");
+    const links = nav?.querySelectorAll("a");
+    expect(links?.length).toBe(3);
+    for (const link of links ?? []) {
+      expect(link.className).toContain("focus-visible:ring");
+    }
+  });
 });
