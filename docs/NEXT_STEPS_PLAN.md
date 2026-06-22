@@ -87,6 +87,33 @@ A continuous, parallel workstream to make the **coach-facing interface** look pr
 - No heavy dependencies (no large animation/chart libs unless clearly justified).
 - Each polish task ships with at least a render/smoke test where practical.
 
+## Phase 7 — Professional Visual Design Elevation (CURRENT PRIORITY)
+
+The functional UX checklist above (tasks #1–10) is essentially complete — every surface uses shared primitives, toasts, skeletons, and has accessibility basics. This phase is the **aesthetic elevation pass**: make SwingLab look like a polished, premium product a professional hitting coach is proud to send to paying clients. This is now the **top inner-loop priority** alongside finishing Wave 6 deploy checks. Work coach-facing surfaces first, then the public + parent surfaces (since parents pay through them).
+
+**Goal:** elevate from "clean functional app" to "professional, premium, confidence-inspiring product." Sport-specific and modern — NOT generic SaaS template, NOT fitness-app, NOT clinical.
+
+**Design direction to establish first (one foundational tick before per-screen work):**
+1. **Refine the design tokens / theme.** Audit `app/globals.css`. The current primary is a clay/red (`oklch(0.55 0.19 28)`) on a near-pure-white/grey neutral scale. Elevate it: introduce a richer, more deliberate neutral ramp (subtle warm or cool tint instead of pure grey), a confident primary + a complementary accent, success/warning/destructive that feel designed (not default Tailwind), and verify light + dark both look intentional. Tune `--radius`, shadows, and border treatments for a more premium feel (softer, layered shadows; hairline borders). Lock a type scale (display/heading/body/caption) with good line-height + tracking. Document the palette in a short `docs/DESIGN_SYSTEM.md`.
+2. **Elevate shared primitives** (Card, Button, Badge, etc.) to the refined tokens — better default shadows, hover/active states, focus rings, transitions. One change here lifts every screen.
+
+**Per-surface elevation (after the foundation tick), coach-first:**
+3. **Coach dashboard / inbox** — strongest first impression. Refined stat cards (better hierarchy, iconography, subtle gradients/tints per status), polished submission cards with clear visual rhythm, refined filter tabs, a more designed empty state, a proper page header with coach identity. Make it feel like a focused command center.
+4. **Review Studio** — the hero screen. Premium control bar, refined recording indicator (clear, calm, unmistakable), well-spaced tool palette, polished saved-frames strip, considered use of the video frame real-estate. This is where the coach spends their time — make it feel like a pro tool.
+5. **Submission detail** — clear visual hierarchy, framed video preview, a designed status timeline, grouped primary/secondary actions with a prominent Start Review CTA.
+6. **Lesson approval + AI review** — make the AI-assisted draft feel trustworthy and editable; clear sections, readable typography, confident Send CTA.
+7. **Public coach page + landing** — parents judge credibility here before paying. Professional hero, coach profile presentation (photo, credentials, review products as polished pricing cards), trust signals, clean submission CTA.
+8. **Parent upload + lesson pages** — the paid surfaces. Reassuring, simple, premium. Polished upload flow with clear progress; lesson page that feels like a high-value deliverable (chapters, video framing, homework presented attractively).
+9. **Global shell + nav** — refined header/footer, coach-context nav, consistent page headers, breadcrumbs where useful, cohesive spacing system across all routes.
+10. **Motion + finish** — tasteful micro-interactions (button/press feedback, card hover, smooth state transitions, skeleton→content fade). Subtle, fast, never gratuitous.
+
+**Phase 7 constraints (same discipline as above):**
+- Quality gate stays green on every commit; every visual change ships with at least a render/smoke test where practical.
+- shadcn/ui + Tailwind composition; no heavy animation/chart/UI libraries.
+- Token/primitive changes first (maximum leverage), then per-screen. Don't hand-tune individual screens before the shared foundation is refined — that creates inconsistency.
+- Keep it accessible: contrast ratios, focus-visible, reduced-motion respect.
+- Keep it baseball/coach-specific in tone, not generic.
+
 ## Test Plan
 - Unit: schema validation, storage adapters, note ordering, transcript state transitions, AI packaging guardrails, lesson token expiry
 - API: upload, payment webhook, audio upload, transcription retry, process lesson, email delivery, tokenized lesson access

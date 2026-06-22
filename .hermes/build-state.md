@@ -11,8 +11,15 @@
 - **Outer Loop** (cron `30bbeeaeeaf8`) — every 60 min (hourly): Alignment audit against PRD + NEXT_STEPS_PLAN, guardrails, drift detection. Read-only.
 - **Overnight mode (2026-06-21):** intervals doubled (10m / 60m). Inner loop self-pauses both jobs at a genuine terminal point and sends "🛑 SwingLab Loop Stopped" to Telegram. To restart: user says "resume".
 
-## CURRENT WAVE: Wave 6 — Hardening (IN PROGRESS)
+## CURRENT WAVE: Wave 6 — Hardening (IN PROGRESS) + Phase 7 — Professional Visual Design Elevation (TOP PRIORITY)
 (Waves 1–5 COMPLETE. Wave 6 Task 1 — file-size/type validation — DONE.)
+
+### TOP PRIORITY: Phase 7 — Professional Visual Design Elevation
+User explicitly requested a more polished, professional, premium look (2026-06-22). See docs/NEXT_STEPS_PLAN.md "Phase 7" for the full brief. **Do the FOUNDATION tick FIRST** before per-screen work:
+1. Refine design tokens / theme in `app/globals.css` (richer neutral ramp, confident primary + accent, designed success/warning/destructive, premium shadows/radius/borders, locked type scale). Document in `docs/DESIGN_SYSTEM.md`.
+2. Elevate shared primitives (Card, Button, Badge, etc.) to the refined tokens.
+Then per-surface, coach-first: dashboard/inbox → Review Studio → submission detail → lesson approval → public coach page/landing → parent upload/lesson → global shell → motion/finish.
+Discipline: token+primitive changes first (max leverage, max consistency), THEN per-screen. Quality gate green every commit; render/smoke test each visual change; shadcn/ui + Tailwind only, no heavy libs; keep accessible + baseball-specific.
 
 ### Wave 6 Sub-tasks
 1. [x] File-size / type validation — video MIME allowlist (mp4/quicktime/webm/x-m4v) on /api/submissions POST; oversized video/audio → 400 tests. Commit 2b98f17. 746 tests.
