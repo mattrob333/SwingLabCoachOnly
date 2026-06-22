@@ -69,4 +69,21 @@ describe("session token sign/verify", () => {
     const sig = createHmac("sha256", secret).update(body).digest("base64url");
     expect(verifySession(`${body}.${sig}`)).toBeNull();
   });
+
+  it("verifySession rejects a token with an empty coachSlug (Wave 6 hardening)", () => {
+    // An empty string passes the `typeof === "string"` check but is not a
+    // valid coach identity. Defense-in-depth: reject it so a buggy payload
+    // builder can't produce a session with no coach context.
+    const payload = makePayload({ coachSlug: "" });
+    const token = signSession(payload);
+    expect(verifySession(token)).toBeNull();
+  });
+
+  it("verifySession rejects a token with NaN expiresAt (Wave 6 hardening)", () => {
+    // NaN passes `typeof === "number"` but `Date.now() > NaN` is always false,
+    // so a token with expiresAt: NaN would never expire. Reject it.
+    const payload = makePayload({ expiresAt: Number.NaN });
+    const token = signSession(payload);
+    expect(verifySession(token)).toBeNull();
+  });
 });

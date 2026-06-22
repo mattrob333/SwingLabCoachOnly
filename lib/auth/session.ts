@@ -64,8 +64,8 @@ export function verifySession(token: string): SessionPayload | null {
   } catch {
     return null;
   }
-  if (typeof payload.coachSlug !== "string") return null;
-  if (typeof payload.expiresAt !== "number") return null;
+  if (typeof payload.coachSlug !== "string" || payload.coachSlug.length === 0) return null;
+  if (typeof payload.expiresAt !== "number" || !Number.isFinite(payload.expiresAt)) return null;
   if (Date.now() > payload.expiresAt) return null;
   return payload;
 }
