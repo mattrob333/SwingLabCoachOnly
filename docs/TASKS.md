@@ -1,6 +1,6 @@
 # Tasks / TODO Board
 
-**Last synced:** 2026-06-22 · **Tests:** 964 passing · **Build:** ✅ green · **Commits:** 180
+**Last synced:** 2026-06-22 · **Tests:** 972 passing · **Build:** ✅ green · **Commits:** 181
 
 This is the living task board. It is updated alongside the code every build tick. Legend: ✅ done · 🚧 in progress · ⏭️ next · ⬜ not started.
 
@@ -103,7 +103,7 @@ Full coach-facing AI loop wired: transcribe → package → coach reviews/edits 
 - [x] Lesson approval screen (Card+Badge primitives for AiReviewPanel + LessonApprovalForm; Badge for status/saved/drills; 11 render tests, commit f83ffe3, 843 tests)
 - [x] Global shell / nav (CoachTopNav + ConditionalChrome — path-aware chrome switching, mobile hamburger, active-state highlighting; 18 tests, commit 2607c4a, 861 tests)
 - [ ] Micro-states everywhere (loading, empty, error, success toasts, disabled/processing) — toast system foundation DONE (9086908): lib/toast.ts + Toaster + 25 tests; **toast wiring slices 1–7 DONE:** AiReviewPanel (6 tests, 892), SubmissionDangerActions (13 tests, 905), OnboardingForm (4 tests, 909), LoginForm (4 tests, 913), StartReviewButton (4 tests, 917), LessonApprovalForm (5 tests, 922), ReviewStudioClient process-lesson (3 tests, 925).
-- [~] Accessibility pass (landmarks, focus states, aria, contrast, keyboard nav) — **skip-to-content link + main landmark id DONE (commit 5d43d89, 3 tests, 964 total)**; remaining: focus-visible states, aria-labels on icon-only buttons.
+- [~] Accessibility pass (landmarks, focus states, aria, contrast, keyboard nav) — **skip-to-content link + main landmark id DONE (commit 5d43d89, 3 tests, 964 total)**; **focus-visible ring styles on raw buttons DONE (commit dded234, 8 tests, 972 total)** — error boundaries, top nav, inbox tabs, payment toggle, toaster dismiss; aria-label audit complete (all icon-only buttons already labeled).
 
 ---
 
