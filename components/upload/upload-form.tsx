@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
+import { showToast } from "@/lib/toast";
 import type { Coach } from "@/lib/coaches";
 
 type UploadFormProps = {
@@ -85,10 +86,11 @@ export function UploadForm({ coaches, followUpFor }: UploadFormProps) {
           error?: string;
           errors?: string[];
         };
-        setError(
-          data.errors?.join("; ") ?? data.error ?? "Failed to submit",
-        );
+        const message =
+          data.errors?.join("; ") ?? data.error ?? "Failed to submit";
+        setError(message);
         setLoading(false);
+        showToast({ title: "Upload failed", description: message, variant: "error" });
         return;
       }
 
@@ -97,10 +99,20 @@ export function UploadForm({ coaches, followUpFor }: UploadFormProps) {
         id: data.id,
         coachName: selectedCoach?.name ?? "your coach",
       });
+      showToast({
+        title: "Swing uploaded!",
+        description: `Your submission has been sent to ${selectedCoach?.name ?? "your coach"}.`,
+        variant: "success",
+      });
     } catch {
       clearInterval(progressInterval);
       setError("Network error — please try again.");
       setLoading(false);
+      showToast({
+        title: "Network error",
+        description: "Couldn't reach the server. Please check your connection and try again.",
+        variant: "error",
+      });
     }
   }
 
