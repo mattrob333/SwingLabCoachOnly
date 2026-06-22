@@ -10,6 +10,7 @@ import { getCoachBySlug } from "@/lib/coaches";
 import { getStorageAdapter } from "@/lib/storage";
 import { createVideoAssetRecord } from "@/lib/video-assets";
 import type { StorageProvider } from "@/lib/records";
+import { rateLimitOr429 } from "@/lib/auth/rate-limit";
 
 const MAX_VIDEO_BYTES = 250 * 1024 * 1024;
 
@@ -153,6 +154,14 @@ async function parseSubmissionRequest(request: NextRequest): Promise<SubmissionI
  * and only advances after the payment flow (Phase 3 #4).
  */
 export async function POST(request: NextRequest) {
+  // Rate limit: 10 uploads per 10 minutes per IP (prevents upload abuse).
+  const blocked = rateLimitOr429(request, {
+    limit: 10,
+    windowMs: 600_000,
+    keyPrefix: "upload",
+  });
+  if (blocked) return blocked;
+
   let input: SubmissionInput & { __videoAsset?: unknown };
   try {
     input = (await parseSubmissionRequest(request)) as SubmissionInput & {

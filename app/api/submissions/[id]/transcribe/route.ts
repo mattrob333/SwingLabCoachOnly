@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { verifySession, SESSION_COOKIE } from "@/lib/auth/session";
+import { rateLimitOr429 } from "@/lib/auth/rate-limit";
 import { getSubmissionById } from "@/lib/submissions";
 import {
   getPlaybackManifestForSubmission,
@@ -21,6 +22,15 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
+
+  // Rate limit: 20 transcribe calls per 10 minutes per IP.
+  const blocked = rateLimitOr429(request, {
+    limit: 20,
+    windowMs: 600_000,
+    keyPrefix: "transcribe",
+  });
+  if (blocked) return blocked;
+
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   const session = token ? verifySession(token) : null;
   if (!session) {
