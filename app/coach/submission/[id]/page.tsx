@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { Container } from "@/components/site/container";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -63,15 +64,16 @@ export default async function SubmissionDetailPage({
       {/* Back link */}
       <a
         href="/coach/dashboard"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-ring/50 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:rounded-md"
       >
-        ← Back to inbox
+        <ArrowLeft className="h-3.5 w-3.5" />
+        Back to inbox
       </a>
 
       <div className="mt-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+            <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
               Submission
             </h1>
             <Badge variant={statusBadgeVariant(submission.status)}>
@@ -108,7 +110,7 @@ export default async function SubmissionDetailPage({
       <section className="mt-8">
         {submission.status === "paid" && (
           <Card className="p-6">
-            <h2 className="text-lg font-medium">Ready to review</h2>
+            <h2 className="text-lg font-semibold">Ready to review</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               This submission has been paid. Start the review to open the Review
               Studio.
@@ -121,7 +123,7 @@ export default async function SubmissionDetailPage({
 
         {submission.status === "in_review" && (
           <Card className="p-6">
-            <h2 className="text-lg font-medium">Review in progress</h2>
+            <h2 className="text-lg font-semibold">Review in progress</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               You&apos;ve started reviewing this submission. Open the Review
               Studio to annotate the swing and record your feedback.
@@ -138,7 +140,7 @@ export default async function SubmissionDetailPage({
 
         {submission.status === "rendering" && (
           <Card className="p-6">
-            <h2 className="text-lg font-medium">Rendering lesson</h2>
+            <h2 className="text-lg font-semibold">Rendering lesson</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               The review has been submitted and the render pipeline is composing
               the final lesson. This page will update when rendering completes.
@@ -148,7 +150,7 @@ export default async function SubmissionDetailPage({
 
         {submission.status === "completed" && (
           <Card className="p-6">
-            <h2 className="text-lg font-medium">Review complete</h2>
+            <h2 className="text-lg font-semibold">Review complete</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               This submission has been processed into an interactive lesson the
               player can watch.
@@ -172,7 +174,7 @@ export default async function SubmissionDetailPage({
       {/* Comparison mode — show when there are comparable follow-ups */}
       {comparisonCandidates.length > 0 && (
         <Card className="mt-6 p-6">
-          <h2 className="text-lg font-medium">Compare swings</h2>
+          <h2 className="text-lg font-semibold">Compare swings</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             {comparisonCandidates.length} follow-up swing
             {comparisonCandidates.length === 1 ? "" : "s"} with a completed
