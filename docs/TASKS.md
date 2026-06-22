@@ -1,6 +1,6 @@
 # Tasks / TODO Board
 
-**Last synced:** 2026-06-22 · **Tests:** 681 passing · **Build:** ✅ green · **Commits:** 109
+**Last synced:** 2026-06-22 · **Tests:** 697 passing · **Build:** ✅ green · **Commits:** 118
 
 This is the living task board. It is updated alongside the code every build tick. Legend: ✅ done · 🚧 in progress · ⏭️ next · ⬜ not started.
 
@@ -15,9 +15,9 @@ This is the living task board. It is updated alongside the code every build tick
 | Scaffold | MVP — all 20 PRD build-order items | ✅ Complete |
 | Wave 1 | Foundation (persistence + storage) | ✅ Complete |
 | Wave 2 | Workflow (upload, payment, delivery) | ✅ Complete |
-| Wave 3 | Review Studio polish | 🚧 ~Complete |
-| Wave 4 | AI (Deepgram + OpenAI) | 🚧 In progress |
-| Wave 5 | Player experience | ⬜ Not started |
+| Wave 3 | Review Studio polish | ✅ Complete |
+| Wave 4 | AI (Deepgram + OpenAI) | ✅ Complete |
+| Wave 5 | Player experience | 🚧 Next |
 | Wave 6 | Hardening + deploy | ⬜ Not started |
 | UX | UX/UI polish (coach-first) | ⬜ Not started |
 
@@ -43,7 +43,7 @@ All 20 PRD §31 build-order items: coach auth, onboarding, parent upload, paymen
 - [x] Lesson delivery token + email (approve→deliver→view end-to-end)
 - [x] Lesson page token verification (`lib/lesson/access.ts`; valid/expired/revoked/mismatch/not-found gating; 9 tests)
 
-## 🚧 Wave 3 — Review Studio Polish (~Complete)
+## ✅ Wave 3 — Review Studio Polish (Complete)
 - [x] Draft-note autosave hook + wiring + localStorage recovery
 - [x] Re-record a coach note in place (`VoiceRecorder` forwardRef/imperative handle)
 - [x] Transcript edit UI polish (char count + "Edited" badge via transcriptRaw/transcriptEdited)
@@ -54,9 +54,7 @@ All 20 PRD §31 build-order items: coach auth, onboarding, parent upload, paymen
 - [x] Mobile touch targets (note cards, lightbox close, annotation toolbar)
 - [x] Annotation toolbar mobile layout fix (no overlap with player controls)
 - [x] `beforeunload` unsaved-changes warning
-- [ ] 🔴 **HIGH (user-reported 2026-06-22): Mobile draw-tools overlap the video canvas.** On the coach lesson/review canvas at mobile width (~390px), the white annotation toolbar panel overlaps the bottom of the `<video>`, covering the player's feet / tee base (see attached screenshot). The video frame must NOT be obstructed by the draw tools on mobile.
-  - Acceptance: at 360–430px width, the full video frame (including the player's feet and the bottom of the swing area) is visible and unobstructed; the draw-tools toolbar sits BELOW the video (stacked), not floating over it. Tools remain reachable with large touch targets. No regression on desktop (toolbar may overlay/float on larger screens if intended).
-  - Notes: inspect `components/review/annotation-canvas.tsx` toolbar positioning + the review studio layout. Likely the toolbar is absolutely positioned over the video; on mobile it should reflow to a stacked block under the video (or the video should reserve space so nothing covers the frame). Add a render test asserting the mobile layout class/structure.
+- [x] **Mobile draw-tools overlap fix (course correction)** — split annotation toolbar into shared `AnnotationToolbar` (desktop overlay `hidden sm:flex`, mobile stacked block below video `sm:hidden`); `forwardRef`+`useImperativeHandle` for undo/clear; 4 render tests. Resolved commit d6327b7 (697 tests).
 - [ ] ⬜ Remaining ergonomics review (mobile QA pass — overlaps Wave 5)
 
 ## ✏️ Draw Tools Backlog (Annotation Canvas)
@@ -64,18 +62,20 @@ Current tools: pen (freehand), line, arrow, circle. Add the following IN ORDER (
 - [ ] **Dotted line** — a dashed/dotted straight line (use `ctx.setLineDash`). New tool id `"dotted-line"`; toolbar button + icon; draw path mirrors `"line"` but dashed; reset dash after stroke. Render/draw test.
 - [ ] **Curved arrow** — an arrow drawn along a curved (arc/quadratic) path with the arrowhead at the end. Very useful for showing rotation / lack of rotation. New tool id `"curved-arrow"`; capture start + control/drag to define curvature; render a quadratic curve + arrowhead at the terminal point; draw test covering the arrowhead orientation along the curve tangent.
 
-## 🚧 Wave 4 — AI (Deepgram + OpenAI) (In Progress)
+## ✅ Wave 4 — AI (Deepgram + OpenAI) (Complete)
 - [x] Transcription adapter layer: types + Mock + Deepgram + env-gated factory (18 tests)
 - [x] Transcription worker route `POST /api/submissions/[id]/transcribe` (auth + ownership; 9 tests)
 - [x] OpenAI packaging adapter layer: types + Mock + OpenAI + factory (guardrail prompt; 36 tests)
 - [x] Packaging worker route `POST /api/submissions/[id]/package` (persists aiSummary + aiNoteTitles; 8 tests)
 - [x] Coach edit AI output `PATCH /api/submissions/[id]/package` (partial updates; validated note IDs; 11 tests)
 - [x] Coach approval route `POST /api/submissions/[id]/approve` (status→approved, triggers delivery+email, idempotent; 9 tests)
-- [ ] ⏭️ **NEXT: Sub-slice 3c — coach-facing UI for reviewing AI output + approve button**
-  - [ ] 3c-i: review UI component (display AI summary + per-note titles; edit → `PATCH /package`)
-  - [ ] 3c-ii: "Approve & Send Lesson" button → `POST /approve`, wiring + render/smoke test
+- [x] **Sub-slice 3c — coach-facing UI for reviewing AI output + approve button**
+  - [x] 3c-i: review UI component — `AiReviewPanel` displays AI summary + per-note titles; edit → `PATCH /package` (7 tests, 688 total)
+  - [x] 3c-ii: "Approve & Send Lesson" button → `POST /approve` + page wiring (5 tests, 693 total)
 
-## ⬜ Wave 5 — Player Experience (Not Started)
+Full coach-facing AI loop wired: transcribe → package → coach reviews/edits → coach approves → delivery token + email sent to parent. **WAVE 4 COMPLETE.**
+
+## 🚧 Wave 5 — Player Experience (Next)
 - [ ] Lesson note chapters
 - [ ] Thumbnail navigation
 - [ ] Transcript text display
