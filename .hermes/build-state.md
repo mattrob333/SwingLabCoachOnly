@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 6 (Hardening) IN PROGRESS — 748 tests. Task 1 (file validation) + Task 2 (auth/session hardening) DONE. Next: rate limits OR privacy controls OR Track B UX polish.
+**Status:** Wave 6 (Hardening) IN PROGRESS — 763 tests. Task 1 (file validation) + Task 2 (auth/session hardening) + Task 3 (rate limits) DONE. Next: privacy controls OR expanded test coverage OR Track B UX polish.
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
@@ -17,7 +17,7 @@
 ### Wave 6 Sub-tasks
 1. [x] File-size / type validation — video MIME allowlist (mp4/quicktime/webm/x-m4v) on /api/submissions POST; oversized video/audio → 400 tests. Commit 2b98f17. 746 tests.
 2. [x] Auth/session security review — **DONE (commit ad74b65)**: audited session module (HMAC-SHA256 + timingSafeEqual + expiry — solid). Cookie attributes already correct (httpOnly, sameSite=lax, secure in prod). Hardened verifySession: reject empty coachSlug + non-finite expiresAt (NaN/Infinity). 2 new tests. 748 tests.
-3. [ ] Rate limits — protect upload/transcribe/package/approve routes from abuse.
+3. [x] Rate limits — protect upload/transcribe/package/approve routes from abuse. **DONE (commit b0e1d07):** In-memory sliding-window rate limiter (`lib/auth/rate-limit.ts`). Per-IP, per-route namespaced keys. Upload: 10/10min. AI routes (transcribe/package/approve): 20/10min. Env-gated (`RATE_LIMIT_DISABLED=1` disables; set globally in tests). 429 response with Retry-After + X-RateLimit headers. 15 tests (763 total).
 4. [ ] Privacy controls — data deletion, link revocation (PRD §25).
 5. [ ] Expanded test coverage + error monitoring.
 6. [ ] Deploy checks (Vercel).
@@ -35,9 +35,9 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan.
 6. [ ] Hardening: auth/session security, rate limits, file validation, privacy, tests, deploy
 
 ### Next Action (Inner Loop)
-**Wave 6 Task 2 ✅ DONE (this tick):** Auth/session hardening — audited `lib/auth/session.ts` (HMAC-SHA256 + timingSafeEqual + expiry — solid). Cookie attributes already correct (httpOnly, sameSite=lax, secure in prod). Hardened `verifySession`: reject empty `coachSlug` (`typeof "" === "string"` passed old check) + non-finite `expiresAt` (`Number.isFinite` check). 2 new tests. 748 tests. Commit ad74b65.
+**Wave 6 Task 3 ✅ DONE (this tick):** Rate limits — in-memory sliding-window rate limiter (`lib/auth/rate-limit.ts`). `checkRateLimit` (pure sliding window), `getClientIp` (x-forwarded-for / x-real-ip), `rateLimitOr429` (route helper → 429 with Retry-After + X-RateLimit headers). Env-gated (`RATE_LIMIT_DISABLED=1` disables; set globally in `tests/setup.ts`). Wired into 4 abuse-prone routes: POST /api/submissions (10/10min upload), POST .../transcribe (20/10min), POST .../package (20/10min), POST .../approve (20/10min). Per-IP, per-route namespaced keys. 15 tests. 763 tests. Commit b0e1d07.
 
-**Next: Wave 6 Task 3 — Rate limits.** Protect upload/transcribe/package/approve routes from abuse (in-memory rate limiter, per-IP or per-session, env-gated). OR Wave 6 Task 4 — Privacy controls (data deletion, link revocation per PRD §25). OR pick up a Track B UX polish task (design tokens, shared primitives, dashboard/inbox — coach interface first).
+**Next: Wave 6 Task 4 — Privacy controls** (data deletion, link revocation per PRD §25). OR Wave 6 Task 5 — Expanded test coverage + error monitoring. OR pick up a Track B UX polish task (design tokens, shared primitives, dashboard/inbox — coach interface first).
 
 **Next: Wave 6 — Hardening.** Auth/session security review, rate limits, file-size/type validation, privacy controls (data deletion, link revocation), expanded test coverage, deploy checks (Vercel). OR pick up a Track B UX polish task (design tokens, shared primitives, dashboard/inbox polish — coach interface first).
 

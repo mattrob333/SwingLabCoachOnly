@@ -1,6 +1,6 @@
 # Tasks / TODO Board
 
-**Last synced:** 2026-06-22 · **Tests:** 697 passing · **Build:** ✅ green · **Commits:** 118
+**Last synced:** 2026-06-22 · **Tests:** 763 passing · **Build:** ✅ green · **Commits:** 119
 
 This is the living task board. It is updated alongside the code every build tick. Legend: ✅ done · 🚧 in progress · ⏭️ next · ⬜ not started.
 
@@ -87,7 +87,7 @@ Full coach-facing AI loop wired: transcribe → package → coach reviews/edits 
 
 ## 🚧 Wave 6 — Hardening (In Progress)
 - [x] Auth/session security review — **DONE (commit ad74b65)**: verifySession hardened (reject empty coachSlug + non-finite expiresAt); cookie attrs already correct; 2 tests. 748 tests.
-- [ ] Rate limits
+- [x] Rate limits — **DONE (commit b0e1d07)**: in-memory sliding-window rate limiter (`lib/auth/rate-limit.ts`). Per-IP, per-route namespaced keys. Upload: 10/10min. AI routes: 20/10min. Env-gated (`RATE_LIMIT_DISABLED=1`). 429 + Retry-After + X-RateLimit headers. 15 tests. 763 tests.
 - [x] File-size / type validation, oversized upload rejection — **DONE (commit 2b98f17)**: video MIME allowlist (mp4/quicktime/webm/x-m4v) on /api/submissions POST; 3 hardening tests. 746 tests.
 - [ ] Privacy controls (data deletion, link revocation per PRD §25)
 - [ ] Expanded test coverage + error monitoring
