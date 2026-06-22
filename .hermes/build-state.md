@@ -26,7 +26,11 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan. North star: ONE coach re
 6. [ ] Hardening: auth/session security, rate limits, file validation, privacy, tests, deploy
 
 ### Next Action (Inner Loop)
-**Wave 2, Task 1 — Real Parent Upload → Durable Storage:** Replace the mock upload flow with a real storage adapter that writes video files to Supabase Storage (when env keys present) or local file store (mock fallback). Create a `VideoAsset` record on upload.
+**Wave 2, Task 2 — Stripe Checkout + webhooks** (real payment, env-gated; mock fallback when no STRIPE_* keys). Then Task 3: inbox ownership, Task 4: lesson delivery token + email.
+
+**Wave 2, Task 1 ✅ DONE (repaired by interactive fix):** Real parent upload → durable storage via env-gated storage adapter + VideoAsset record on upload. The autonomous tick was cut off by the iteration cap mid-write, leaving lib/video-assets.ts broken (missing getVideoAssetRepository import + type-only re-exports not in local scope). Repaired interactively, commit 8ffd2a9. 406 tests green.
+
+**PITFALL for future ticks:** When splitting work across files, COMMIT each green slice before starting the next file. A tick cut off by the iteration cap leaves an uncommitted, half-written facade that fails typecheck. Keep slices small enough to finish + commit within one tick's iteration budget.
 
 **Build on mock mode** — no API keys provisioned yet. All env-gated adapters run in mock mode; the architecture is built real and flips live when the user adds `.env` keys.
 
