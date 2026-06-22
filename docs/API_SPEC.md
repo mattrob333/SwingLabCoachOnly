@@ -2,7 +2,7 @@
 
 **Source:** PRD Section 24 + Wave 1 implementation.
 
-**Status:** Active — 13 API route handlers implemented. All routes are Next.js App Router route handlers (`app/api/.../route.ts`).
+**Status:** Active — 22+ API route handlers implemented across Waves 1–6. All routes are Next.js App Router route handlers (`app/api/.../route.ts`).
 
 ---
 
@@ -105,6 +105,63 @@ Redeem a follow-up code to create a follow-up submission linked to the original.
 - **Response 201:** `{ submission: Submission }`
 - **Auth:** None (parent-facing)
 
+#### POST /api/submissions/[id]/transcribe
+Transcribe a single voice-over note's audio (Wave 4 AI). Calls the transcription adapter (Deepgram when live, deterministic mock otherwise) and updates the note's `transcriptRaw`/`transcriptStatus`/`transcriptProvider`/`transcriptError` on the stored playback manifest, if one exists. Rate-limited (20 req / 10 min per IP).
+
+- **Body:** `{ noteId: string, audioUrl: string, language?: string }`
+- **Response 200:** `{ success: boolean, transcript?: string, provider: string, error?: string }`
+- **Response 400:** `{ error: "noteId is required" | "audioUrl is required" | "Invalid JSON body" }`
+- **Response 401:** `{ error: "Authentication required" }`
+- **Response 403:** `{ error: "Forbidden" }` — submission belongs to a different coach
+- **Response 404:** `{ error: "Submission not found" }`
+- **Response 429:** Rate-limited (with `Retry-After` + `X-RateLimit-*` headers)
+- **Auth:** Coach session required (ownership enforced — 403 on cross-coach)
+
+#### POST /api/submissions/[id]/package
+Run the OpenAI packaging worker on a submission's stored manifest (Wave 4 AI). Requires existing transcribed notes. Generates a parent-friendly `aiSummary` and per-note `aiNoteTitles`, then persists both onto the playback manifest. Preserves coach wording — only cleans obvious filler and organizes; never invents technical feedback (guardrail-enforced in the adapter system prompt). Rate-limited (20 req / 10 min per IP).
+
+- **Body:** None (reads the stored manifest + coach display name)
+- **Response 200:** `{ success: boolean, summary?: string, noteTitles?: Array<{ noteId: string, title: string }>, provider: string, error?: string }` — also persists `aiSummary` + `aiNoteTitles` on the manifest
+- **Response 401:** `{ error: "Authentication required" }`
+- **Response 403:** `{ error: "Forbidden" }` — cross-coach
+- **Response 404:** `{ error: "Submission not found" | "No lesson manifest found for this submission" }`
+- **Response 429:** Rate-limited
+- **Response 500:** `{ success: false, error: string }` — packaging adapter failed
+- **Auth:** Coach session required (ownership enforced — 403 on cross-coach)
+
+#### PATCH /api/submissions/[id]/package
+Coach edits the AI-generated `aiSummary` and/or `aiNoteTitles` previously persisted by a POST `/package` call (Wave 4 Sub-slice 3a — "review/edit AI output"). Partial update: only the fields present in the body are written; the other is preserved. `aiNoteTitles` entries are validated against the manifest's existing note IDs to prevent orphaned titles.
+
+- **Body:** `{ aiSummary?: string, aiNoteTitles?: Array<{ noteId: string, title: string }> }`
+- **Response 200:** `StoredPlaybackManifest` — the updated manifest (with new `aiSummary` / `aiNoteTitles`)
+- **Response 400:** `{ error: "Invalid JSON body" | "aiNoteTitles contains unknown noteId: \"<id>\"" }` — empty `aiSummary` string is a valid "clear" intent
+- **Response 401:** `{ error: "Authentication required" }`
+- **Response 403:** `{ error: "Forbidden" }` — cross-coach
+- **Response 404:** `{ error: "Submission not found" | "No lesson manifest found for this submission" }`
+- **Auth:** Coach session required (ownership enforced — 403 on cross-coach). NOT rate-limited (edit-only, no external API call).
+
+#### POST /api/submissions/[id]/approve
+Coach approves the AI-packaged lesson and triggers parent delivery (Wave 4 Sub-slice 3b). Transitions the manifest status to `"approved"` and, on the FIRST approval only, creates a delivery token + sends the magic-link email to the parent. Subsequent calls are idempotent — no duplicate tokens/emails. Pre-condition: the manifest must have an `aiSummary` (packaging must have been run); returns 409 otherwise. Delivery side effects (token creation + email send) are non-fatal: if they fail, the approval still succeeds and the coach can re-trigger later. Rate-limited (20 req / 10 min per IP).
+
+- **Body:** None
+- **Response 200:** `StoredPlaybackManifest` — the manifest with `status: "approved"`
+- **Response 401:** `{ error: "Authentication required" }`
+- **Response 403:** `{ error: "Forbidden" }` — cross-coach
+- **Response 404:** `{ error: "Submission not found" | "No lesson manifest found for this submission" }`
+- **Response 409:** `{ error: "Manifest has not been packaged yet. Run packaging before approving." }` — pre-condition gate
+- **Response 429:** Rate-limited
+- **Auth:** Coach session required (ownership enforced — 403 on cross-coach)
+
+#### POST /api/submissions/[id]/revoke-link
+Privacy control (Wave 6 Task 4 — PRD §25). Lets a coach revoke all active delivery tokens for a submission, immediately invalidating the magic link sent to the parent. The parent can no longer access the lesson via any previously-issued link. The coach can re-approve later to issue a new token. Idempotent: returns `revokedCount: 0` if all tokens were already revoked.
+
+- **Body:** None
+- **Response 200:** `{ revokedCount: number }` — count of tokens that were active and are now revoked
+- **Response 401:** `{ error: "Authentication required" }`
+- **Response 403:** `{ error: "Forbidden" }` — cross-coach
+- **Response 404:** `{ error: "Submission not found" }`
+- **Auth:** Coach session required (ownership enforced — 403 on cross-coach). NOT rate-limited (privacy control, low abuse surface).
+
 ### Coach
 
 #### POST /api/coach/onboarding
@@ -130,21 +187,18 @@ Fetch submissions for side-by-side comparison (original + follow-up).
 - **Response 200:** `{ original: Submission, followUps: Submission[] }`
 - **Auth:** Coach session required
 
-## Upcoming Routes (Wave 2+)
+## Upcoming Routes (Future Waves)
+
+These routes are not yet implemented and may shift as the build evolves.
 
 | Route | Method | Purpose | Wave |
 |---|---|---|---|
-| `/api/submissions/[id]/notes/[noteId]` | PUT | Autosave note edits | 2 |
-| `/api/submissions/[id]/process-lesson` | POST | Trigger lesson processing pipeline | 2 |
-| `/api/lessons/deliver` | POST | Create delivery token + send magic-link email | 2 |
-| `/api/lessons/[token]` | GET | Parent fetches lesson by magic-link token | 2 |
-| `/api/submissions/[id]/transcribe` | POST | Retry transcription for a note | 4 |
-| `/api/stripe/checkout` | POST | Create Stripe Checkout session | 2 |
-| `/api/stripe/webhook` | POST | Stripe webhook handler (replay-safe) | 2 |
+| `/api/submissions/[id]/notes/[noteId]` | PUT | Autosave note edits | 2+ |
+| `/api/submissions/[id]/process-lesson` | POST | Trigger lesson processing pipeline | 2+ |
 
 ## Response Conventions
 
 - All responses are JSON (`Content-Type: application/json`).
 - Error responses: `{ error: string, errors?: string[] }` where `errors` is the array of validation messages.
 - Success responses: `{ <resource>: <T> }` or `{ ok: true }`.
-- HTTP status codes: 200 (OK), 201 (Created), 400 (Bad Request), 401 (Unauthorized), 404 (Not Found), 500 (Internal Server Error).
+- HTTP status codes: 200 (OK), 201 (Created), 400 (Bad Request), 401 (Unauthorized), 403 (Forbidden), 404 (Not Found), 409 (Conflict — pre-condition gate, e.g. approve-before-package), 429 (Too Many Requests — rate-limited, with `Retry-After` + `X-RateLimit-*` headers), 500 (Internal Server Error).
