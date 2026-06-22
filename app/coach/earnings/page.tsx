@@ -1,13 +1,14 @@
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/site/container";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { verifySession, SESSION_COOKIE } from "@/lib/auth/session";
 import { getCoachBySlug } from "@/lib/coaches";
 import {
   getEarningsForCoach,
   getTotalEarningsForCoach,
-  type Earning,
 } from "@/lib/earnings";
+import { EarningsBreakdown } from "@/components/coach/earnings-breakdown";
 
 export const metadata = {
   title: "Coach earnings",
@@ -31,11 +32,13 @@ export default async function CoachEarningsPage() {
   const total = await getTotalEarningsForCoach(coach.slug);
 
   return (
-    <Container className="py-12">
+    <Container className="py-8 sm:py-12">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm text-muted-foreground">Earnings</p>
-          <h1 className="text-2xl font-semibold tracking-tight">{coach.name}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            {coach.name}
+          </h1>
         </div>
         <a
           href="/coach/dashboard"
@@ -45,89 +48,40 @@ export default async function CoachEarningsPage() {
         </a>
       </div>
 
-      <section className="mt-10 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-xl border border-border bg-card p-6">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            Total earnings
-          </p>
-          <p className="mt-2 text-4xl font-semibold">${total}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            From {earnings.length} completed{" "}
-            {earnings.length === 1 ? "review" : "reviews"}
-          </p>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-6">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            Per-review price
-          </p>
-          <p className="mt-2 text-4xl font-semibold">${coach.priceUsd}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Your listed swing review price
-          </p>
-        </div>
+      <section className="mt-8 grid gap-4 sm:grid-cols-2">
+        <Card className="gap-0 p-6">
+          <CardHeader className="px-0 pt-0">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              Total earnings
+            </p>
+          </CardHeader>
+          <CardContent className="px-0 pb-0">
+            <p className="text-4xl font-semibold">${total}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              From {earnings.length} completed{" "}
+              {earnings.length === 1 ? "review" : "reviews"}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="gap-0 p-6">
+          <CardHeader className="px-0 pt-0">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              Per-review price
+            </p>
+          </CardHeader>
+          <CardContent className="px-0 pb-0">
+            <p className="text-4xl font-semibold">${coach.priceUsd}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Your listed swing review price
+            </p>
+          </CardContent>
+        </Card>
       </section>
 
       <section className="mt-8">
-        <h2 className="text-lg font-medium">Breakdown</h2>
-        {earnings.length === 0 ? (
-          <div className="mt-4 rounded-xl border border-border bg-card p-8 text-center">
-            <p className="text-sm text-muted-foreground">
-              No earnings yet. When you complete a swing review, the payment
-              will appear here.
-            </p>
-          </div>
-        ) : (
-          <div className="mt-4 overflow-hidden rounded-xl border border-border">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Parent</th>
-                  <th className="px-4 py-3 font-medium">Submission</th>
-                  <th className="px-4 py-3 font-medium">Date</th>
-                  <th className="px-4 py-3 text-right font-medium">Amount</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {earnings.map((e) => (
-                  <EarningRow key={e.id} earning={e} />
-                ))}
-              </tbody>
-              <tfoot className="bg-muted/50">
-                <tr>
-                  <td className="px-4 py-3 text-sm font-medium" colSpan={3}>
-                    Total
-                  </td>
-                  <td className="px-4 py-3 text-right text-sm font-semibold">
-                    ${total}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        )}
+        <h2 className="mb-4 text-lg font-medium">Breakdown</h2>
+        <EarningsBreakdown earnings={earnings} total={total} />
       </section>
     </Container>
-  );
-}
-
-function EarningRow({ earning }: { earning: Earning }) {
-  return (
-    <tr className="bg-card">
-      <td className="px-4 py-3">{earning.parentEmail}</td>
-      <td className="px-4 py-3">
-        <a
-          href={`/coach/submission/${earning.submissionId}`}
-          className="text-primary hover:underline"
-        >
-          {earning.submissionId.slice(0, 8)}…
-        </a>
-      </td>
-      <td className="px-4 py-3 text-muted-foreground">
-        {earning.createdAt.toLocaleDateString()}
-      </td>
-      <td className="px-4 py-3 text-right font-medium">
-        ${earning.amountUsd}
-      </td>
-    </tr>
   );
 }
