@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 2 in progress — Task 4 (lesson delivery token + email) Sub-slice A (email adapter layer) COMPLETE. 462 tests. Next: Wave 2 Task 4 Sub-slice B (delivery token repository + verification logic).
+**Status:** Wave 2 in progress — Task 4 (lesson delivery token + email) Sub-slice B (delivery token repository + verification) COMPLETE. 483 tests. Next: Wave 2 Task 4 Sub-slice C (wire approve/deliver flow — create token on approval, send email, verify on lesson page).
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
@@ -19,7 +19,7 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan. North star: ONE coach re
 
 ### Wave Order
 1. [x] Foundation: Supabase schema ✅, storage adapter ✅, env validation ✅, migrate file-stores ✅, extend types ✅, docs ✅, async interfaces ✅, **Supabase PostgREST impls ✅**. **WAVE 1 COMPLETE.**
-2. [~] Workflow: real upload→storage ✅, Stripe Checkout+webhooks ✅, inbox ownership ✅, lesson delivery token + email (Sub-slice A: email adapter ✅ ← **CURRENT**)
+2. [~] Workflow: real upload→storage ✅, Stripe Checkout+webhooks ✅, inbox ownership ✅, lesson delivery token + email (Sub-slice A: email adapter ✅, Sub-slice B: delivery token repository ✅ ← **CURRENT**)
 3. [ ] Review Studio polish: autosave, edit/re-record, transcript edit UI, thumbnails, mobile, recovery
 4. [ ] AI: Deepgram transcription worker, OpenAI packaging (coach voice preserved), approval flow
 5. [ ] Player experience: chapters, thumbnails, transcript, speed, jump-to-note, follow-up CTA, mobile QA
@@ -27,9 +27,9 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan. North star: ONE coach re
 
 ### Next Action (Inner Loop)
 **Wave 2, Task 4 — Lesson delivery token + email send.** DECOMPOSED into sub-slices:
-- **Sub-slice A ✅ DONE (this tick):** Email adapter layer — `lib/email/` (types.ts: EmailAdapter interface + SendLessonDeliveryInput + SendEmailResult; mock-email.ts: MockEmailAdapter logs to console + MOCK_SENT_EMAILS for test inspection; resend-email.ts: ResendEmailAdapter uses fetch() to POST to Resend /emails endpoint with subject + HTML body containing the magic-link lesson URL; index.ts: env-gated factory on isLive('email') → RESEND_API_KEY, EMAIL_FROM config var defaults to Resend sandbox sender). 23 new tests (8 mock + 9 resend + 6 factory). Commit 27e1aa4. 462 tests.
-- **Sub-slice B (NEXT):** Delivery token repository — CRUD for LessonDeliveryToken (create, getByToken, getBySubmissionId, markViewed, revoke). Mirror the existing repository pattern (in-memory impl + Supabase stub + factory). The `LessonDeliveryToken` type and `createLessonDeliveryToken` factory are already in `lib/records/index.ts`. Add token verification logic (is token valid + not expired + not revoked?).
-- **Sub-slice C (AFTER):** Wire the approve/deliver flow — when coach approves/completes a lesson, create a delivery token, persist it, send the email via `getEmailAdapter().sendLessonDeliveryEmail(...)` with the magic-link URL `/lesson/[id]?token=...`. Add a verification route/middleware that validates the token on the lesson page.
+- **Sub-slice A ✅ DONE:** Email adapter layer — `lib/email/` (types.ts: EmailAdapter interface + SendLessonDeliveryInput + SendEmailResult; mock-email.ts: MockEmailAdapter logs to console + MOCK_SENT_EMAILS for test inspection; resend-email.ts: ResendEmailAdapter uses fetch() to POST to Resend /emails endpoint with subject + HTML body containing the magic-link lesson URL; index.ts: env-gated factory on isLive('email') → RESEND_API_KEY, EMAIL_FROM config var defaults to Resend sandbox sender). 23 new tests (8 mock + 9 resend + 6 factory). Commit 27e1aa4. 462 tests.
+- **Sub-slice B ✅ DONE (this tick):** Delivery token repository — `LessonDeliveryTokenRepository` interface (create, getByToken, getBySubmissionId, markViewed, revoke) added to `lib/repositories/types.ts`. `InMemoryDeliveryTokenRepository` + `DELIVERY_TOKENS` array in `lib/repositories/in-memory-delivery-tokens.ts`. `SupabaseDeliveryTokenRepository` stub (throws "not implemented" — real PostgREST impl in follow-up, table exists in schema). Factory wired: `getDeliveryTokenRepository()` env-gated on `isLive('database')`. Pure `verifyDeliveryToken()` function: returns `{ valid: true }` for valid tokens, `{ valid: false, reason: 'expired' | 'revoked' }` for invalid, `undefined` for not-found (null/undefined input — distinct from invalid). 21 new tests (4 create + 2 getByToken + 2 getBySubmissionId + 2 markViewed + 2 revoke + 6 verifyDeliveryToken + 3 factory). Commit 1b36758. 483 tests.
+- **Sub-slice C (NEXT):** Wire the approve/deliver flow — when coach approves/completes a lesson, create a delivery token via `getDeliveryTokenRepository().create(...)`, send the email via `getEmailAdapter().sendLessonDeliveryEmail(...)` with the magic-link URL `/lesson/[id]?token=...`. Add a verification route/middleware that validates the token on the lesson page using `verifyDeliveryToken()`. The Supabase stub for the delivery token repository should also be filled in with real PostgREST queries (mirror supabase-video-assets.ts pattern, table `lesson_delivery_tokens` already in schema).
 
 **Wave 2, Task 3 ✅ DONE:** Coach inbox ownership enforcement — test coverage complete. Audit found all coach-facing API routes (review, render, lesson-draft, audio, lesson-playback POST) already enforce `submission.coachSlug !== session.coachSlug → 403` in code, and the dashboard + submission detail server components already filter by the session coach's slug. The gap was test coverage: the audio and lesson-playback routes lacked the cross-coach 403 test that review/render/lesson-draft already had. Added the "returns 403 when the submission belongs to a different coach" test to both test files. 439 tests (was 437), commit 9c81ed8.
 
@@ -87,4 +87,4 @@ lib/repositories/
 - **No lesson delivery token + email** → Wave 2 Task 4
 - API keys not yet provisioned → adapters run in mock mode until user adds .env
 
-**Last Updated:** 2026-06-21 — Wave 2 Task 4 Sub-slice A (email adapter layer) COMPLETE. Env-gated EmailAdapter interface + MockEmailAdapter + ResendEmailAdapter (fetch-based, no SDK) + factory. 462 tests green. Next: Sub-slice B — delivery token repository + verification logic.
+**Last Updated:** 2026-06-22 — Wave 2 Task 4 Sub-slice B (delivery token repository + verification logic) COMPLETE. LessonDeliveryTokenRepository interface + InMemory impl + Supabase stub + factory + verifyDeliveryToken pure function. 21 new tests. 483 tests green. Next: Sub-slice C — wire approve/deliver flow (token creation on approval, email send, lesson page token verification).
