@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 6 (Hardening) IN PROGRESS — 816 tests. Tasks 1–4 DONE. Tasks 5–6 remaining. **UX/UI Polish workstream** — task #1 (design tokens + shared primitives) DONE (80b4186), task #2 (coach dashboard/inbox polish) DONE (02298d0), task #3 (submission detail page polish) DONE (abb5111). Next: UX task #4 (Review Studio chrome) or Wave 6 Task 5 (expanded test coverage).
+**Status:** Wave 6 (Hardening) IN PROGRESS — 816 tests. Tasks 1–4 DONE (validation, session, rate-limit, privacy). Tasks 5–6 remaining (expanded test coverage + error monitoring, deploy checks). **UX/UI Polish workstream** — task #1 (design tokens + shared primitives) DONE (80b4186), task #2 (coach dashboard/inbox polish) DONE (02298d0), task #3 (submission detail page polish) DONE (abb5111). Next: UX task #4 (Review Studio chrome) OR Wave 6 Task 5 (expanded test coverage + error monitoring).
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
@@ -18,7 +18,7 @@
 1. [x] File-size / type validation — video MIME allowlist (mp4/quicktime/webm/x-m4v) on /api/submissions POST; oversized video/audio → 400 tests. Commit 2b98f17. 746 tests.
 2. [x] Auth/session security review — **DONE (commit ad74b65)**: audited session module (HMAC-SHA256 + timingSafeEqual + expiry — solid). Cookie attributes already correct (httpOnly, sameSite=lax, secure in prod). Hardened verifySession: reject empty coachSlug + non-finite expiresAt (NaN/Infinity). 2 new tests. 748 tests.
 3. [x] Rate limits — protect upload/transcribe/package/approve routes from abuse. **DONE (commit b0e1d07):** In-memory sliding-window rate limiter (`lib/auth/rate-limit.ts`). Per-IP, per-route namespaced keys. Upload: 10/10min. AI routes (transcribe/package/approve): 20/10min. Env-gated (`RATE_LIMIT_DISABLED=1` disables; set globally in tests). 429 response with Retry-After + X-RateLimit headers. 15 tests (763 total).
-4. [ ] Privacy controls — data deletion, link revocation (PRD §25).
+4. [x] Privacy controls — data deletion, link revocation (PRD §25). **DONE**: delivery link revocation API `POST /revoke-link` (commit ce2c097, 6 tests); data deletion cascade `DELETE /api/submissions/[id]` (commit b619cfc, 10 tests). 769 tests.
 5. [ ] Expanded test coverage + error monitoring.
 6. [ ] Deploy checks (Vercel).
 
@@ -99,11 +99,11 @@ lib/repositories/
 - 360 tests across 40 files, all green; typecheck ✓ lint ✓ build ✓ (24 routes)
 
 ## Open Issues
+- **API keys not yet provisioned** → adapters run in mock mode until user adds .env
+- **No real upload storage yet** → Wave 2 Task 1 ✅ DONE (storage adapter built, flips live when SUPABASE keys added)
 - **Stripe is mock** → Wave 2 real Checkout + webhooks ✅ DONE (adapter layer + webhook route built, flips live when STRIPE_* keys added)
-- **No transcription yet** → Wave 4 Deepgram
-- **No real AI packaging** → Wave 4 OpenAI
-- **No real upload storage yet** → Wave 2 Task 1 (next action)
-- **No lesson delivery token + email** → Wave 2 Task 4
-- API keys not yet provisioned → adapters run in mock mode until user adds .env
+- **No lesson delivery token + email** → Wave 2 Task 4 ✅ DONE (delivery token + email adapter built, flips live when keys added)
+- **No transcription yet** → Wave 4 Deepgram ✅ DONE (adapter built, flips live when DEEPGRAM_API_KEY added)
+- **No real AI packaging** → Wave 4 OpenAI ✅ DONE (adapter built, flips live when OPENAI_API_KEY added)
 
 **Last Updated:** 2026-06-22 — **Wave 4 (AI) COMPLETE.** Sub-slice 3c-ii shipped in two slices: (A) AiReviewPanel approve button — POSTs to /approve, shows green approved banner on success, handles loading/error/retry; (B) wired AiReviewPanel into coach lesson page — loads playback manifest server-side, renders panel when manifest.aiSummary exists, legacy LessonApprovalForm coexists. 5 new tests (693 total). Commits 9f1439a + 4a04325. Next: Wave 5 — Player Experience.
