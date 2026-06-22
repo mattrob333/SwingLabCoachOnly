@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Phase 7 — Professional Visual Design Elevation IN PROGRESS. Foundation tick DONE (commit adcf93b). Dashboard/inbox elevation DONE (commit 253501c). Review Studio elevation DONE (commits 2199e4c + b3b2577). Submission detail elevation DONE (commit 568f25f). Lesson approval + AI review elevation DONE (commit 4e3813a). Public coach page + landing elevation DONE (commit 56a2742). Parent upload + lesson pages elevation DONE (commit f2847aa). 1010 tests, all gates green. Next: global shell/nav → motion/finish. Waves 1–5 COMPLETE. Wave 6 Task 5 PARTIAL (error monitoring requires deploy/keys), Task 6 (deploy checks) remaining. **0 open course corrections.**
+**Status:** STOPPED — Phase 7 Visual Design Elevation COMPLETE (all 10 surfaces). Wave 6 deploy checks done to extent possible (build green, app Vercel-ready). Remaining work (error monitoring, actual Vercel deploy) requires real credentials/user action. 1010 tests, all gates green, 0 open course corrections. Both crons paused.
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
@@ -27,7 +27,7 @@ Discipline: token+primitive changes first (max leverage, max consistency), THEN 
 3. [x] Rate limits — protect upload/transcribe/package/approve routes from abuse. **DONE (commit b0e1d07):** In-memory sliding-window rate limiter (`lib/auth/rate-limit.ts`). Per-IP, per-route namespaced keys. Upload: 10/10min. AI routes (transcribe/package/approve): 20/10min. Env-gated (`RATE_LIMIT_DISABLED=1` disables; set globally in tests). 429 response with Retry-After + X-RateLimit headers. 15 tests (763 total).
 4. [x] Privacy controls — data deletion, link revocation (PRD §25). **DONE**: delivery link revocation API `POST /revoke-link` (commit ce2c097, 6 tests); data deletion cascade `DELETE /api/submissions/[id]` (commit b619cfc, 10 tests). 769 tests.
 5. [~] Expanded test coverage + error monitoring — error boundaries (`app/error.tsx`, `app/global-error.tsx`) + custom 404 page (`app/not-found.tsx`) DONE (commit 2186aa7, 9 tests, 934 total). Auth login+logout API route tests DONE (commit eb155ee, 17 tests, 951 total) — covers malformed JSON, missing fields, unknown slug (no-leak), wrong password, valid login + cookie attrs, Secure flag, token verification, slug trimming; logout redirect + cookie clearing.
-6. [ ] Deploy checks (Vercel).
+6. [x] Deploy checks (Vercel) — build verification green (24 routes, all dynamic/static/SSG prerendered correctly). Standard Next.js app, Vercel auto-detects, no vercel.json needed. Actual `vercel deploy` requires user to connect repo to Vercel.
 
 See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan.
 
@@ -39,12 +39,23 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan.
 3. [~] Review Studio polish: autosave (slice 1 ✅ draft-notes storage, slice 2a ✅ useDraftNotesAutosave hook, slice 2b ✅ wire into review-studio-client, slice 2c ✅ render/smoke test), re-record coach note ✅, transcript edit UI polish ✅ (char count + Edited badge using transcriptRaw/transcriptEdited fields), video error recovery ✅ (error overlay + Retry button + src-change reset), annotation canvas fallback ✅ (context-unavailable detection + fallback message), retake thumbnail ✅ (Camera button on note cards, seeks to timecode + re-captures), thumbnail zoom ✅ (click thumbnail → full-size lightbox modal, closable via X/Escape/backdrop), mobile touch targets ✅ (note cards, lightbox close, annotation toolbar), annotation toolbar mobile layout ✅ (removed below-video positioning that overlapped player controls; icon-only Undo/Clear + hidden marks count on mobile), **beforeunload unsaved-changes warning ✅** (useBeforeUnloadWarning hook + wired into ReviewStudioClient — browser "Are you sure?" dialog when notes exist && lesson not processed; autosave localStorage is the recovery mechanism)
 4. [x] AI: Deepgram transcription worker, OpenAI packaging (coach voice preserved), approval flow — **COMPLETE**: transcription adapter layer ✅ (18 tests), transcription worker route ✅ (9 tests, 617 total), OpenAI packaging adapter layer ✅ (36 tests, 653 total), packaging worker route ✅ (8 tests, 661 total), coach edit AI output ✅ (11 tests, 672 total), coach approval route ✅ (9 tests, 681 total), coach AI review panel ✅ (3c-i, 7 tests, 688 total), **approve button + page wiring ✅ (3c-ii, 5 tests, 693 total)**. Full coach-facing AI loop wired: transcribe → package → coach reviews/edits → coach approves → delivery token + email sent to parent. **WAVE 4 COMPLETE.**
 5. [x] Player experience: chapters ✅, thumbnails ✅, transcript ✅, speed ✅ (pre-existing), jump-to-note ✅, replay/next-note ✅, follow-up CTA polish ✅, mobile QA ✅. **WAVE 5 COMPLETE — 743 tests.**
-6. [ ] Hardening: auth/session security, rate limits, file validation, privacy, tests, deploy
+6. [x] Hardening: auth/session security, rate limits, file validation, privacy, tests, deploy checks — ALL DONE (error monitoring requires real keys, deferred)
 
 **Next Action (Inner Loop)**
-**Phase 7 Foundation ✅ DONE (commit adcf93b):** Refined design tokens in app/globals.css — warm-tinted neutral ramp (subtle oklch chroma, not pure grey), clay primary + new deep navy "ink" accent (--info token), designed semantic tokens (--success forest green, --warning rich amber, --destructive deep red, each with -foreground), premium layered shadow tokens (--shadow-xs through --shadow-xl, warm-tinted light + pure-black dark), clay-tinted focus ring + ::selection, antialiased font rendering + optimizeLegibility. Elevated shared primitives: Card (shadow-sm, border-border/70, transition-shadow), Button default (shadow-sm, smoother hover bg-primary/90), Badge (token-based semantic variants + new info variant), Toaster (token-based success/warning). Documented full palette + type scale + usage rules in docs/DESIGN_SYSTEM.md. 1004 tests, all gates green.
+**STOPPED — Phase 7 Visual Design Elevation COMPLETE.** All 10 elevation surfaces shipped:
+1. Foundation (tokens + primitives) — commit adcf93b
+2. Dashboard/inbox — commit 253501c
+3. Review Studio — commits 2199e4c + b3b2577
+4. Submission detail — commit 568f25f
+5. Lesson approval + AI review — commit 4e3813a
+6. Public coach page + landing — commit 56a2742
+7. Parent upload + lesson pages — commit f2847aa
+8. Global shell/nav — commit 9088098
+9. Motion/finish (comprehensive prefers-reduced-motion) — commit b2c705e
 
-**Next: Phase 7 per-surface elevation — parent upload + lesson pages NEXT.** Dashboard/inbox elevation ✅ DONE (commit 253501c). Review Studio elevation ✅ DONE (commits 2199e4c + b3b2577). Submission detail elevation ✅ DONE (commit 568f25f). Lesson approval + AI review elevation ✅ DONE (commit 4e3813a). Public coach page + landing elevation ✅ DONE (commit 56a2742): ArrowLeft back-links + focus-visible rings, font-bold headings, Card primitives for step/testimonial/booking, Check icon for highlights, ArrowRight for "View profile", hover:shadow-md on cards, border-border/70 softening. Next: parent upload + lesson pages → global shell/nav → motion/finish.
+Wave 6 hardening COMPLETE (tasks 1–6). Error monitoring (Task 5) requires real keys — deferred. Actual Vercel deployment requires user to connect repo.
+
+**To resume:** user says "resume" → unpause both crons. Next priorities would be: real Vercel deployment, provisioning API keys (.env), or any new feature requests.
 
 **Previous UX Polish work (completed before Phase 7):** tasks #1–10 essentially done — design tokens + primitives, dashboard/inbox, submission detail, Review Studio chrome, onboarding, earnings, lesson approval, global shell, micro-states (toast wiring 1–9, loading skeletons), accessibility (skip-link, focus-visible rings). Phase 7 is the aesthetic elevation pass on top of this functional foundation.
 
