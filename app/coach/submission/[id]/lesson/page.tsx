@@ -63,7 +63,7 @@ export default async function LessonApprovalPage({
   }
 
   return (
-    <Container className="py-12">
+    <Container className="py-8 sm:py-12">
       {/* Back link */}
       <a
         href={`/coach/submission/${submission.id}`}

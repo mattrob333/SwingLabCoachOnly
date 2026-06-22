@@ -3,6 +3,8 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import type { LessonDraft } from "@/lib/ai/lesson-draft";
 
 type LessonApprovalFormProps = {
@@ -79,64 +81,68 @@ export function LessonApprovalForm({
     rejected: "Rejected — needs rework",
   };
 
-  const statusColor: Record<string, string> = {
-    draft: "bg-amber-100 text-amber-700",
-    approved: "bg-green-100 text-green-700",
-    rejected: "bg-red-100 text-red-700",
+  const statusBadgeVariant: Record<
+    string,
+    "default" | "success" | "warning" | "destructive" | "primary" | "outline"
+  > = {
+    draft: "warning",
+    approved: "success",
+    rejected: "destructive",
   };
 
   return (
     <div className="space-y-6">
-      {/* Status banner */}
+      {/* Status badge */}
       <div className="flex items-center gap-3">
-        <span
-          className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[status] ?? "bg-muted text-muted-foreground"}`}
-        >
+        <Badge variant={statusBadgeVariant[status] ?? "default"}>
           {statusLabel[status] ?? status}
-        </span>
+        </Badge>
       </div>
 
       {/* Draft preview */}
-      <section className="rounded-xl border border-border bg-card p-6">
-        <h2 className="text-lg font-medium">{draft.title}</h2>
-        <p className="mt-2 text-sm text-muted-foreground">{draft.summary}</p>
+      <Card>
+        <CardHeader>
+          <CardTitle>{draft.title}</CardTitle>
+          <CardDescription>{draft.summary}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {draft.keyPoints.length > 0 && (
+            <div>
+              <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Key Moments
+              </h3>
+              <ul className="mt-2 space-y-1">
+                {draft.keyPoints.map((kp, i) => (
+                  <li key={i} className="text-sm">
+                    <span className="font-medium">{kp.label}</span>
+                    <span className="text-muted-foreground">
+                      {" "}— {kp.description}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-        {draft.keyPoints.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Key Moments
-            </h3>
-            <ul className="mt-2 space-y-1">
-              {draft.keyPoints.map((kp, i) => (
-                <li key={i} className="text-sm">
-                  <span className="font-medium">{kp.label}</span>
-                  <span className="text-muted-foreground">
-                    {" "}— {kp.description}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {draft.drills.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Recommended Drills
-            </h3>
-            <ul className="mt-2 space-y-1">
-              {draft.drills.map((drill, i) => (
-                <li key={i} className="text-sm">
-                  <span className="font-medium">{drill.name}</span>
-                  <span className="rounded-full bg-muted px-2 py-0.5 ml-2 text-xs text-muted-foreground">
-                    {drill.category}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </section>
+          {draft.drills.length > 0 && (
+            <div>
+              <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Recommended Drills
+              </h3>
+              <ul className="mt-2 space-y-2">
+                {draft.drills.map((drill, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm">
+                    <span className="font-medium">{drill.name}</span>
+                    <Badge variant="default" size="sm">
+                      {drill.category}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Coach notes editor */}
       <form onSubmit={handleSaveNotes} className="space-y-3">
@@ -158,38 +164,40 @@ export function LessonApprovalForm({
           <Button type="submit" variant="outline" size="sm" disabled={loading}>
             {loading ? "Saving…" : "Save notes"}
           </Button>
-          {saved && (
-            <span className="text-xs text-green-600">Notes saved.</span>
-          )}
+          {saved && <Badge variant="success">Notes saved</Badge>}
         </div>
       </form>
 
       {/* Approval actions */}
-      <section className="rounded-xl border border-border bg-card p-6">
-        <h3 className="text-sm font-medium">Approve or reject this lesson</h3>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Approving publishes the lesson to the parent via the delivery page.
-          Rejecting sends it back for rework — the draft stays editable.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <Button
-            variant="default"
-            size="lg"
-            disabled={loading || status === "approved"}
-            onClick={handleApprove}
-          >
-            {status === "approved" ? "Approved ✓" : "Approve lesson"}
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            disabled={loading || status === "rejected"}
-            onClick={handleReject}
-          >
-            {status === "rejected" ? "Rejected" : "Reject"}
-          </Button>
-        </div>
-      </section>
+      <Card>
+        <CardHeader>
+          <CardTitle>Approve or reject this lesson</CardTitle>
+          <CardDescription>
+            Approving publishes the lesson to the parent via the delivery page.
+            Rejecting sends it back for rework — the draft stays editable.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              variant="default"
+              size="lg"
+              disabled={loading || status === "approved"}
+              onClick={handleApprove}
+            >
+              {status === "approved" ? "Approved ✓" : "Approve lesson"}
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              disabled={loading || status === "rejected"}
+              onClick={handleReject}
+            >
+              {status === "rejected" ? "Rejected" : "Reject"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {error && (
         <p role="alert" className="text-sm text-destructive">
