@@ -24,8 +24,10 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan. North star: ONE coach re
 6. [ ] Hardening: auth/session security, rate limits, file validation, privacy, tests, deploy
 
 ### Next Action (Inner Loop)
-**Wave 1, Task 1:** Create env validation module (`lib/env.ts`) — validate + mode-log all integration keys (Supabase, storage, Deepgram, OpenAI, Stripe, email). Warn (don't crash) when missing; log which mode each adapter runs in. TDD-first.
-Then: storage adapter interface (`lib/storage/`) with mock + Supabase implementations.
+**Wave 1, Task 2:** Create storage adapter interface (`lib/storage/types.ts` + `lib/storage/index.ts`) — `StorageAdapter` interface with `upload(bucket, key, blob, contentType)` → URL, `getUrl(bucket, key)`, `delete(bucket, key)`, `exists(bucket, key)`. Then mock implementation (`lib/storage/mock-storage.ts`) writing to `public/uploads` (existing behavior). Then Supabase implementation stub (`lib/storage/supabase-storage.ts`) gated on `isLive('storage')`. Factory `getStorageAdapter()` returns the live one when env present, else mock. TDD-first.
+Then: migrate file-stores to repository interfaces; extend FreezeFrameNote + LessonPlaybackManifest fields; add VideoAsset/AudioAsset/LessonDeliveryToken/AiPackagingJob records.
+
+**Wave 1, Task 1 ✅ DONE:** env validation module (`lib/env.ts`) — 12 tests, committed 4824d67.
 
 ## Completed (MVP Scaffold — Rounds 1–19, plus external AI's freeze-frame playback)
 - All 20 PRD build-order items: auth, onboarding, upload, payment(mock), inbox, submission detail, Review Studio (player/scrubber/mic/annotation/events), render pipeline, AI lesson draft, drill library, coach approval, lesson delivery, follow-up, Stripe(mock)+earnings, PWA, comparison mode
@@ -39,4 +41,4 @@ Then: storage adapter interface (`lib/storage/`) with mock + Supabase implementa
 - No real AI packaging → Wave 4 OpenAI
 - API keys not yet provisioned → adapters run in mock mode until user adds .env
 
-**Last Updated:** 2026-06-21 (Wave 2 Production Push kicked off — consensus plan from user + 2 AIs)
+**Last Updated:** 2026-06-21 — Wave 1 Task 1 done (env validation module, 12 tests, commit 4824d67). Next: storage adapter interface.
