@@ -226,7 +226,7 @@ describe("Toaster", () => {
     const id = showToast({ title: "Done!", variant: "success" });
     render(<Toaster />);
     const toast = screen.getByTestId(`toast-${id}`);
-    expect(toast.className).toContain("border-emerald-500");
+    expect(toast.className).toContain("border-success");
     expect(toast.getAttribute("role")).toBe("status");
   });
 

@@ -57,11 +57,11 @@ describe("shared UI primitives (UX Polish task #1)", () => {
       expect(badge?.className).toContain("rounded-full");
     });
 
-    it("applies the success variant classes", () => {
+    it("applies the success variant classes (semantic token)", () => {
       const { container } = render(<Badge variant="success">Completed</Badge>);
       const badge = container.querySelector('[data-slot="badge"]');
-      expect(badge?.className).toContain("bg-emerald-100");
-      expect(badge?.className).toContain("text-emerald-800");
+      expect(badge?.className).toContain("bg-success");
+      expect(badge?.className).toContain("text-success");
     });
 
     it("applies the primary variant (clay accent)", () => {
@@ -71,10 +71,25 @@ describe("shared UI primitives (UX Polish task #1)", () => {
       expect(badge?.className).toContain("text-primary-foreground");
     });
 
+    it("applies the info variant (navy/ink)", () => {
+      const { container } = render(<Badge variant="info">3 items</Badge>);
+      const badge = container.querySelector('[data-slot="badge"]');
+      expect(badge?.className).toContain("bg-info");
+      expect(badge?.className).toContain("text-info");
+      expect(badge?.textContent).toBe("3 items");
+    });
+
+    it("applies the warning variant (amber, semantic token)", () => {
+      const { container } = render(<Badge variant="warning">Pending</Badge>);
+      const badge = container.querySelector('[data-slot="badge"]');
+      expect(badge?.className).toContain("bg-warning");
+      expect(badge?.className).toContain("text-warning");
+    });
+
     it("badgeVariants exports the full variant set", () => {
       const cv = badgeVariants;
       // Each variant produces a class string containing "rounded-full".
-      for (const v of ["default", "primary", "success", "warning", "destructive", "outline"] as const) {
+      for (const v of ["default", "primary", "success", "warning", "info", "destructive", "outline"] as const) {
         expect(cv({ variant: v })).toContain("rounded-full");
       }
     });

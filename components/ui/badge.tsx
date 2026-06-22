@@ -10,9 +10,10 @@ import { cn } from "@/lib/utils";
  * Uses the clay token system. Variants map to semantic states:
  * - default: neutral (secondary surface)
  * - primary: clay accent (primary surface)
- * - success: green-tinted (for "paid", "completed", "approved")
- * - warning: amber-tinted (for "pending", "in_review")
- * - destructive: red-tinted (for "expired", "revoked", errors)
+ * - success: forest-green tinted (for "paid", "completed", "approved")
+ * - warning: amber tinted (for "pending", "in_review")
+ * - info: navy/ink tinted (for neutral informational labels, counts)
+ * - destructive: red tinted (for "expired", "revoked", errors)
  * - outline: bordered, transparent fill
  *
  * Mobile-first: compact height (h-5 / 20px) with `sm:h-6` (24px) on desktop.
@@ -27,9 +28,11 @@ const badgeVariants = cva(
         primary:
           "border-transparent bg-primary text-primary-foreground",
         success:
-          "border-transparent bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300",
+          "border-transparent bg-success/15 text-success dark:bg-success/20 dark:text-success",
         warning:
-          "border-transparent bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300",
+          "border-transparent bg-warning/20 text-warning-foreground dark:bg-warning/20 dark:text-warning",
+        info:
+          "border-transparent bg-info/12 text-info dark:bg-info/20 dark:text-info",
         destructive:
           "border-transparent bg-destructive/10 text-destructive dark:bg-destructive/20",
         outline:

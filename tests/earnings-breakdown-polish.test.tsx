@@ -47,7 +47,7 @@ describe("EarningsBreakdown — UX polish task #6", () => {
     const badges = container.querySelectorAll('[data-slot="badge"]');
     expect(badges.length).toBe(2);
     // Each badge should have the success variant classes
-    expect(badges[0].className).toContain("emerald");
+    expect(badges[0].className).toContain("bg-success");
     expect(getAllByText("Paid").length).toBe(2);
   });
 

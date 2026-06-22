@@ -13,10 +13,10 @@ import { cn } from "@/lib/utils";
 const variantStyles: Record<ToastVariant, string> = {
   default: "border-border bg-background text-foreground",
   success:
-    "border-emerald-500/40 bg-emerald-500/10 text-emerald-900 dark:text-emerald-100",
+    "border-success/40 bg-success/10 text-success-foreground dark:text-success",
   error: "border-destructive/40 bg-destructive/10 text-destructive",
   warning:
-    "border-amber-500/40 bg-amber-500/10 text-amber-900 dark:text-amber-100",
+    "border-warning/40 bg-warning/10 text-warning-foreground dark:text-warning",
 };
 
 const variantIcons: Record<ToastVariant, string> = {

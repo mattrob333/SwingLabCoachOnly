@@ -171,7 +171,7 @@ describe("LessonApprovalForm — UX polish task #7 (Card + Badge primitives)", (
       b.textContent?.toLowerCase().includes("draft"),
     );
     expect(statusBadge).toBeTruthy();
-    expect(statusBadge?.className).toContain("amber");
+    expect(statusBadge?.className).toContain("bg-warning");
   });
 
   it("uses Badge success variant for approved status", () => {
@@ -186,7 +186,7 @@ describe("LessonApprovalForm — UX polish task #7 (Card + Badge primitives)", (
       b.textContent?.toLowerCase().includes("approved"),
     );
     expect(approvedBadge).toBeTruthy();
-    expect(approvedBadge?.className).toContain("emerald");
+    expect(approvedBadge?.className).toContain("bg-success");
   });
 
   it("uses Badge destructive variant for rejected status", () => {
