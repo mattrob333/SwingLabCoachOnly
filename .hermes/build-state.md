@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 3 in progress — note card action button touch targets COMPLETE. 562 tests. Next: Wave 3 remaining polish items (annotation canvas touch/pointer support, lightbox mobile sizing).
+**Status:** Wave 3 in progress — lightbox close button mobile touch target COMPLETE. 563 tests. Next: Wave 3 remaining polish items (annotation canvas touch/pointer support).
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
@@ -29,7 +29,7 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan. North star: ONE coach re
 **Wave 3 — Review Studio polish.** Thumbnail zoom lightbox COMPLETE: each note's freeze-frame thumbnail is now a clickable button (cursor-zoom-in) that opens a full-size lightbox modal showing the freeze-frame with annotations. Closable via X button (top-right), Escape key, or backdrop click. Notes without a thumbnail show no zoom affordance. 5 new tests (555 total). Commit cf21485.
 
 **Next: Wave 3 remaining polish items.** Pick the smallest next slice:
-1. **Mobile responsiveness** — video player controls ✅ DONE, note card touch targets ✅ DONE (this tick: Camera/Re-record/Delete buttons bumped from h-7 to h-10 on mobile, sm:h-7 on desktop). Next mobile items: annotation canvas touch/pointer support audit, lightbox sizing on mobile.
+1. **Mobile responsiveness** — video player controls ✅ DONE, note card touch targets ✅ DONE, lightbox close button touch target ✅ DONE (this tick: close button bumped from h-8 w-8 to h-10 w-10 on mobile, sm:h-8 sm:w-8 on desktop; position adjusted to -top-2 -right-2 on mobile so the larger button isn't clipped). Next mobile item: annotation canvas touch/pointer support audit.
 2. **Thumbnails** — retake ✅ DONE, zoom ✅ DONE.
 
 - **Sub-slice D part 2 ✅ DONE (this tick):** Lesson page token verification — `lib/lesson/access.ts` exports `verifyLessonAccess()` (composes `getDeliveryTokenRepository().getByToken` + `verifyDeliveryToken` + submission-id match + idempotent `markViewed`) and `LessonAccessDeniedReason` type. `app/lesson/[id]/page.tsx` now accepts `searchParams.token`, runs the access gate before loading lesson data. Valid → grant + markViewed; missing/expired/revoked/mismatch → access-denied UI; not_found → `notFound()` (404, so probes don't confirm lesson existence). 9 new tests. Commits e0dd214 + 7249fc6. 502 tests.
@@ -91,4 +91,4 @@ lib/repositories/
 - **No lesson delivery token + email** → Wave 2 Task 4
 - API keys not yet provisioned → adapters run in mock mode until user adds .env
 
-**Last Updated:** 2026-06-22 — Wave 3 note card action button mobile touch targets COMPLETE. Camera (retake), RotateCcw (re-record), and Trash2 (delete) buttons on each note card bumped from h-7 (28px) to h-10 (40px) on mobile, reverting to sm:h-7 on desktop. 3 new tests, 562 total. Commit 7798ad4. Next: Wave 3 remaining mobile polish (annotation canvas touch/pointer support, lightbox mobile sizing).
+**Last Updated:** 2026-06-22 — Wave 3 lightbox close button mobile touch target COMPLETE. Close button on the thumbnail-zoom lightbox bumped from h-8 w-8 (32px) to h-10 w-10 (40px) on mobile, reverting to sm:h-8 sm:w-8 on desktop. Position adjusted from -top-3 -right-3 to -top-2 -right-2 on mobile (sm:-top-3 sm:-right-3 on desktop) so the larger button isn't clipped at the viewport edge. 1 new test, 563 total. Commit 0feb6d9. Next: Wave 3 remaining mobile polish (annotation canvas touch/pointer support).
