@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { showToast } from "@/lib/toast";
 
 type PaymentFormProps = {
   submissionId: string;
@@ -28,8 +29,10 @@ export function PaymentForm({ submissionId, coachName, priceUsd }: PaymentFormPr
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(data.error ?? "Payment failed");
+        const message = data.error ?? "Payment failed";
+        setError(message);
         setLoading(false);
+        showToast({ title: "Payment failed", description: message, variant: "error" });
         return;
       }
       const data = (await res.json().catch(() => ({}))) as {
@@ -42,11 +45,21 @@ export function PaymentForm({ submissionId, coachName, priceUsd }: PaymentFormPr
         return;
       }
       // Mock mode: payment confirmed synchronously, go to submission detail.
+      showToast({
+        title: "Payment confirmed",
+        description: "Redirecting to your submission…",
+        variant: "success",
+      });
       router.push(`/coach/submission/${submissionId}`);
       router.refresh();
     } catch {
       setError("Network error — please try again.");
       setLoading(false);
+      showToast({
+        title: "Network error",
+        description: "Couldn't reach the server. Please check your connection and try again.",
+        variant: "error",
+      });
     }
   }
 
@@ -63,15 +76,27 @@ export function PaymentForm({ submissionId, coachName, priceUsd }: PaymentFormPr
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(data.error ?? "Invalid code");
+        const message = data.error ?? "Invalid code";
+        setError(message);
         setLoading(false);
+        showToast({ title: "Couldn't redeem code", description: message, variant: "error" });
         return;
       }
+      showToast({
+        title: "Code redeemed",
+        description: "Redirecting to your submission…",
+        variant: "success",
+      });
       router.push(`/coach/submission/${submissionId}`);
       router.refresh();
     } catch {
       setError("Network error — please try again.");
       setLoading(false);
+      showToast({
+        title: "Network error",
+        description: "Couldn't reach the server. Please check your connection and try again.",
+        variant: "error",
+      });
     }
   }
 
