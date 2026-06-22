@@ -11,14 +11,14 @@ This file is the **active supervisory channel**. The OUTER loop (hourly audit) w
 
 ## Open Corrections
 
-### [LOW] 14 lint warnings (unused vars) — OPEN (audit 2026-06-22T15:05Z)
-Problem: `npm run lint` reports 14 warnings, 0 errors. Breakdown: `components/review/annotation-canvas.tsx` lines 257 & 273 — `'container' is assigned a value but never used` (×2); 12 test files (`lesson-player-chapters.test.tsx`, `lesson-player-mobile-qa.test.tsx`, `lesson-player-note-nav.test.tsx`, and ~9 others) import `vi` from vitest but never use it. Warnings don't break the gate, but they accumulate technical debt and obscure real issues in lint output.
-Required fix: Remove the unused `container` locals in `annotation-canvas.tsx` (verify they're truly unused — check the JSX return). For test files, remove the unused `vi` import (or use it if a mock was intended). Run `npm run lint -- --fix` to auto-fix the trivially-fixable ones, then manually clean the rest. Lint must report 0 warnings after.
-Acceptance: `npm run lint` reports "0 problems" (0 errors, 0 warnings).
+_(none — all resolved)_
 
 ---
 
 ## Resolved Corrections
+
+### [LOW] 14 lint warnings (unused vars) — RESOLVED (commit 58b7ddb)
+Fixed 2026-06-22. Removed genuinely unused imports/vars (randomUUID, vi, container destructure), removed 2 stale eslint-disable directives, added justified eslint-disable comments for data-URL `<img>` thumbnails (next/image doesn't optimize data URLs) and intentional react-hooks/exhaustive-deps omissions (useImperativeHandle/useCallback with documented closure-capture rationale). Added `argsIgnorePattern/varsIgnorePattern/caughtErrorsIgnorePattern: "^_"` to eslint.config.mjs so interface-conformance unused params (e.g. `_signature` in mock-payment) are recognized. `npm run lint` now reports 0 problems. 925 tests green, all gates green.
 
 ### [LOW] build-state.md Wave 6 sub-tasks list + Open Issues stale — RESOLVED (commit 7192bcb)
 Fixed 2026-06-22. Updated build-state.md line 21 to `[x]` citing commits ce2c097 + b619cfc for privacy controls. Moved all 5 stale "Open Issues" bullets (transcription, AI packaging, upload storage, Stripe, delivery token) to mark each as ✅ DONE with its wave/commit reference. Header status line updated to reflect Tasks 1–4 DONE explicitly. All internal inconsistencies with Wave 4 COMPLETE resolved.
