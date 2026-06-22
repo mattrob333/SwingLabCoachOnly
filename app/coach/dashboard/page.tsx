@@ -2,9 +2,12 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/site/container";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Avatar } from "@/components/ui/avatar";
+import { CoachInbox, type InboxSubmission } from "@/components/coach/coach-inbox";
 import { verifySession, SESSION_COOKIE } from "@/lib/auth/session";
 import { getCoachBySlug } from "@/lib/coaches";
-import { getSubmissionsForCoach, type Submission } from "@/lib/submissions";
+import { getSubmissionsForCoach } from "@/lib/submissions";
 
 export const metadata = {
   title: "Coach dashboard",
@@ -35,13 +38,33 @@ export default async function CoachDashboardPage() {
     (s) => s.status === "completed",
   ).length;
 
+  // Serialize submissions for the client component (Date → ISO string).
+  const inboxSubs: InboxSubmission[] = visibleSubs.map((s) => ({
+    ...s,
+    createdAt: s.createdAt.toISOString(),
+  }));
+
+  // Coach initials for the avatar fallback.
+  const initials = coach.name
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
   return (
-    <Container className="py-12">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-sm text-muted-foreground">Signed in as</p>
-          <h1 className="text-2xl font-semibold tracking-tight">{coach.name}</h1>
-          <p className="text-sm text-muted-foreground">{coach.title}</p>
+    <Container className="py-8 sm:py-12">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <Avatar fallback={initials} size="lg" />
+          <div>
+            <p className="text-xs text-muted-foreground">Signed in as</p>
+            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+              {coach.name}
+            </h1>
+            <p className="text-sm text-muted-foreground">{coach.title}</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <a
@@ -64,80 +87,37 @@ export default async function CoachDashboardPage() {
         </div>
       </div>
 
-      <section className="mt-10 grid gap-4 sm:grid-cols-3">
+      {/* Stat cards */}
+      <section className="mt-8 grid gap-4 sm:grid-cols-3">
         <StatCard label="Pending reviews" value={String(pendingCount)} />
         <StatCard label="Completed" value={String(completedCount)} />
-        <StatCard label="Avg. turnaround" value={coach.turnaround === "PT24H" ? "24h" : coach.turnaround === "PT48H" ? "48h" : coach.turnaround === "PT12H" ? "12h" : "—"} />
+        <StatCard
+          label="Avg. turnaround"
+          value={
+            coach.turnaround === "PT24H"
+              ? "24h"
+              : coach.turnaround === "PT48H"
+                ? "48h"
+                : coach.turnaround === "PT12H"
+                  ? "12h"
+                  : "—"
+          }
+        />
       </section>
 
-      <section className="mt-8">
-        <h2 className="text-lg font-medium">Inbox</h2>
-        {visibleSubs.length === 0 ? (
-          <div className="mt-4 rounded-xl border border-border bg-card p-8 text-center">
-            <p className="text-sm text-muted-foreground">
-              No submissions yet. When a parent uploads a swing and pays, it
-              will appear here.
-            </p>
-          </div>
-        ) : (
-          <div className="mt-4 space-y-3">
-            {visibleSubs.map((sub) => (
-              <SubmissionCard key={sub.id} submission={sub} />
-            ))}
-          </div>
-        )}
-      </section>
+      {/* Inbox with filter tabs */}
+      <CoachInbox submissions={inboxSubs} />
     </Container>
   );
 }
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
+    <Card className="p-4">
+      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
       <p className="mt-1 text-2xl font-semibold">{value}</p>
-    </div>
-  );
-}
-
-function SubmissionCard({ submission }: { submission: Submission }) {
-  const statusColors: Record<string, string> = {
-    paid: "bg-blue-100 text-blue-700",
-    in_review: "bg-amber-100 text-amber-700",
-    completed: "bg-green-100 text-green-700",
-  };
-  const statusLabel: Record<string, string> = {
-    paid: "New",
-    in_review: "In review",
-    completed: "Completed",
-  };
-
-  return (
-    <a
-      href={`/coach/submission/${submission.id}`}
-      className="block rounded-xl border border-border bg-card p-4 transition hover:border-ring hover:shadow-sm"
-    >
-      <div className="flex items-center justify-between gap-4">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium">
-            {submission.parentEmail}
-          </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Age {submission.playerAge} · {submission.swingType} ·{" "}
-            {submission.createdAt.toLocaleDateString()}
-          </p>
-        </div>
-        <span
-          className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[submission.status] ?? "bg-muted text-muted-foreground"}`}
-        >
-          {statusLabel[submission.status] ?? submission.status}
-        </span>
-      </div>
-      {submission.notes && (
-        <p className="mt-2 truncate text-xs text-muted-foreground">
-          {submission.notes}
-        </p>
-      )}
-    </a>
+    </Card>
   );
 }
