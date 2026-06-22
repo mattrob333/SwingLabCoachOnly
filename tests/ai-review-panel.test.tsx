@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import * as toastModule from "@/lib/toast";
 import { AiReviewPanel } from "@/components/coach/ai-review-panel";
 import type {
   LessonPlaybackManifest,
@@ -248,5 +249,102 @@ describe("AiReviewPanel — approve & send lesson (Wave 4 Sub-slice 3c-ii)", () 
       expect(btn).toBeDisabled();
     });
     resolveFetch(new Response(JSON.stringify({ status: "approved" }), { status: 200 }));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Toast feedback (UX Polish task #9 — micro-states wiring)
+// ---------------------------------------------------------------------------
+
+describe("AiReviewPanel — toast feedback (UX micro-states)", () => {
+  let toastSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    toastSpy = vi.spyOn(toastModule, "showToast");
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("fires a success toast when changes are saved", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), { status: 200 }),
+    );
+    render(<AiReviewPanel submissionId="sub-1" manifest={makeManifest()} />);
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
+    await waitFor(() => {
+      expect(toastSpy).toHaveBeenCalledTimes(1);
+    });
+    expect(toastSpy.mock.calls[0][0].variant).toBe("success");
+    expect(toastSpy.mock.calls[0][0].title).toMatch(/saved/i);
+  });
+
+  it("fires an error toast on save failure (non-ok response)", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ error: "Invalid noteId" }), {
+        status: 400,
+      }),
+    );
+    render(<AiReviewPanel submissionId="sub-1" manifest={makeManifest()} />);
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
+    await waitFor(() => {
+      expect(toastSpy).toHaveBeenCalledTimes(1);
+    });
+    expect(toastSpy.mock.calls[0][0].variant).toBe("error");
+  });
+
+  it("fires an error toast on save network error (fetch rejects)", async () => {
+    vi.spyOn(global, "fetch").mockRejectedValue(new Error("offline"));
+    render(<AiReviewPanel submissionId="sub-1" manifest={makeManifest()} />);
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
+    await waitFor(() => {
+      expect(toastSpy).toHaveBeenCalledTimes(1);
+    });
+    expect(toastSpy.mock.calls[0][0].variant).toBe("error");
+  });
+
+  it("fires a success toast when the lesson is approved & sent", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ status: "approved" }), { status: 200 }),
+    );
+    render(<AiReviewPanel submissionId="sub-1" manifest={makeManifest()} />);
+    fireEvent.click(
+      screen.getByRole("button", { name: /approve & send lesson/i }),
+    );
+    await waitFor(() => {
+      expect(toastSpy).toHaveBeenCalledTimes(1);
+    });
+    expect(toastSpy.mock.calls[0][0].variant).toBe("success");
+    expect(toastSpy.mock.calls[0][0].title).toMatch(/approv|sent/i);
+  });
+
+  it("fires an error toast on approve failure (non-ok response)", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ error: "Manifest not packaged" }), {
+        status: 409,
+      }),
+    );
+    render(<AiReviewPanel submissionId="sub-1" manifest={makeManifest()} />);
+    fireEvent.click(
+      screen.getByRole("button", { name: /approve & send lesson/i }),
+    );
+    await waitFor(() => {
+      expect(toastSpy).toHaveBeenCalledTimes(1);
+    });
+    expect(toastSpy.mock.calls[0][0].variant).toBe("error");
+  });
+
+  it("fires an error toast on approve network error (fetch rejects)", async () => {
+    vi.spyOn(global, "fetch").mockRejectedValue(new Error("offline"));
+    render(<AiReviewPanel submissionId="sub-1" manifest={makeManifest()} />);
+    fireEvent.click(
+      screen.getByRole("button", { name: /approve & send lesson/i }),
+    );
+    await waitFor(() => {
+      expect(toastSpy).toHaveBeenCalledTimes(1);
+    });
+    expect(toastSpy.mock.calls[0][0].variant).toBe("error");
   });
 });

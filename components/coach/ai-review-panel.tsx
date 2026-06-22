@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { showToast } from "@/lib/toast";
 import type { LessonPlaybackManifest } from "@/lib/lesson/playback";
 
 type AiReviewPanelProps = {
@@ -68,13 +69,28 @@ export function AiReviewPanel({ submissionId, manifest }: AiReviewPanelProps) {
           error?: string;
         };
         setError(data.error ?? "Failed to save AI review changes");
+        showToast({
+          title: "Couldn't save changes",
+          description: data.error ?? "Please try again.",
+          variant: "error",
+        });
         setSaving(false);
         return;
       }
       setSaved(true);
       setSaving(false);
+      showToast({
+        title: "Changes saved",
+        description: "Your edits are stored.",
+        variant: "success",
+      });
     } catch {
       setError("Network error — please try again.");
+      showToast({
+        title: "Network error",
+        description: "Couldn't reach the server. Please try again.",
+        variant: "error",
+      });
       setSaving(false);
     }
   }
@@ -93,13 +109,28 @@ export function AiReviewPanel({ submissionId, manifest }: AiReviewPanelProps) {
         setApproveError(
           data.error ?? "Failed to approve lesson — please try again.",
         );
+        showToast({
+          title: "Couldn't approve lesson",
+          description: data.error ?? "Please try again.",
+          variant: "error",
+        });
         setApproving(false);
         return;
       }
       setApproved(true);
       setApproving(false);
+      showToast({
+        title: "Lesson approved & sent",
+        description: "The parent has been emailed a secure magic link.",
+        variant: "success",
+      });
     } catch {
       setApproveError("Network error — please try again.");
+      showToast({
+        title: "Network error",
+        description: "Couldn't reach the server. Please try again.",
+        variant: "error",
+      });
       setApproving(false);
     }
   }
