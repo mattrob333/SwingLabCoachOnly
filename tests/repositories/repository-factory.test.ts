@@ -5,9 +5,9 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
  *
  * Tests the env-gated factory selection for all four domain repositories
  * (submissions, coaches, earnings, playback manifests). Mirrors the storage
- * adapter factory pattern: mock when env keys absent, live (Supabase stub)
- * when present. The Supabase impls are stubs that throw "not implemented"
- * — Wave 1 Slice D will fill them in with the real schema + queries.
+ * adapter factory pattern: mock when env keys absent, live (Supabase impl)
+ * when present. The Supabase impls make real PostgREST fetch() calls (Wave 1
+ * Slice D) — behavior is tested in tests/repositories/supabase-impls.test.ts.
  *
  * All repository methods are async (Wave 1 Task 7) — stub throw tests use
  * `await expect(...).rejects.toThrow(...)` and facade calls use `await`.
@@ -57,29 +57,14 @@ describe("repository factories (env-gated)", () => {
       expect(mod.getSubmissionRepository()).toBe(mod.getSubmissionRepository());
     });
 
-    it("Supabase stub throws on create with not-implemented message", async () => {
+    it("Supabase impl is selected in live mode (Wave 1 Slice D — real PostgREST queries)", async () => {
       stubLive();
       const mod = await import("@/lib/repositories");
       mod._resetAllRepositoriesForTests();
       const repo = mod.getSubmissionRepository();
-      await expect(
-        repo.create({
-          coachSlug: "x",
-          parentEmail: "p@e.com",
-          playerAge: 10,
-          swingType: "baseball",
-          notes: "",
-        }),
-      ).rejects.toThrow(/not.*implemented/i);
-    });
-
-    it("Supabase stub throws on reads too", async () => {
-      stubLive();
-      const mod = await import("@/lib/repositories");
-      mod._resetAllRepositoriesForTests();
-      const repo = mod.getSubmissionRepository();
-      await expect(repo.getById("any")).rejects.toThrow(/not.*implemented/i);
-      await expect(repo.getForCoach("any")).rejects.toThrow(/not.*implemented/i);
+      expect(repo.mode).toBe("live");
+      // The impl now makes real fetch() calls — behavior tested in
+      // tests/repositories/supabase-impls.test.ts with mocked fetch.
     });
   });
 
@@ -105,12 +90,11 @@ describe("repository factories (env-gated)", () => {
       expect(mod.getCoachRepository()).toBe(mod.getCoachRepository());
     });
 
-    it("Supabase stub throws on getBySlug", async () => {
+    it("Supabase impl selected in live mode (Slice D — real PostgREST)", async () => {
       stubLive();
       const mod = await import("@/lib/repositories");
       mod._resetAllRepositoriesForTests();
-      const repo = mod.getCoachRepository();
-      await expect(repo.getBySlug("any")).rejects.toThrow(/not.*implemented/i);
+      expect(mod.getCoachRepository().mode).toBe("live");
     });
   });
 
@@ -136,19 +120,11 @@ describe("repository factories (env-gated)", () => {
       expect(mod.getEarningRepository()).toBe(mod.getEarningRepository());
     });
 
-    it("Supabase stub throws on record", async () => {
+    it("Supabase impl selected in live mode (Slice D — real PostgREST)", async () => {
       stubLive();
       const mod = await import("@/lib/repositories");
       mod._resetAllRepositoriesForTests();
-      const repo = mod.getEarningRepository();
-      await expect(
-        repo.record({
-          submissionId: "s1",
-          coachSlug: "c1",
-          amountUsd: 49,
-          parentEmail: "p@e.com",
-        }),
-      ).rejects.toThrow(/not.*implemented/i);
+      expect(mod.getEarningRepository().mode).toBe("live");
     });
   });
 
@@ -176,20 +152,11 @@ describe("repository factories (env-gated)", () => {
       );
     });
 
-    it("Supabase stub throws on save", async () => {
+    it("Supabase impl selected in live mode (Slice D — real PostgREST)", async () => {
       stubLive();
       const mod = await import("@/lib/repositories");
       mod._resetAllRepositoriesForTests();
-      const repo = mod.getPlaybackManifestRepository();
-      await expect(
-        repo.save("sub-1", {
-          videoUrl: "/v.mp4",
-          notes: [],
-          createdAt: 1,
-          status: "processed",
-          version: 1,
-        }),
-      ).rejects.toThrow(/not.*implemented/i);
+      expect(mod.getPlaybackManifestRepository().mode).toBe("live");
     });
   });
 });
