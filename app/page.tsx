@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { Container } from "@/components/site/container";
+import { Card } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { COACHES } from "@/lib/coaches";
@@ -25,10 +27,10 @@ export default function HomePage() {
       {/* Hero */}
       <section className="border-b border-border/60 bg-gradient-to-b from-muted/40 to-background">
         <Container className="flex flex-col items-center gap-6 py-16 text-center sm:py-24">
-          <span className="rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
+          <span className="rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm">
             Web-first · No app required
           </span>
-          <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
+          <h1 className="max-w-3xl text-4xl font-bold tracking-tight text-balance sm:text-5xl">
             Turn a swing video into a paid lesson in{" "}
             <span className="text-primary">5–10 minutes</span>.
           </h1>
@@ -53,18 +55,18 @@ export default function HomePage() {
       {/* How it works */}
       <section className="border-b border-border/60">
         <Container className="py-14">
-          <h2 className="mb-8 text-center text-2xl font-semibold tracking-tight sm:text-left">
+          <h2 className="mb-8 text-center text-2xl font-bold tracking-tight sm:text-left">
             How it works
           </h2>
           <div className="grid gap-6 sm:grid-cols-3">
             {STEPS.map((step) => (
-              <div
+              <Card
                 key={step.title}
-                className="rounded-xl border border-border bg-card p-5"
+                className="border-border/70 p-5 transition-shadow hover:shadow-md"
               >
                 <h3 className="mb-2 font-medium">{step.title}</h3>
                 <p className="text-sm text-muted-foreground">{step.body}</p>
-              </div>
+              </Card>
             ))}
           </div>
         </Container>
@@ -74,12 +76,12 @@ export default function HomePage() {
       <section>
         <Container className="py-14">
           <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-2xl font-semibold tracking-tight">
+            <h2 className="text-2xl font-bold tracking-tight">
               Featured coaches
             </h2>
             <Link
               href="/coaches"
-              className="text-sm font-medium text-primary hover:underline"
+              className="text-sm font-medium text-primary transition-colors hover:underline focus-visible:outline-ring/50 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:rounded-md"
             >
               View all
             </Link>
@@ -89,7 +91,7 @@ export default function HomePage() {
               <Link
                 key={coach.slug}
                 href={`/coaches/${coach.slug}`}
-                className="group rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/40 hover:bg-muted/40"
+                className="group rounded-xl border border-border/70 bg-card p-5 transition-all hover:border-primary/40 hover:bg-muted/40 hover:shadow-md focus-visible:outline-ring/50 focus-visible:ring-2 focus-visible:ring-ring/50"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
@@ -103,8 +105,9 @@ export default function HomePage() {
                 <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">
                   {coach.bio}
                 </p>
-                <span className="mt-4 inline-block text-sm font-medium text-primary group-hover:underline">
-                  View profile →
+                <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline">
+                  View profile
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                 </span>
               </Link>
             ))}

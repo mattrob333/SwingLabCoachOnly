@@ -10,7 +10,7 @@ export const metadata = {
 export default function CoachesPage() {
   return (
     <Container className="py-12">
-      <h1 className="mb-2 text-3xl font-semibold tracking-tight">Coaches</h1>
+      <h1 className="mb-2 text-3xl font-bold tracking-tight">Coaches</h1>
       <p className="mb-8 text-muted-foreground">
         Pick a coach and upload a swing — get a voice-over review back fast.
       </p>
@@ -19,7 +19,7 @@ export default function CoachesPage() {
           <Link
             key={coach.slug}
             href={`/coaches/${coach.slug}`}
-            className="group flex flex-col rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/40 hover:bg-muted/40"
+            className="group flex flex-col rounded-xl border border-border/70 bg-card p-5 transition-all hover:border-primary/40 hover:bg-muted/40 hover:shadow-md focus-visible:outline-ring/50 focus-visible:ring-2 focus-visible:ring-ring/50"
           >
             <div className="flex items-start justify-between gap-4">
               <div>

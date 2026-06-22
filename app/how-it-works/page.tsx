@@ -31,15 +31,15 @@ const STEPS = [
 export default function HowItWorksPage() {
   return (
     <Container className="py-12">
-      <h1 className="mb-8 text-3xl font-semibold tracking-tight">How it works</h1>
+      <h1 className="mb-8 text-3xl font-bold tracking-tight">How it works</h1>
       <ol className="space-y-6">
         {STEPS.map((step, i) => (
           <li key={step.title} className="flex gap-4">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary shadow-sm">
               {i + 1}
             </span>
             <div>
-              <h2 className="font-medium">{step.title}</h2>
+              <h2 className="font-semibold">{step.title}</h2>
               <p className="mt-1 text-sm text-muted-foreground">{step.body}</p>
             </div>
           </li>
