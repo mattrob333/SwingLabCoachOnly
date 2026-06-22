@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 6 (Hardening) IN PROGRESS — 793 tests. Tasks 1–4 DONE (file validation, auth/session, rate limits, privacy controls — link revocation + data deletion). Tasks 5–6 remaining. **UX/UI Polish workstream STARTED** — task #1 (design tokens + shared primitives) DONE (commit 80b4186, 14 tests). Next: UX task #2 (coach dashboard/inbox polish).
+**Status:** Wave 6 (Hardening) IN PROGRESS — 816 tests. Tasks 1–4 DONE. Tasks 5–6 remaining. **UX/UI Polish workstream** — task #1 (design tokens + shared primitives) DONE (commit 80b4186), task #2 (coach dashboard/inbox polish) DONE (commit 02298d0). Next: UX task #3 (submission detail page hierarchy) or Wave 6 Task 5 (expanded test coverage).
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
@@ -37,7 +37,9 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan.
 ### Next Action (Inner Loop)
 **UX Polish task #1 ✅ DONE (this tick):** Recovered orphaned UX primitive files from prior tick, ran quality gate (793 tests, all green), committed + pushed (80b4186). Design tokens + shared shadcn/ui primitives: Card (with header/title/description/content/footer sub-slots), Badge (cva variants: default/primary/success/warning/destructive/outline), Skeleton (aria-hidden pulsing block), EmptyState (icon+title+description+action for zero-data screens), Avatar (img+onError fallback to initials, sm/default/lg sizes). 14 render/smoke tests. Resolved OPEN course correction about UX workstream never started.
 
-**Next: UX Polish task #2 — Coach dashboard / inbox polish.** Apply the new primitives to the coach dashboard: submission cards using Card+Badge, status filter tabs, stat cards, empty states (EmptyState component), skeleton loading states, responsive list↔detail layout. This is the primary coach-facing surface (PRD §32: "the coach should always know the next best action").
+**Next: UX Polish task #3 — Submission detail page hierarchy + status timeline.** OR Wave 6 Task 5 — Expanded test coverage + error monitoring. Interleave as needed.
+
+**UX Polish task #2 ✅ DONE (this tick):** Coach dashboard/inbox polish. New `CoachInbox` client component with filter tabs (All/Active/Completed), count badges, aria-selected state. Uses Card, Badge, and EmptyState primitives. Dashboard header now has Avatar with coach initials. StatCards use Card primitive. 23 tests (10 pure function + 13 component render). Commit 02298d0. 816 tests.
 
 **Course correction resolved this tick (commit 80b4186):** UX/UI Polish workstream never started — shipped task #1 (design tokens + shared primitives). No open corrections remain.
 

@@ -95,7 +95,7 @@ Full coach-facing AI loop wired: transcribe → package → coach reviews/edits 
 
 ## 🚧 UX / UI Polish — Coach Interface First (In Progress)
 - [x] Design tokens + shared shadcn/ui primitives (Card, Badge, Skeleton, EmptyState, Avatar) — 14 render/smoke tests, commit 80b4186, 793 tests
-- [ ] Coach dashboard / inbox (submission cards, status filter tabs, stat cards, empty states, skeletons, responsive list↔detail)
+- [x] Coach dashboard / inbox (CoachInbox client component with filter tabs, Card+Badge+EmptyState primitives, Avatar in header; 23 tests, commit 02298d0, 816 tests)
 - [ ] Submission detail page hierarchy + status timeline
 - [ ] Review Studio chrome (control bar, recording indicator, tool palette, saved-frames strip)
 - [ ] Coach onboarding (multi-step, progress, inline validation)
