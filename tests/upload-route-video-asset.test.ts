@@ -157,4 +157,51 @@ describe("POST /api/submissions (Wave 2 — durable upload)", () => {
     expect(res.status).toBe(404);
     errSpy.mockRestore();
   });
+
+  it("rejects oversized videos with a 400 (Wave 6 hardening)", async () => {
+    // Spoof .size to exceed the 250 MB limit without allocating 250 MB of memory.
+    const file = new File([new Uint8Array(1024)], "huge.mp4", {
+      type: "video/mp4",
+    });
+    Object.defineProperty(file, "size", {
+      value: 250 * 1024 * 1024 + 1,
+      configurable: true,
+    });
+
+    const form = new FormData();
+    form.append("coachSlug", "marcus-reed");
+    form.append("parentEmail", "parent@example.com");
+    form.append("playerAge", "12");
+    form.append("swingType", "baseball");
+    form.append("notes", "x");
+    form.append("video", file);
+
+    const res = await POST(makeMultipartRequest(form));
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toMatch(/large|too big|size/i);
+    expect(VIDEO_ASSETS).toHaveLength(0);
+  });
+
+  it("rejects video with a disallowed mime type with a 400 (Wave 6 hardening)", async () => {
+    // video/x-flv starts with "video/" so the old prefix-only check accepted
+    // it and stored it with a mismatched .mp4 extension. The MIME allowlist
+    // must reject formats we can't safely store/play back.
+    const form = new FormData();
+    form.append("coachSlug", "marcus-reed");
+    form.append("parentEmail", "parent@example.com");
+    form.append("playerAge", "12");
+    form.append("swingType", "baseball");
+    form.append("notes", "x");
+    form.append(
+      "video",
+      new File([new Uint8Array(256)], "clip.flv", { type: "video/x-flv" }),
+    );
+
+    const res = await POST(makeMultipartRequest(form));
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toMatch(/video|format|type|unsupported/i);
+    expect(VIDEO_ASSETS).toHaveLength(0);
+  });
 });

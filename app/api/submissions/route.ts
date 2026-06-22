@@ -13,6 +13,20 @@ import type { StorageProvider } from "@/lib/records";
 
 const MAX_VIDEO_BYTES = 250 * 1024 * 1024;
 
+/**
+ * Allowlist of video MIME types we will accept and store. Anything outside
+ * this set is rejected with a 400 — even if the browser reports it as
+ * `video/*`. This prevents storing a file with a mismatched extension (the
+ * old behavior silently re-mapped unknown `video/*` types to `.mp4`) and
+ * keeps the storage layer from holding files we can't safely play back.
+ */
+const ALLOWED_VIDEO_MIME_TYPES = new Set([
+  "video/mp4",
+  "video/quicktime",
+  "video/webm",
+  "video/x-m4v",
+]);
+
 function safeVideoExtension(fileName: string, type: string): string {
   const ext = extname(fileName).toLowerCase();
   if ([".mp4", ".mov", ".m4v", ".webm"].includes(ext)) return ext;
@@ -43,6 +57,11 @@ async function saveUploadedVideo(file: File): Promise<{
 }> {
   if (!file.type.startsWith("video/")) {
     throw new Error("Please upload a video file");
+  }
+  if (!ALLOWED_VIDEO_MIME_TYPES.has(file.type)) {
+    throw new Error(
+      "Unsupported video format. Please upload an MP4, MOV, M4V, or WebM file.",
+    );
   }
   if (file.size > MAX_VIDEO_BYTES) {
     throw new Error("Video file is too large for this local demo");

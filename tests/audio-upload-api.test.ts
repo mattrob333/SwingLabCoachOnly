@@ -99,4 +99,32 @@ describe("POST /api/submissions/[id]/audio", () => {
 
     expect(res.status).toBe(400);
   });
+
+  it("rejects oversized audio files with a 400 (Wave 6 hardening)", async () => {
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
+    await markSubmissionInReview(sub.id);
+    const token = signSession(createSessionPayload("marcus-reed"));
+
+    // Spoof .size to exceed the 50 MB limit without allocating 50 MB of memory.
+    const file = new File([new Uint8Array(1024)], "big.webm", {
+      type: "audio/webm",
+    });
+    Object.defineProperty(file, "size", {
+      value: 50 * 1024 * 1024 + 1,
+      configurable: true,
+    });
+
+    const form = new FormData();
+    form.set("audio", file);
+
+    const res = await POST(
+      makeRequest({ [SESSION_COOKIE]: token }, form),
+      makeParams(sub.id),
+    );
+
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toMatch(/large|too big|size/i);
+  });
 });
