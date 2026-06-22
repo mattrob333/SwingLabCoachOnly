@@ -1,6 +1,6 @@
 # Tasks / TODO Board
 
-**Last synced:** 2026-06-22 · **Tests:** 964 passing · **Build:** ✅ green · **Commits:** 174
+**Last synced:** 2026-06-22 · **Tests:** 964 passing · **Build:** ✅ green · **Commits:** 180
 
 This is the living task board. It is updated alongside the code every build tick. Legend: ✅ done · 🚧 in progress · ⏭️ next · ⬜ not started.
 
