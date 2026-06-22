@@ -1,6 +1,6 @@
 # Tasks / TODO Board
 
-**Last synced:** 2026-06-22 · **Tests:** 951 passing · **Build:** ✅ green · **Commits:** 172
+**Last synced:** 2026-06-22 · **Tests:** 964 passing · **Build:** ✅ green · **Commits:** 174
 
 This is the living task board. It is updated alongside the code every build tick. Legend: ✅ done · 🚧 in progress · ⏭️ next · ⬜ not started.
 
@@ -90,7 +90,7 @@ Full coach-facing AI loop wired: transcribe → package → coach reviews/edits 
 - [x] Rate limits — **DONE (commit b0e1d07)**: in-memory sliding-window rate limiter (`lib/auth/rate-limit.ts`). Per-IP, per-route namespaced keys. Upload: 10/10min. AI routes: 20/10min. Env-gated (`RATE_LIMIT_DISABLED=1`). 429 + Retry-After + X-RateLimit headers. 15 tests. 763 tests.
 - [x] File-size / type validation, oversized upload rejection — **DONE (commit 2b98f17)**: video MIME allowlist (mp4/quicktime/webm/x-m4v) on /api/submissions POST; 3 hardening tests. 746 tests.
 - [x] Privacy controls (data deletion, link revocation per PRD §25) — **DONE**: delivery link revocation API `POST /revoke-link` (commit ce2c097, 6 tests, 769 total); data deletion cascade `DELETE /api/submissions/[id]` — coach permanently deletes submission + all associated data (playback manifest, delivery tokens, VideoAssets, storage file best-effort); delete()/deleteForSubmission() added to 4 repository interfaces with InMemory + Supabase impls (commit b619cfc, 10 tests).
-5. [~] Expanded test coverage + error monitoring — error boundaries (`app/error.tsx`, `app/global-error.tsx`) + custom 404 page (`app/not-found.tsx`) DONE (commit 2186aa7, 9 tests); **auth login+logout API route tests DONE (commit eb155ee, 17 tests, 951 total)** — covers malformed JSON, missing fields, unknown slug (no-leak), wrong password, valid login + cookie attrs (HttpOnly/SameSite/Path/Max-Age/Secure), token verification, slug trimming; logout redirect + cookie clearing.
+5. [~] Expanded test coverage + error monitoring — error boundaries (`app/error.tsx`, `app/global-error.tsx`) + custom 404 page (`app/not-found.tsx`) DONE (commit 2186aa7, 9 tests); **auth login+logout API route tests DONE (commit eb155ee, 17 tests, 951 total)** — covers malformed JSON, missing fields, unknown slug (no-leak), wrong password, valid login + cookie attrs (HttpOnly/SameSite/Path/Max-Age/Secure), token verification, slug trimming; logout redirect + cookie clearing; **redeem-code API route tests DONE (commit 3e56790, 10 tests, 961 total)** — covers 404/409/400/422/happy-path/whitespace-trimming for the last untested API route.
 - [ ] Deploy checks (Vercel)
 
 ## 🚧 UX / UI Polish — Coach Interface First (In Progress)
@@ -103,7 +103,7 @@ Full coach-facing AI loop wired: transcribe → package → coach reviews/edits 
 - [x] Lesson approval screen (Card+Badge primitives for AiReviewPanel + LessonApprovalForm; Badge for status/saved/drills; 11 render tests, commit f83ffe3, 843 tests)
 - [x] Global shell / nav (CoachTopNav + ConditionalChrome — path-aware chrome switching, mobile hamburger, active-state highlighting; 18 tests, commit 2607c4a, 861 tests)
 - [ ] Micro-states everywhere (loading, empty, error, success toasts, disabled/processing) — toast system foundation DONE (9086908): lib/toast.ts + Toaster + 25 tests; **toast wiring slices 1–7 DONE:** AiReviewPanel (6 tests, 892), SubmissionDangerActions (13 tests, 905), OnboardingForm (4 tests, 909), LoginForm (4 tests, 913), StartReviewButton (4 tests, 917), LessonApprovalForm (5 tests, 922), ReviewStudioClient process-lesson (3 tests, 925).
-- [ ] Accessibility pass (landmarks, focus states, aria, contrast, keyboard nav)
+- [~] Accessibility pass (landmarks, focus states, aria, contrast, keyboard nav) — **skip-to-content link + main landmark id DONE (commit 5d43d89, 3 tests, 964 total)**; remaining: focus-visible states, aria-labels on icon-only buttons.
 
 ---
 
