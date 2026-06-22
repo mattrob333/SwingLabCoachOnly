@@ -82,7 +82,7 @@ export function PaymentForm({ submissionId, coachName, priceUsd }: PaymentFormPr
         <button
           type="button"
           onClick={() => setMode("pay")}
-          className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition ${
+          className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
             mode === "pay" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
           }`}
         >
@@ -91,7 +91,7 @@ export function PaymentForm({ submissionId, coachName, priceUsd }: PaymentFormPr
         <button
           type="button"
           onClick={() => setMode("code")}
-          className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition ${
+          className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
             mode === "code" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
           }`}
         >

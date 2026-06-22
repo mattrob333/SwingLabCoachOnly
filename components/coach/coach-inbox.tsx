@@ -150,7 +150,7 @@ export function CoachInbox({ submissions }: { submissions: InboxSubmission[] }) 
             aria-selected={filter === value}
             onClick={() => setFilter(value)}
             className={cn(
-              "inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+              "inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               filter === value
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted",

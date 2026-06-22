@@ -86,7 +86,7 @@ export function CoachTopNav() {
           >
             <button
               type="submit"
-              className="inline-flex h-8 items-center justify-center rounded-lg border border-border bg-background px-2.5 text-sm font-medium hover:bg-muted"
+              className="inline-flex h-8 items-center justify-center rounded-lg border border-border bg-background px-2.5 text-sm font-medium hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Sign out
             </button>
@@ -95,7 +95,7 @@ export function CoachTopNav() {
           {/* Mobile hamburger */}
           <button
             type="button"
-            className="inline-flex size-9 items-center justify-center rounded-lg hover:bg-muted sm:hidden"
+            className="inline-flex size-9 items-center justify-center rounded-lg hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:hidden"
             aria-label="Toggle menu"
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((v) => !v)}
@@ -152,7 +152,7 @@ export function CoachTopNav() {
             <form action="/api/auth/logout" method="post">
               <button
                 type="submit"
-                className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 Sign out
               </button>

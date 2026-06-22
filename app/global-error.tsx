@@ -24,6 +24,14 @@ export default function GlobalErrorBoundary({
 
   return (
     <html lang="en">
+      <head>
+        <style>{`
+          button:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+          }
+        `}</style>
+      </head>
       <body
         style={{
           margin: 0,
@@ -60,6 +68,7 @@ export default function GlobalErrorBoundary({
           </p>
           <button
             onClick={reset}
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             style={{
               marginTop: "1.5rem",
               padding: "0.625rem 1.25rem",

@@ -41,7 +41,7 @@ export default function RouteErrorBoundary({
         <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
           <button
             onClick={reset}
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             Try Again
           </button>

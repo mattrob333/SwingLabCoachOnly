@@ -73,7 +73,7 @@ export function Toaster() {
           <button
             type="button"
             onClick={() => dismissToast(toast.id)}
-            className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground"
+            className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Dismiss notification"
           >
             <svg
