@@ -15,6 +15,10 @@ import {
   createSessionPayload,
   SESSION_COOKIE,
 } from "@/lib/auth/session";
+import { DELIVERY_TOKENS } from "@/lib/repositories/in-memory-delivery-tokens";
+import { MOCK_SENT_EMAILS } from "@/lib/email/mock-email";
+import { _resetAllRepositoriesForTests } from "@/lib/repositories";
+import { _resetEmailAdapterForTests } from "@/lib/email";
 
 function makeRequest(cookies: Record<string, string>, body?: unknown) {
   return {
@@ -53,6 +57,10 @@ describe("POST /api/submissions/[id]/lesson-draft", () => {
   beforeEach(() => {
     SUBMISSIONS.length = 0;
     LESSON_DRAFTS.length = 0;
+    DELIVERY_TOKENS.length = 0;
+    MOCK_SENT_EMAILS.length = 0;
+    _resetAllRepositoriesForTests();
+    _resetEmailAdapterForTests();
   });
 
   it("generates a lesson draft for a completed submission", async () => {
@@ -136,6 +144,10 @@ describe("PATCH /api/submissions/[id]/lesson-draft", () => {
   beforeEach(() => {
     SUBMISSIONS.length = 0;
     LESSON_DRAFTS.length = 0;
+    DELIVERY_TOKENS.length = 0;
+    MOCK_SENT_EMAILS.length = 0;
+    _resetAllRepositoriesForTests();
+    _resetEmailAdapterForTests();
   });
 
   it("approves a lesson draft", async () => {
@@ -242,5 +254,126 @@ describe("PATCH /api/submissions/[id]/lesson-draft", () => {
       makeParams(id),
     );
     expect(res.status).toBe(401);
+  });
+
+  // ── Delivery token + email wiring (Wave 2 Task 4 Sub-slice C) ──
+
+  it("creates a delivery token when the lesson is approved", async () => {
+    const id = await completeSubmission();
+    const token = signSession(createSessionPayload("marcus-reed"));
+
+    await POST(
+      makeRequest({ [SESSION_COOKIE]: token }, {
+        swingType: "baseball",
+        manifest: {
+          videoUrl: "https://example.com/swing.mp4",
+          audioLayers: [],
+          annotationLayers: [],
+          events: [],
+          createdAt: 1700000000000,
+        },
+      }),
+      makeParams(id),
+    );
+
+    await PATCH(
+      makeRequest({ [SESSION_COOKIE]: token }, { status: "approved" }),
+      makeParams(id),
+    );
+
+    expect(DELIVERY_TOKENS).toHaveLength(1);
+    expect(DELIVERY_TOKENS[0].submissionId).toBe(id);
+    expect(DELIVERY_TOKENS[0].parentEmail).toBe("parent@example.com");
+    expect(DELIVERY_TOKENS[0].token).toBeTruthy();
+  });
+
+  it("sends a lesson delivery email when the lesson is approved", async () => {
+    const id = await completeSubmission();
+    const token = signSession(createSessionPayload("marcus-reed"));
+
+    await POST(
+      makeRequest({ [SESSION_COOKIE]: token }, {
+        swingType: "baseball",
+        manifest: {
+          videoUrl: "https://example.com/swing.mp4",
+          audioLayers: [],
+          annotationLayers: [],
+          events: [],
+          createdAt: 1700000000000,
+        },
+      }),
+      makeParams(id),
+    );
+
+    await PATCH(
+      makeRequest({ [SESSION_COOKIE]: token }, { status: "approved" }),
+      makeParams(id),
+    );
+
+    expect(MOCK_SENT_EMAILS).toHaveLength(1);
+    const email = MOCK_SENT_EMAILS[0];
+    expect(email.to).toBe("parent@example.com");
+    expect(email.submissionId).toBe(id);
+    expect(email.lessonUrl).toContain(`/lesson/${id}?token=`);
+    expect(email.coachName).toBeTruthy();
+  });
+
+  it("does not create a duplicate token when approving an already-approved draft", async () => {
+    const id = await completeSubmission();
+    const token = signSession(createSessionPayload("marcus-reed"));
+
+    await POST(
+      makeRequest({ [SESSION_COOKIE]: token }, {
+        swingType: "baseball",
+        manifest: {
+          videoUrl: "https://example.com/swing.mp4",
+          audioLayers: [],
+          annotationLayers: [],
+          events: [],
+          createdAt: 1700000000000,
+        },
+      }),
+      makeParams(id),
+    );
+
+    await PATCH(
+      makeRequest({ [SESSION_COOKIE]: token }, { status: "approved" }),
+      makeParams(id),
+    );
+    // Re-approve (idempotent — should not create a second token)
+    await PATCH(
+      makeRequest({ [SESSION_COOKIE]: token }, { status: "approved" }),
+      makeParams(id),
+    );
+
+    expect(DELIVERY_TOKENS).toHaveLength(1);
+    expect(MOCK_SENT_EMAILS).toHaveLength(1);
+  });
+
+  it("does not create a delivery token when rejecting", async () => {
+    const id = await completeSubmission();
+    const token = signSession(createSessionPayload("marcus-reed"));
+
+    await POST(
+      makeRequest({ [SESSION_COOKIE]: token }, {
+        swingType: "baseball",
+        manifest: {
+          videoUrl: "https://example.com/swing.mp4",
+          audioLayers: [],
+          annotationLayers: [],
+          events: [],
+          createdAt: 1700000000000,
+        },
+      }),
+      makeParams(id),
+    );
+
+    await PATCH(
+      makeRequest({ [SESSION_COOKIE]: token }, { status: "rejected" }),
+      makeParams(id),
+    );
+
+    expect(DELIVERY_TOKENS).toHaveLength(0);
+    expect(MOCK_SENT_EMAILS).toHaveLength(0);
   });
 });

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSubmissionById } from "@/lib/submissions";
+import { getCoachBySlug } from "@/lib/coaches";
 import { verifySession, SESSION_COOKIE } from "@/lib/auth/session";
 import {
   generateLessonDraft,
@@ -9,6 +10,8 @@ import {
   getDraftForSubmission,
   saveDraft,
 } from "@/lib/ai/lesson-draft-store";
+import { getDeliveryTokenRepository } from "@/lib/repositories";
+import { getEmailAdapter } from "@/lib/email";
 import type { RenderManifest } from "@/lib/render/pipeline";
 
 /**
@@ -189,7 +192,54 @@ export async function PATCH(
         { status: 400 },
       );
     }
+
+    // ── Delivery token + email on transition to "approved" ──
+    // Only fire when transitioning TO approved (not if already approved —
+    // avoids duplicate tokens/emails on repeated PATCH calls). This is the
+    // core of the approve→deliver flow (Wave 2 Task 4 Sub-slice C).
+    const transitioningToApproved =
+      body.status === "approved" && existing.status !== "approved";
+
     existing.status = body.status;
+
+    if (transitioningToApproved) {
+      try {
+        const coach = await getCoachBySlug(session.coachSlug);
+        const coachName = coach?.name ?? session.coachSlug;
+
+        const deliveryToken =
+          await getDeliveryTokenRepository().create({
+            submissionId: id,
+            parentEmail: submission.parentEmail,
+          });
+
+        const lessonUrl = `/lesson/${id}?token=${deliveryToken.token}`;
+
+        const emailResult = await getEmailAdapter().sendLessonDeliveryEmail({
+          to: submission.parentEmail,
+          coachName,
+          lessonUrl,
+          submissionId: id,
+        });
+
+        if (!emailResult.success) {
+          console.error(
+            `[lesson-draft] delivery email failed for submission ${id}:`,
+            emailResult.error,
+          );
+          // Don't fail the approval — the token is created and the coach
+          // can re-send later. Log the error and continue.
+        }
+      } catch (err) {
+        console.error(
+          `[lesson-draft] delivery token/email error for submission ${id}:`,
+          err,
+        );
+        // Non-fatal: the approval status is still saved. The delivery
+        // can be retried. We don't want a failed email to block the
+        // coach's approval workflow.
+      }
+    }
   }
 
   saveDraft(existing);
