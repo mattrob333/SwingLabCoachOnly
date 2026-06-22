@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 6 (Hardening) IN PROGRESS — 886 tests. Tasks 1–4 DONE (validation, session, rate-limit, privacy). Tasks 5–6 remaining (expanded test coverage + error monitoring, deploy checks). **UX/UI Polish workstream** — tasks #1–8 DONE, task #9 (micro-states) IN PROGRESS: toast notification system DONE (9086908) — `lib/toast.ts` external store + `Toaster` component mounted globally, 25 tests. Next: wire toasts into pages for success/error feedback OR Wave 6 Task 5.
+**Status:** Wave 6 (Hardening) IN PROGRESS — 892 tests. Tasks 1–4 DONE (validation, session, rate-limit, privacy). Tasks 5–6 remaining (expanded test coverage + error monitoring, deploy checks). **UX/UI Polish workstream** — tasks #1–8 DONE, task #9 (micro-states) IN PROGRESS: toast system foundation DONE (9086908) — `lib/toast.ts` external store + `Toaster` component mounted globally, 25 tests. **Toast wiring slice 1 DONE (commit df09cbb):** AiReviewPanel now fires success/error toasts on save + approve (6 tests). Next: wire toasts into more coach-facing actions (onboarding form, revoke-link/delete confirmations) OR Wave 6 Task 5.
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
@@ -34,10 +34,10 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan.
 5. [x] Player experience: chapters ✅, thumbnails ✅, transcript ✅, speed ✅ (pre-existing), jump-to-note ✅, replay/next-note ✅, follow-up CTA polish ✅, mobile QA ✅. **WAVE 5 COMPLETE — 743 tests.**
 6. [ ] Hardening: auth/session security, rate limits, file validation, privacy, tests, deploy
 
-### Next Action (Inner Loop)
-**UX Polish task #8 ✅ DONE (commit 2607c4a):** Global shell / nav. Created `CoachTopNav` client component — context-aware top nav with Dashboard/Earnings links, active-state highlighting via `usePathname()`, Sign out form, mobile hamburger dropdown (aria-expanded toggle). Created `ConditionalChrome` client component — path-aware chrome: renders CoachTopNav (no footer) on `/coach/*` routes (except `/coach/login` which stays public), renders marketing SiteHeader + SiteFooter on all other routes. Root layout updated to use ConditionalChrome. Dashboard page cleaned up: removed redundant Earnings + Sign out buttons (now in top nav), kept coach identity + Edit profile. 18 new tests (861 total).
+**Next Action (Inner Loop)**
+**Toast wiring slice 1 ✅ DONE (commit df09cbb):** AiReviewPanel fires success/error toasts on save changes + approve & send lesson (6 tests, 892 total). Toasts are supplementary transient feedback alongside existing inline terminal-state UI (Saved badge, approved banner, error `<p>`).
 
-**Next: UX Polish task #9 — Micro-states everywhere** (loading, empty, error, success toasts, disabled/processing). Toast system foundation DONE (9086908): `lib/toast.ts` external store + `Toaster` component + 25 tests. Next: wire toasts into pages for success/error feedback. OR Wave 6 Task 5 — Expanded test coverage + error monitoring. Interleave as needed.
+**Next: UX Polish task #9 continued — micro-states toast wiring slice 2.** Wire toasts into more coach-facing client actions (onboarding form save, revoke-link/delete confirmations on submission detail, earnings). OR Wave 6 Task 5 — Expanded test coverage + error monitoring. Interleave as needed.
 
 **UX Polish task #7 ✅ DONE (commit f83ffe3):** Lesson approval screen polish. AiReviewPanel: replaced bespoke rounded-xl border divs with Card+CardHeader+CardTitle+CardDescription+CardContent primitives (summary, moment titles, approve sections); "Saved" indicator uses Badge variant=success; moment title rows show timecode as Badge; approved banner uses Card with emerald tint. LessonApprovalForm: replaced bespoke divs with Card primitives (draft preview, approval actions); replaced inline status color map with Badge variants (warning/success/destructive); drill categories use Badge instead of bg-muted span; "Notes saved" indicator uses Badge success. Lesson page consistent py-8 sm:py-12 spacing. 11 render tests (843 total).
 
