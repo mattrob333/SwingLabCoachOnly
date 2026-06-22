@@ -1,6 +1,6 @@
 # Tasks / TODO Board
 
-**Last synced:** 2026-06-22 · **Tests:** 934 passing · **Build:** ✅ green · **Commits:** 171
+**Last synced:** 2026-06-22 · **Tests:** 951 passing · **Build:** ✅ green · **Commits:** 172
 
 This is the living task board. It is updated alongside the code every build tick. Legend: ✅ done · 🚧 in progress · ⏭️ next · ⬜ not started.
 
@@ -90,7 +90,7 @@ Full coach-facing AI loop wired: transcribe → package → coach reviews/edits 
 - [x] Rate limits — **DONE (commit b0e1d07)**: in-memory sliding-window rate limiter (`lib/auth/rate-limit.ts`). Per-IP, per-route namespaced keys. Upload: 10/10min. AI routes: 20/10min. Env-gated (`RATE_LIMIT_DISABLED=1`). 429 + Retry-After + X-RateLimit headers. 15 tests. 763 tests.
 - [x] File-size / type validation, oversized upload rejection — **DONE (commit 2b98f17)**: video MIME allowlist (mp4/quicktime/webm/x-m4v) on /api/submissions POST; 3 hardening tests. 746 tests.
 - [x] Privacy controls (data deletion, link revocation per PRD §25) — **DONE**: delivery link revocation API `POST /revoke-link` (commit ce2c097, 6 tests, 769 total); data deletion cascade `DELETE /api/submissions/[id]` — coach permanently deletes submission + all associated data (playback manifest, delivery tokens, VideoAssets, storage file best-effort); delete()/deleteForSubmission() added to 4 repository interfaces with InMemory + Supabase impls (commit b619cfc, 10 tests).
-5. [~] Expanded test coverage + error monitoring — error boundaries (`app/error.tsx`, `app/global-error.tsx`) + custom 404 page (`app/not-found.tsx`) DONE (commit 2186aa7, 9 tests, 934 total).
+5. [~] Expanded test coverage + error monitoring — error boundaries (`app/error.tsx`, `app/global-error.tsx`) + custom 404 page (`app/not-found.tsx`) DONE (commit 2186aa7, 9 tests); **auth login+logout API route tests DONE (commit eb155ee, 17 tests, 951 total)** — covers malformed JSON, missing fields, unknown slug (no-leak), wrong password, valid login + cookie attrs (HttpOnly/SameSite/Path/Max-Age/Secure), token verification, slug trimming; logout redirect + cookie clearing.
 - [ ] Deploy checks (Vercel)
 
 ## 🚧 UX / UI Polish — Coach Interface First (In Progress)
