@@ -4,72 +4,39 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** ✅ COMPLETE — All 20 PRD build-order items shipped (Rounds 1–19)
+**Status:** MVP scaffold COMPLETE (267 tests). Starting WAVE 2 — Production Push (pilot-usable product).
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 5 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub.
-- **Outer Loop** (cron `30bbeeaeeaf8`) — every 30 min: Alignment audit against PRD, guardrails checks, drift detection. Read-only.
+- **Outer Loop** (cron `30bbeeaeeaf8`) — every 30 min: Alignment audit against PRD + NEXT_STEPS_PLAN, guardrails, drift detection. Read-only.
 
-## Phases
-1. [x] Bootstrap repo + seed all 16 /docs/ artifacts (Rounds 1–2)
-2. [x] Phase 1a: Web Foundation (Round 3)
-3. [x] Phase 1b: Sync engine core (Round 4)
-4. [x] Phase 2: Coach auth + onboarding (Rounds 5–6)
-5. [x] Phase 3: Parent upload + payment (Round 7)
-6. [x] Phase 4: Coach inbox + submission detail (Round 8)
-7. [x] Phase 5: Review Studio (Rounds 9–11 — video player, scrubber, mic recording, annotation canvas, event capture)
-8. [x] Phase 6: Render pipeline (Round 13 — manifest composition, render API, status transitions)
-9. [x] Phase 6: AI lesson pack (Round 14 — lesson draft generator, drill library, lesson-draft API)
-10. [x] Phase 7: Lesson delivery + coach approval + follow-up (Rounds 15–16)
-11. [x] Phase 8: Stripe Connect (mock) + earnings (Round 17)
-12. [x] Phase 9: PWA enhancements (Round 18 — manifest, service worker, app icons, registrar)
-13. [x] Phase 10: Comparison mode (Round 19 — lib/comparison.ts, comparison API, /coach/compare page, submission detail link)
+## CURRENT WAVE: Wave 2 Production Push
+See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan. North star: ONE coach receives a real swing, reviews on mobile, generates an interactive lesson, delivers via secure magic link.
 
-## Completed Tasks
-- All 16 /docs/ artifacts seeded
-- Next.js 16 + React 19 + Tailwind 4 + shadcn scaffold
-- lib/coaches.ts, lib/turnaround.ts, lib/sync/phases.ts, lib/sync/frameMapping.ts, lib/utils.ts
-- Phase 2: auth (scrypt + HMAC sessions), login/logout API, middleware, login + dashboard pages, onboarding form + API
-- Phase 3: lib/submissions.ts, lib/invite-codes.ts, submissions/pay/redeem-code APIs, upload form, payment page
-- Phase 4: Coach inbox (dashboard with stat cards + submission cards), submission detail page (/coach/submission/[id]), markSubmissionInReview, POST /api/submissions/[id]/review, StartReviewButton
-- Phase 5 (complete): lib/review/timecode.ts, lib/review/recording.ts, lib/review/strokes.ts, lib/review/events.ts, VideoPlayer, VoiceRecorder, AnnotationCanvas, ReviewStudioClient, /coach/review/[id] page
-- Phase 6 render pipeline (complete): lib/render/pipeline.ts, lib/render/store.ts, lib/submissions.ts (rendering + completed statuses), app/api/submissions/[id]/render/route.ts, 24 new tests
-- Phase 6 AI lesson pack (complete): lib/drills.ts, lib/ai/lesson-draft.ts, lib/ai/lesson-draft-store.ts, app/api/submissions/[id]/lesson-draft/route.ts, 20 new tests
-- Phase 7 lesson delivery + coach approval + follow-up (complete): app/lesson/[id]/page.tsx, GET lesson-draft API, app/coach/submission/[id]/lesson/page.tsx + lesson-approval-form, followUpFor field + upload flow + lesson CTA
-- Phase 8 Stripe Connect (mock) + earnings (complete): lib/stripe-mock.ts, lib/earnings.ts, pay/render/earnings APIs, /coach/earnings dashboard, 28 new tests — 232 total
-- Phase 9 PWA enhancements (complete): public/manifest.json (standalone, theme/icons), public/sw.js (offline app-shell caching — network-first navigations, cache-first static assets), public/icon.svg + icon-maskable.svg, components/site/service-worker-registrar.tsx (production-only registration), app/layout.tsx wired with manifest/themeColor/appleWebApp/icons, 7 new tests — 239 total
-- Phase 10 Comparison mode (complete): lib/comparison.ts (getComparisonPair — validates follow-up linkage + render manifests; listComparisonCandidates — completed follow-ups newest-first), app/api/comparison/route.ts (GET pair + candidate list, coach-auth-gated, ownership check), app/coach/compare/page.tsx (picker + side-by-side viewer), components/coach/comparison-viewer.tsx (synchronized play/pause + resync, dual video panels), submission detail page "Compare swings" link, 17 new tests — 256 total
-- Quality gate: typecheck ✓ lint ✓ test ✓ (256) build ✓
+**Guiding principle:** Env-gated adapters — real service when key present, graceful mock fallback when absent. Never block on missing keys.
+
+### Wave Order
+1. [ ] Foundation: Supabase schema, storage adapter, env validation, migrate file-stores, extend FreezeFrameNote + LessonPlaybackManifest, add VideoAsset/AudioAsset/LessonDeliveryToken/AiPackagingJob
+2. [ ] Workflow: real upload→storage, Stripe Checkout+webhooks, inbox ownership, lesson delivery token + email
+3. [ ] Review Studio polish: autosave, edit/re-record, transcript edit UI, thumbnails, mobile, recovery
+4. [ ] AI: Deepgram transcription worker, OpenAI packaging (coach voice preserved), approval flow
+5. [ ] Player experience: chapters, thumbnails, transcript, speed, jump-to-note, follow-up CTA, mobile QA
+6. [ ] Hardening: auth/session security, rate limits, file validation, privacy, tests, deploy
+
+### Next Action (Inner Loop)
+**Wave 1, Task 1:** Create env validation module (`lib/env.ts`) — validate + mode-log all integration keys (Supabase, storage, Deepgram, OpenAI, Stripe, email). Warn (don't crash) when missing; log which mode each adapter runs in. TDD-first.
+Then: storage adapter interface (`lib/storage/`) with mock + Supabase implementations.
+
+## Completed (MVP Scaffold — Rounds 1–19, plus external AI's freeze-frame playback)
+- All 20 PRD build-order items: auth, onboarding, upload, payment(mock), inbox, submission detail, Review Studio (player/scrubber/mic/annotation/events), render pipeline, AI lesson draft, drill library, coach approval, lesson delivery, follow-up, Stripe(mock)+earnings, PWA, comparison mode
+- Freeze-frame lesson playback (external AI): lib/lesson/playback.ts, playback-store.ts, lesson-playback-player.tsx, audio upload API, lesson-playback API
+- 267 tests across 33 files, all green; typecheck ✓ lint ✓ build ✓ (24 routes)
 
 ## Open Issues
-- All stores in-memory — MVP-acceptable.
-- Video URL is a sample placeholder; real video storage comes with render pipeline (Phase 6).
-- Stripe is a mock; real Connect onboarding deferred until keys provisioned.
-- No blockers
+- All stores in-memory/file → Wave 1 replaces with Supabase + storage adapter
+- Stripe is mock → Wave 2 real Checkout + webhooks
+- No transcription yet → Wave 4 Deepgram
+- No real AI packaging → Wave 4 OpenAI
+- API keys not yet provisioned → adapters run in mock mode until user adds .env
 
-## PRD Build Order Status (§31)
-All 20 items complete:
-1. ✅ Coach auth scaffold
-2. ✅ Coach onboarding form
-3. ✅ Parent upload flow
-4. ✅ Payment / invite code flow
-5. ✅ Coach inbox
-6. ✅ Submission detail page
-7. ✅ Web Review Studio (video player + scrubber)
-8. ✅ Microphone recording
-9. ✅ Annotation canvas
-10. ✅ Review event capture
-11. ✅ Render pipeline
-12. ✅ Transcription (covered by render manifest event capture)
-13. ✅ AI lesson draft
-14. ✅ Drill library
-15. ✅ Coach approval screen
-16. ✅ Lesson delivery page
-17. ✅ Follow-up swing submission
-18. ✅ Stripe Connect + earnings
-19. ✅ PWA enhancements
-20. ✅ Comparison mode
-
-**Next Action:** Build complete. Awaiting user decision on next steps (real Stripe keys, real video storage, deployment, or new features beyond MVP scope).
-
-**Last Updated:** 2026-06-21 (Round 19 — Phase 10 Comparison mode, 256 tests, all 20 PRD build-order items complete)
+**Last Updated:** 2026-06-21 (Wave 2 Production Push kicked off — consensus plan from user + 2 AIs)
