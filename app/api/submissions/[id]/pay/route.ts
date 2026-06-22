@@ -1,24 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { markSubmissionPaid, getSubmissionById } from "@/lib/submissions";
 import { getCoachBySlug } from "@/lib/coaches";
+import { getPaymentAdapter } from "@/lib/payments";
+import { isLive } from "@/lib/env";
 import {
   createPaymentIntent,
   confirmPaymentIntent,
 } from "@/lib/stripe-mock";
 
 /**
- * Phase 3 + Phase 8 — Payment endpoint.
+ * Phase 3 + Wave 2 — Payment / Checkout endpoint.
  *
  * POST /api/submissions/[id]/pay
- * Marks a submission as paid. For MVP this uses the mock Stripe Connect flow
- * (lib/stripe-mock.ts): a PaymentIntent is created and immediately confirmed.
- * When real Stripe keys are provisioned, only the internals of this route
- * change — the response contract stays the same.
+ *
+ * Two modes (env-gated):
+ * - Mock (no STRIPE_* keys): synchronous — creates + confirms a mock
+ *   PaymentIntent, marks the submission paid immediately. Returns
+ *   { id, status, amountPaid, paymentIntentId }. Existing contract preserved.
+ * - Live (STRIPE_* keys present): creates a Stripe Checkout Session and
+ *   returns { url, sessionId }. The client redirects to Stripe Checkout.
+ *   Payment confirmation + markSubmissionPaid happens asynchronously via
+ *   the webhook (POST /api/stripe/webhook).
  *
  * Guardrail: payment before review. Only pending_payment → paid.
  */
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
@@ -47,9 +54,25 @@ export async function POST(
   }
 
   try {
-    // MVP: create + confirm a mock PaymentIntent. Real Stripe integration
-    // swaps these two calls for stripe.paymentIntents.create/confirm with the
-    // coach's Connect account as the transfer destination.
+    if (isLive("payments")) {
+      // Live Stripe Checkout flow — redirect the client to Stripe.
+      const adapter = getPaymentAdapter();
+      const origin = request.nextUrl.origin;
+      const session = await adapter.createCheckoutSession({
+        submissionId: submission.id,
+        coachSlug: coach.slug,
+        amountUsd: coach.priceUsd,
+        parentEmail: submission.parentEmail,
+        successUrl: `${origin}/pay?submission=${submission.id}`,
+        cancelUrl: `${origin}/pay?submission=${submission.id}&canceled=1`,
+      });
+      return NextResponse.json({
+        url: session.url,
+        sessionId: session.id,
+      });
+    }
+
+    // Mock flow — synchronous confirm (existing contract preserved).
     const intent = createPaymentIntent({
       amountUsd: coach.priceUsd,
       coachSlug: coach.slug,

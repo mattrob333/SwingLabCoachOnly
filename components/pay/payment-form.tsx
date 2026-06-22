@@ -32,6 +32,16 @@ export function PaymentForm({ submissionId, coachName, priceUsd }: PaymentFormPr
         setLoading(false);
         return;
       }
+      const data = (await res.json().catch(() => ({}))) as {
+        url?: string;
+        status?: string;
+      };
+      // Live Stripe mode: redirect to Stripe Checkout.
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      // Mock mode: payment confirmed synchronously, go to submission detail.
       router.push(`/coach/submission/${submissionId}`);
       router.refresh();
     } catch {
