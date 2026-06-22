@@ -605,6 +605,9 @@ export function ReviewStudioClient({
             aria-label={`Zoomed freeze frame for note ${idx + 1}`}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
             onClick={() => setZoomedNoteId(null)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setZoomedNoteId(null);
+            }}
           >
             <div
               className="relative max-h-[90vh] max-w-[90vw]"

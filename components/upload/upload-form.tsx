@@ -128,9 +128,15 @@ export function UploadForm({ coaches, followUpFor }: UploadFormProps) {
           Submission ID: <code>{success.id}</code>
         </p>
         <div className="mt-6 flex justify-center gap-2">
-          <Button variant="default" size="lg">
-            <a href={`/pay?submission=${success.id}`}>Continue to payment</a>
-          </Button>
+          <Button
+            variant="default"
+            size="lg"
+            render={
+              <a href={`/pay?submission=${success.id}`}>
+                Continue to payment
+              </a>
+            }
+          />
         </div>
       </div>
     );

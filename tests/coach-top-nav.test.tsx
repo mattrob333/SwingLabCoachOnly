@@ -134,6 +134,31 @@ describe("CoachTopNav", () => {
     fireEvent.click(link!);
     expect(screen.queryByTestId("mobile-menu")).toBeNull();
   });
+
+  // Accessibility — focus-visible rings on nav links
+  it("desktop nav links have focus-visible ring styles", () => {
+    render(<CoachTopNav />);
+    const desktopNav = screen.getByTestId("desktop-nav");
+    const links = desktopNav.querySelectorAll("a");
+    expect(links.length).toBeGreaterThanOrEqual(1);
+    links.forEach((link) => {
+      expect(link.className).toContain("focus-visible:ring-2");
+      expect(link.className).toContain("focus-visible:ring-ring");
+    });
+  });
+
+  it("mobile dropdown nav links have focus-visible ring styles", () => {
+    render(<CoachTopNav />);
+    const toggle = screen.getByLabelText("Toggle menu");
+    fireEvent.click(toggle); // open
+    const mobileMenu = screen.getByTestId("mobile-menu");
+    const links = mobileMenu.querySelectorAll("a");
+    expect(links.length).toBeGreaterThanOrEqual(1);
+    links.forEach((link) => {
+      expect(link.className).toContain("focus-visible:ring-2");
+      expect(link.className).toContain("focus-visible:ring-ring");
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------

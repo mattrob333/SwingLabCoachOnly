@@ -272,6 +272,7 @@ export function LessonPlaybackPlayer({ manifest }: LessonPlaybackPlayerProps) {
               variant={playbackRate === rate ? "default" : "outline"}
               size="sm"
               onClick={() => setPlaybackRate(rate)}
+              aria-pressed={playbackRate === rate}
             >
               {rate}x
             </Button>

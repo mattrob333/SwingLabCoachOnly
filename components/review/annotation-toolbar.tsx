@@ -52,6 +52,7 @@ export function AnnotationToolbar({
             size="sm"
             onClick={() => onToolChange(item.id)}
             aria-label={item.label}
+            aria-pressed={tool === item.id}
             title={item.label}
             className="h-10 w-10 px-0 sm:h-8 sm:w-8"
           >
@@ -67,6 +68,7 @@ export function AnnotationToolbar({
             type="button"
             onClick={() => onColorChange(c)}
             aria-label={`Select ${c}`}
+            aria-pressed={color === c}
             title={c}
             className={`h-8 w-8 rounded-full border-2 sm:h-6 sm:w-6 ${
               color === c ? "border-foreground" : "border-background"
