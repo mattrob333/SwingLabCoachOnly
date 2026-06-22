@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 6 (Hardening) IN PROGRESS — 769 tests. Tasks 1–4 (file validation, auth/session, rate limits, link revocation) DONE. Next: data deletion OR expanded test coverage OR Track B UX polish.
+**Status:** Wave 6 (Hardening) IN PROGRESS — 793 tests. Tasks 1–4 DONE (file validation, auth/session, rate limits, privacy controls — link revocation + data deletion). Tasks 5–6 remaining. **UX/UI Polish workstream STARTED** — task #1 (design tokens + shared primitives) DONE (commit 80b4186, 14 tests). Next: UX task #2 (coach dashboard/inbox polish).
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
@@ -35,13 +35,11 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan.
 6. [ ] Hardening: auth/session security, rate limits, file validation, privacy, tests, deploy
 
 ### Next Action (Inner Loop)
-**Wave 6 Task 3 ✅ DONE (this tick):** Rate limits — in-memory sliding-window rate limiter (`lib/auth/rate-limit.ts`). `checkRateLimit` (pure sliding window), `getClientIp` (x-forwarded-for / x-real-ip), `rateLimitOr429` (route helper → 429 with Retry-After + X-RateLimit headers). Env-gated (`RATE_LIMIT_DISABLED=1` disables; set globally in `tests/setup.ts`). Wired into 4 abuse-prone routes: POST /api/submissions (10/10min upload), POST .../transcribe (20/10min), POST .../package (20/10min), POST .../approve (20/10min). Per-IP, per-route namespaced keys. 15 tests. 763 tests. Commit b0e1d07.
+**UX Polish task #1 ✅ DONE (this tick):** Recovered orphaned UX primitive files from prior tick, ran quality gate (793 tests, all green), committed + pushed (80b4186). Design tokens + shared shadcn/ui primitives: Card (with header/title/description/content/footer sub-slots), Badge (cva variants: default/primary/success/warning/destructive/outline), Skeleton (aria-hidden pulsing block), EmptyState (icon+title+description+action for zero-data screens), Avatar (img+onError fallback to initials, sm/default/lg sizes). 14 render/smoke tests. Resolved OPEN course correction about UX workstream never started.
 
-**Next: Wave 6 Task 4 — Privacy controls** (data deletion, link revocation per PRD §25). OR Wave 6 Task 5 — Expanded test coverage + error monitoring. OR pick up a Track B UX polish task (design tokens, shared primitives, dashboard/inbox — coach interface first).
+**Next: UX Polish task #2 — Coach dashboard / inbox polish.** Apply the new primitives to the coach dashboard: submission cards using Card+Badge, status filter tabs, stat cards, empty states (EmptyState component), skeleton loading states, responsive list↔detail layout. This is the primary coach-facing surface (PRD §32: "the coach should always know the next best action").
 
-**Next: Wave 6 — Hardening.** Auth/session security review, rate limits, file-size/type validation, privacy controls (data deletion, link revocation), expanded test coverage, deploy checks (Vercel). OR pick up a Track B UX polish task (design tokens, shared primitives, dashboard/inbox polish — coach interface first).
-
-**Course correction resolved this tick (commit d6327b7):** Mobile annotation toolbar overlap — split toolbar into shared `AnnotationToolbar` component. Desktop: overlay (`hidden sm:flex`, inside AnnotationCanvas). Mobile: stacked block below video (`sm:hidden`, by ReviewStudioClient). `forwardRef`+`useImperativeHandle` for undo/clear. 4 new tests (697 total). No open corrections remain.
+**Course correction resolved this tick (commit 80b4186):** UX/UI Polish workstream never started — shipped task #1 (design tokens + shared primitives). No open corrections remain.
 
 **Alternative: Track B UX polish.** If the next Wave 5 slice is large, pick up a coach-interface UX polish task instead (design tokens, shared primitives, dashboard/inbox polish).
 

@@ -19,7 +19,7 @@ This is the living task board. It is updated alongside the code every build tick
 | Wave 4 | AI (Deepgram + OpenAI) | ✅ Complete |
 | Wave 5 | Player experience | ✅ Complete |
 | Wave 6 | Hardening + deploy | 🚧 Next |
-| UX | UX/UI polish (coach-first) | ⬜ Not started |
+| UX | UX/UI polish (coach-first) | 🚧 In progress |
 
 ---
 
@@ -93,8 +93,8 @@ Full coach-facing AI loop wired: transcribe → package → coach reviews/edits 
 - [ ] Expanded test coverage + error monitoring
 - [ ] Deploy checks (Vercel)
 
-## ⬜ UX / UI Polish — Coach Interface First (Not Started)
-- [ ] Design tokens + shared shadcn/ui primitives (Card, Badge, Button variants, Tabs, Dialog, Toast, Skeleton, EmptyState, Avatar)
+## 🚧 UX / UI Polish — Coach Interface First (In Progress)
+- [x] Design tokens + shared shadcn/ui primitives (Card, Badge, Skeleton, EmptyState, Avatar) — 14 render/smoke tests, commit 80b4186, 793 tests
 - [ ] Coach dashboard / inbox (submission cards, status filter tabs, stat cards, empty states, skeletons, responsive list↔detail)
 - [ ] Submission detail page hierarchy + status timeline
 - [ ] Review Studio chrome (control bar, recording indicator, tool palette, saved-frames strip)
