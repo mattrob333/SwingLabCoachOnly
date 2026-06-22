@@ -433,6 +433,8 @@ export function ReviewStudioClient({
                         aria-label={`Zoom thumbnail for note ${index + 1}`}
                         className="group relative block aspect-video h-full w-full cursor-zoom-in"
                       >
+                        {/* Data URL thumbnail (canvas.toDataURL) — next/image does not optimize data URLs. */}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={note.thumbnailUrl}
                           alt={`Frozen frame for note ${index + 1}`}
@@ -608,6 +610,8 @@ export function ReviewStudioClient({
               className="relative max-h-[90vh] max-w-[90vw]"
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Data URL thumbnail (canvas.toDataURL) — next/image does not optimize data URLs. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={note.thumbnailUrl}
                 alt={`Frozen frame for note ${idx + 1} (zoomed)`}

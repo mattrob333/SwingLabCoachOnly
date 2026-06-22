@@ -9,7 +9,6 @@
  * All methods are async to match the repository interface.
  */
 
-import { randomUUID } from "node:crypto";
 import {
   slugify,
   validateCoachInput,

@@ -113,6 +113,11 @@ export const VoiceRecorder = forwardRef<VoiceRecorderHandle, VoiceRecorderProps>
   useImperativeHandle(ref, () => ({
     startRecording: (timecode?: number) => { void startRecording(timecode); },
     stopRecording: () => stopRecording(),
+    // handle intentionally recreated on currentTime change to capture the latest
+    // startRecording closure (it reads currentTime via fallback). Adding
+    // startRecording to deps would recreate the handle every render; currentTime
+    // is the stable signal.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [currentTime]);
 
   async function uploadAudio(blob: Blob, mimeType: string): Promise<string> {
@@ -173,6 +178,9 @@ export const VoiceRecorder = forwardRef<VoiceRecorderHandle, VoiceRecorderProps>
     // Release the microphone stream
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
+    // uploadAudio is a component-local function; including it would recreate
+    // the callback every render. submissionId is the stable dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [submissionId]);
 
   async function startRecording(forcedTime?: number) {
@@ -239,7 +247,6 @@ export const VoiceRecorder = forwardRef<VoiceRecorderHandle, VoiceRecorderProps>
         if (s.audioBlobUrl?.startsWith("blob:")) URL.revokeObjectURL(s.audioBlobUrl);
       });
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!isSupported) {

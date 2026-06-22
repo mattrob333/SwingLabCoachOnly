@@ -210,7 +210,6 @@ export const AnnotationCanvas = forwardRef<AnnotationCanvasHandle, AnnotationCan
 
     useEffect(() => {
       redrawAll();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [marks, activeMark]);
 
     function getPoint(e: React.PointerEvent<HTMLCanvasElement>): Point {

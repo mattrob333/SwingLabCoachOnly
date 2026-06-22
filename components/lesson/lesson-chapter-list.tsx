@@ -39,6 +39,9 @@ export function LessonChapterList({
               aria-current={isActive ? "true" : undefined}
             >
               {chapter.thumbnailUrl ? (
+                // Data URL thumbnail (canvas.toDataURL) — next/image does not
+                // optimize data URLs, so a plain <img> is correct here.
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={chapter.thumbnailUrl}
                   alt=""

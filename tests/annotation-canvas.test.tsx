@@ -254,7 +254,7 @@ describe("AnnotationCanvas — toolbar mobile layout (Wave 3)", () => {
   });
 
   it("Undo button text label is hidden on mobile (icon-only)", () => {
-    const { getByLabelText, container } = render(
+    const { getByLabelText } = render(
       <Wrapper>
         <AnnotationCanvas currentTime={0} />
       </Wrapper>,
@@ -270,7 +270,7 @@ describe("AnnotationCanvas — toolbar mobile layout (Wave 3)", () => {
   });
 
   it("Clear button text label is hidden on mobile (icon-only)", () => {
-    const { getByLabelText, container } = render(
+    const { getByLabelText } = render(
       <Wrapper>
         <AnnotationCanvas currentTime={0} />
       </Wrapper>,
