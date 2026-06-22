@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { showToast } from "@/lib/toast";
 
 type StartReviewButtonProps = {
   submissionId: string;
@@ -32,7 +33,13 @@ export function StartReviewButton({ submissionId }: StartReviewButtonProps) {
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(data.error ?? "Failed to start review");
+        const message = data.error ?? "Failed to start review";
+        setError(message);
+        showToast({
+          title: "Failed to start review",
+          description: message,
+          variant: "error",
+        });
         setLoading(false);
         return;
       }
@@ -40,6 +47,11 @@ export function StartReviewButton({ submissionId }: StartReviewButtonProps) {
       router.refresh();
     } catch {
       setError("Network error — please try again.");
+      showToast({
+        title: "Network error",
+        description: "Please check your connection and try again.",
+        variant: "error",
+      });
       setLoading(false);
     }
   }
