@@ -4,7 +4,7 @@
 **Repo:** https://github.com/mattrob333/SwingLabCoachOnly
 **Local workspace:** `C:\Users\mrobe\swinglab`
 **Started:** 2026-06-21
-**Status:** Wave 4 (AI) COMPLETE — transcription adapter + worker route, OpenAI packaging adapter + worker route, coach edit AI output (PATCH /package), coach approval route (POST /approve), coach AI review panel (3c-i), approve button + page wiring (3c-ii). 693 tests. Next: Wave 5 — Player experience (chapters, thumbnails, transcript, speed, jump-to-note, follow-up CTA, mobile QA).
+**Status:** Course correction resolved (mobile annotation toolbar overlap). 697 tests. Next: Wave 5 — Player Experience (chapters, thumbnails, transcript, speed, jump-to-note, follow-up CTA, mobile QA).
 
 ## Architecture: Two-Tier Build Loop
 - **Inner Loop** (cron `21c981f54bf6`) — every 10 min: Check → Test → Advance → Repeat. Fast, GLM 5.2, pushes to GitHub. Has a STOP CONDITION CHECK that pauses BOTH crons when all work is done / hard blocker / repeated failure.
@@ -30,6 +30,8 @@ See `docs/NEXT_STEPS_PLAN.md` for the full 6-wave plan.
 **Wave 4 COMPLETE — 693 tests.** All AI routes + coach review/approve UI shipped. Commits 9f1439a (3c-ii slice A — approve button) + 4a04325 (3c-ii slice B — page wiring).
 
 **Next: Wave 5 — Player Experience.** Build the parent-facing lesson playback experience: chapters (from manifest notes), thumbnails (from note.thumbnailUrl), transcript display (from note.transcript), playback speed control, jump-to-note (click chapter → seek video), follow-up CTA (book another lesson). Start with the lesson playback player component (`components/lesson/lesson-playback-player.tsx` already exists from the external AI freeze-frame work — extend it). The parent lesson page (`app/lesson/[id]/page.tsx`) already has the access gate (Wave 2 Sub-slice D); it loads the manifest and renders the player. Mobile QA at the end of the wave.
+
+**Course correction resolved this tick (commit d6327b7):** Mobile annotation toolbar overlap — split toolbar into shared `AnnotationToolbar` component. Desktop: overlay (`hidden sm:flex`, inside AnnotationCanvas). Mobile: stacked block below video (`sm:hidden`, by ReviewStudioClient). `forwardRef`+`useImperativeHandle` for undo/clear. 4 new tests (697 total). No open corrections remain.
 
 **Alternative: Track B UX polish.** If the next Wave 5 slice is large, pick up a coach-interface UX polish task instead (design tokens, shared primitives, dashboard/inbox polish).
 
