@@ -80,6 +80,22 @@ describe("lesson playback API", () => {
     expect(res.status).toBe(401);
   });
 
+  it("returns 403 when the submission belongs to a different coach", async () => {
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
+    await markSubmissionInReview(sub.id);
+
+    // Signed in as a different coach than the submission's owner
+    const token = signSession(createSessionPayload("priya-anand"));
+
+    const res = await POST(
+      makeRequest({ [SESSION_COOKIE]: token }, playbackInput()),
+      makeParams(sub.id),
+    );
+
+    expect(res.status).toBe(403);
+  });
+
   it("rejects processing with no notes", async () => {
     const sub = await createSubmission(validInput());
     await markSubmissionPaid(sub.id);

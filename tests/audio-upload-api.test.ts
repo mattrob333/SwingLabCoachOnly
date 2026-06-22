@@ -51,6 +51,24 @@ describe("POST /api/submissions/[id]/audio", () => {
     expect(res.status).toBe(401);
   });
 
+  it("returns 403 when the submission belongs to a different coach", async () => {
+    const sub = await createSubmission(validInput());
+    await markSubmissionPaid(sub.id);
+    await markSubmissionInReview(sub.id);
+
+    // Signed in as a different coach than the submission's owner
+    const token = signSession(createSessionPayload("priya-anand"));
+    const form = new FormData();
+    form.set("audio", new File(["audio bytes"], "note.webm", { type: "audio/webm" }));
+
+    const res = await POST(
+      makeRequest({ [SESSION_COOKIE]: token }, form),
+      makeParams(sub.id),
+    );
+
+    expect(res.status).toBe(403);
+  });
+
   it("rejects missing audio files", async () => {
     const sub = await createSubmission(validInput());
     await markSubmissionPaid(sub.id);
