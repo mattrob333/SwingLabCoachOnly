@@ -30,7 +30,7 @@
 **Swap points:** `lib/auth/credentials.ts` (`verifyCoachCredentials`, `coachExists`) and `lib/auth/session.ts` (`signSession`, `verifySession`).
 **Date:** 2026-06-21
 
-## 2026-06-21 — Async Repository Interfaces (PENDING)
+## 2026-06-21 — Async Repository Interfaces (DONE)
 **Decision:** Convert the four repository interfaces from synchronous to async before filling in Supabase impls with real PostgREST queries.
 **Context:** Wave 1 Task 5 introduced the repository interface layer with synchronous method signatures (e.g. `create(input: SubmissionInput): Submission`). This was correct for the in-memory impls (which are synchronous array operations) and preserved all 44 existing import sites + 267 tests unchanged. However, real Supabase queries via `fetch()` / PostgREST are inherently async. A synchronous interface cannot call `fetch()` and return the result — `async` functions return `Promise<T>`, not `T`.
 **Options considered:** (a) Keep interfaces sync, use a sync HTTP client (impossible in Node.js — `fetch` is async-only). (b) Make interfaces async and cascade `async`/`await` through facades + callers. (c) Create a separate async interface alongside the sync one (messy, two code paths). (d) Use a sync wrapper like `deasync` (unreliable, blocks the event loop, not production-safe).
