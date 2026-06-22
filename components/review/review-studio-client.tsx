@@ -202,6 +202,7 @@ export function ReviewStudioClient({
           audioDuration: segment.duration,
           thumbnailUrl: captureVideoThumbnail(videoElementRef.current, annotations),
           transcript: "",
+          transcriptRaw: "",
           transcriptStatus: "pending",
           annotations,
           createdAt: Date.now(),
@@ -232,7 +233,11 @@ export function ReviewStudioClient({
 
   function updateNoteTranscript(id: string, transcript: string) {
     setNotes((prev) =>
-      prev.map((note) => (note.id === id ? { ...note, transcript } : note)),
+      prev.map((note) =>
+        note.id === id
+          ? { ...note, transcript, transcriptEdited: transcript }
+          : note,
+      ),
     );
     setLessonUrl(null);
   }
@@ -390,7 +395,7 @@ export function ReviewStudioClient({
                       Transcript / player note
                     </label>
                     <textarea
-                      value={note.transcript ?? ""}
+                      value={note.transcriptEdited ?? note.transcript ?? ""}
                       onChange={(event) =>
                         updateNoteTranscript(note.id, event.target.value)
                       }
@@ -398,6 +403,22 @@ export function ReviewStudioClient({
                       className="mt-1 w-full resize-y rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary"
                       placeholder="Voice-to-text will populate this later. You can add or edit the note text here now."
                     />
+                    <div className="mt-1 flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">
+                        {
+                          (note.transcriptEdited ?? note.transcript ?? "")
+                            .length
+                        }{" "}
+                        characters
+                      </span>
+                      {note.transcriptEdited != null &&
+                        note.transcriptEdited !==
+                          (note.transcriptRaw ?? "") && (
+                          <span className="rounded bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary">
+                            Edited
+                          </span>
+                        )}
+                    </div>
                   </div>
                 </div>
               </article>
