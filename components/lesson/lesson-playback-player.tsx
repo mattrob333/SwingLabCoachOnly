@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { LessonChapterList } from "@/components/lesson/lesson-chapter-list";
+import { buildChapterList } from "@/lib/lesson/chapters";
 import type {
   FreezeFrameNote,
   LessonPlaybackManifest,
@@ -117,6 +119,7 @@ export function LessonPlaybackPlayer({ manifest }: LessonPlaybackPlayerProps) {
     () => [...manifest.notes].sort((a, b) => a.timecode - b.timecode),
     [manifest.notes],
   );
+  const chapters = useMemo(() => buildChapterList(manifest), [manifest]);
 
   function resetLesson() {
     const video = videoRef.current;
@@ -125,6 +128,17 @@ export function LessonPlaybackPlayer({ manifest }: LessonPlaybackPlayerProps) {
     setActiveNote(null);
     video.currentTime = 0;
     video.playbackRate = playbackRate;
+  }
+
+  function jumpToChapter(timecode: number, noteId: string) {
+    const video = videoRef.current;
+    const note = sortedNotes.find((n) => n.id === noteId);
+    if (!note) return;
+    if (video) {
+      video.pause();
+      video.currentTime = timecode;
+    }
+    setActiveNote(note);
   }
 
   useEffect(() => {
@@ -222,6 +236,13 @@ export function LessonPlaybackPlayer({ manifest }: LessonPlaybackPlayerProps) {
             Restart lesson
           </Button>
         </div>
+      </div>
+      <div className="max-h-80 overflow-y-auto border-t border-border p-4">
+        <LessonChapterList
+          chapters={chapters}
+          activeChapterId={activeNote?.id ?? null}
+          onSelect={jumpToChapter}
+        />
       </div>
     </div>
   );
