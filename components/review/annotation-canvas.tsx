@@ -1,14 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import type { ReactNode } from "react";
-import { Circle, Eraser, Minus, MousePointer2, Pencil, RotateCcw, AlertTriangle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { AlertTriangle } from "lucide-react";
 import { createReviewId } from "@/lib/review/ids";
 import { createEvent, type ReviewEvent } from "@/lib/review/events";
 import type { Point } from "@/lib/review/strokes";
-
-type Tool = "pen" | "line" | "arrow" | "circle";
+import { AnnotationToolbar, type Tool, COLORS } from "@/components/review/annotation-toolbar";
 
 export type AnnotationMark = {
   id: string;
@@ -20,19 +17,21 @@ export type AnnotationMark = {
   canvasHeight: number;
 };
 
+export type AnnotationCanvasHandle = {
+  undo: () => void;
+  clearAll: () => void;
+};
+
 type AnnotationCanvasProps = {
   currentTime: number;
+  /** Controlled tool. If omitted, the canvas manages its own. */
+  tool?: Tool;
+  color?: string;
+  onToolChange?: (tool: Tool) => void;
+  onColorChange?: (color: string) => void;
   onEvent?: (event: ReviewEvent) => void;
   onMarksChange?: (marks: AnnotationMark[]) => void;
 };
-
-const COLORS = ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#ffffff"];
-const TOOLS: { id: Tool; label: string; icon: ReactNode }[] = [
-  { id: "pen", label: "Freehand", icon: <Pencil className="h-4 w-4" /> },
-  { id: "line", label: "Line", icon: <Minus className="h-4 w-4" /> },
-  { id: "arrow", label: "Arrow", icon: <MousePointer2 className="h-4 w-4 rotate-45" /> },
-  { id: "circle", label: "Circle", icon: <Circle className="h-4 w-4" /> },
-];
 
 function drawArrowHead(
   ctx: CanvasRenderingContext2D,
@@ -91,259 +90,237 @@ function drawMark(ctx: CanvasRenderingContext2D, mark: AnnotationMark) {
   }
 }
 
-export function AnnotationCanvas({
-  currentTime,
-  onEvent,
-  onMarksChange,
-}: AnnotationCanvasProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [marks, setMarks] = useState<AnnotationMark[]>([]);
-  const [activeMark, setActiveMark] = useState<AnnotationMark | null>(null);
-  const [tool, setTool] = useState<Tool>("arrow");
-  const [color, setColor] = useState(COLORS[0]);
-  const [canvasUnavailable, setCanvasUnavailable] = useState(false);
+export const AnnotationCanvas = forwardRef<AnnotationCanvasHandle, AnnotationCanvasProps>(
+  function AnnotationCanvas({
+    currentTime,
+    tool: controlledTool,
+    color: controlledColor,
+    onToolChange,
+    onColorChange,
+    onEvent,
+    onMarksChange,
+  }, ref) {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [marks, setMarks] = useState<AnnotationMark[]>([]);
+    const [activeMark, setActiveMark] = useState<AnnotationMark | null>(null);
 
-  const marksRef = useRef(marks);
-  const activeMarkRef = useRef(activeMark);
-  const currentTimeRef = useRef(currentTime);
-  const onEventRef = useRef(onEvent);
-  const onMarksChangeRef = useRef(onMarksChange);
+    // Controlled/uncontrolled pattern for tool + color.
+    const [internalTool, setInternalTool] = useState<Tool>("arrow");
+    const [internalColor, setInternalColor] = useState(COLORS[0]);
+    const tool = controlledTool ?? internalTool;
+    const color = controlledColor ?? internalColor;
 
-  useEffect(() => {
-    marksRef.current = marks;
-  }, [marks]);
-  useEffect(() => {
-    activeMarkRef.current = activeMark;
-  }, [activeMark]);
-  useEffect(() => {
-    currentTimeRef.current = currentTime;
-  }, [currentTime]);
-  useEffect(() => {
-    onEventRef.current = onEvent;
-  }, [onEvent]);
-  useEffect(() => {
-    onMarksChangeRef.current = onMarksChange;
-  }, [onMarksChange]);
-
-  function redrawAll() {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
-    if (!canvas || !ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (const mark of marksRef.current) {
-      drawMark(ctx, mark);
+    function changeTool(next: Tool) {
+      if (onToolChange) onToolChange(next);
+      else setInternalTool(next);
     }
-    if (activeMarkRef.current) {
-      drawMark(ctx, activeMarkRef.current);
-    }
-  }
-
-  const redrawRef = useRef(redrawAll);
-  useEffect(() => {
-    redrawRef.current = redrawAll;
-  });
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    // Detect environments where the 2D canvas context is unavailable (e.g.
-    // headless browsers without canvas support). When unavailable, show a
-    // fallback message instead of a silent blank canvas.
-    const ctx = canvas.getContext("2d");
-    if (!ctx) {
-      setCanvasUnavailable(true);
-      return;
+    function changeColor(next: string) {
+      if (onColorChange) onColorChange(next);
+      else setInternalColor(next);
     }
 
-    const resize = () => {
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = Math.round(rect.width);
-      canvas.height = Math.round(rect.height);
-      redrawRef.current();
-    };
+    const [canvasUnavailable, setCanvasUnavailable] = useState(false);
 
-    resize();
-    const observer = new ResizeObserver(resize);
-    observer.observe(canvas);
-    return () => observer.disconnect();
-  }, []);
+    const marksRef = useRef(marks);
+    const activeMarkRef = useRef(activeMark);
+    const currentTimeRef = useRef(currentTime);
+    const onEventRef = useRef(onEvent);
+    const onMarksChangeRef = useRef(onMarksChange);
 
-  useEffect(() => {
-    redrawAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [marks, activeMark]);
+    useEffect(() => {
+      marksRef.current = marks;
+    }, [marks]);
+    useEffect(() => {
+      activeMarkRef.current = activeMark;
+    }, [activeMark]);
+    useEffect(() => {
+      currentTimeRef.current = currentTime;
+    }, [currentTime]);
+    useEffect(() => {
+      onEventRef.current = onEvent;
+    }, [onEvent]);
+    useEffect(() => {
+      onMarksChangeRef.current = onMarksChange;
+    }, [onMarksChange]);
 
-  function getPoint(e: React.PointerEvent<HTMLCanvasElement>): Point {
-    const canvas = canvasRef.current;
-    if (!canvas) return { x: 0, y: 0 };
+    function undo() {
+      setActiveMark(null);
+      const nextMarks = marksRef.current.slice(0, -1);
+      marksRef.current = nextMarks;
+      setMarks(nextMarks);
+      onMarksChangeRef.current?.(nextMarks);
+    }
 
-    const rect = canvas.getBoundingClientRect();
-    return {
-      x: (e.clientX - rect.left) * (canvas.width / rect.width),
-      y: (e.clientY - rect.top) * (canvas.height / rect.height),
-    };
-  }
+    function clearAll() {
+      setActiveMark(null);
+      marksRef.current = [];
+      setMarks([]);
+      onMarksChangeRef.current?.([]);
+    }
 
-  function onPointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
-    e.preventDefault();
-    e.currentTarget.setPointerCapture(e.pointerId);
-    const point = getPoint(e);
-    setActiveMark({
-      id: createReviewId("mark"),
-      tool,
-      timecode: currentTimeRef.current,
-      color,
-      points: [point],
-      canvasWidth: canvasRef.current?.width ?? 0,
-      canvasHeight: canvasRef.current?.height ?? 0,
+    useImperativeHandle(ref, () => ({
+      undo,
+      clearAll,
+    }), []);
+
+    function redrawAll() {
+      const canvas = canvasRef.current;
+      const ctx = canvas?.getContext("2d");
+      if (!canvas || !ctx) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (const mark of marksRef.current) {
+        drawMark(ctx, mark);
+      }
+      if (activeMarkRef.current) {
+        drawMark(ctx, activeMarkRef.current);
+      }
+    }
+
+    const redrawRef = useRef(redrawAll);
+    useEffect(() => {
+      redrawRef.current = redrawAll;
     });
-  }
 
-  function onPointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
-    if (!activeMarkRef.current) return;
-    const point = getPoint(e);
-    const next =
-      activeMarkRef.current.tool === "pen"
-        ? { ...activeMarkRef.current, points: [...activeMarkRef.current.points, point] }
-        : { ...activeMarkRef.current, points: [activeMarkRef.current.points[0], point] };
-    setActiveMark(next);
-  }
+    useEffect(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
 
-  function finishMark() {
-    const finished = activeMarkRef.current;
-    if (!finished) return;
+      // Detect environments where the 2D canvas context is unavailable (e.g.
+      // headless browsers without canvas support). When unavailable, show a
+      // fallback message instead of a silent blank canvas.
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        setCanvasUnavailable(true);
+        return;
+      }
 
-    setActiveMark(null);
-    if (finished.points.length < 2) return;
+      const resize = () => {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = Math.round(rect.width);
+        canvas.height = Math.round(rect.height);
+        redrawRef.current();
+      };
 
-    const canvas = canvasRef.current;
-    const finishedWithSize = {
-      ...finished,
-      canvasWidth: canvas?.width ?? finished.canvasWidth,
-      canvasHeight: canvas?.height ?? finished.canvasHeight,
-    };
+      resize();
+      const observer = new ResizeObserver(resize);
+      observer.observe(canvas);
+      return () => observer.disconnect();
+    }, []);
 
-    const nextMarks = [...marksRef.current, finishedWithSize];
-    marksRef.current = nextMarks;
-    setMarks(nextMarks);
-    onMarksChangeRef.current?.(nextMarks);
-    onEventRef.current?.(
-      createEvent("stroke", finishedWithSize.timecode, {
-        tool: finishedWithSize.tool,
-        pointCount: finishedWithSize.points.length,
-        color: finishedWithSize.color,
-      }),
-    );
-  }
+    useEffect(() => {
+      redrawAll();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [marks, activeMark]);
 
-  function undo() {
-    setActiveMark(null);
-    const nextMarks = marksRef.current.slice(0, -1);
-    marksRef.current = nextMarks;
-    setMarks(nextMarks);
-    onMarksChangeRef.current?.(nextMarks);
-  }
+    function getPoint(e: React.PointerEvent<HTMLCanvasElement>): Point {
+      const canvas = canvasRef.current;
+      if (!canvas) return { x: 0, y: 0 };
 
-  function clearAll() {
-    setActiveMark(null);
-    marksRef.current = [];
-    setMarks([]);
-    onMarksChangeRef.current?.([]);
-  }
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (e.clientX - rect.left) * (canvas.width / rect.width),
+        y: (e.clientY - rect.top) * (canvas.height / rect.height),
+      };
+    }
 
-  if (canvasUnavailable) {
+    function onPointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
+      e.preventDefault();
+      e.currentTarget.setPointerCapture(e.pointerId);
+      const point = getPoint(e);
+      setActiveMark({
+        id: createReviewId("mark"),
+        tool,
+        timecode: currentTimeRef.current,
+        color,
+        points: [point],
+        canvasWidth: canvasRef.current?.width ?? 0,
+        canvasHeight: canvasRef.current?.height ?? 0,
+      });
+    }
+
+    function onPointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
+      if (!activeMarkRef.current) return;
+      const point = getPoint(e);
+      const next =
+        activeMarkRef.current.tool === "pen"
+          ? { ...activeMarkRef.current, points: [...activeMarkRef.current.points, point] }
+          : { ...activeMarkRef.current, points: [activeMarkRef.current.points[0], point] };
+      setActiveMark(next);
+    }
+
+    function finishMark() {
+      const finished = activeMarkRef.current;
+      if (!finished) return;
+
+      setActiveMark(null);
+      if (finished.points.length < 2) return;
+
+      const canvas = canvasRef.current;
+      const finishedWithSize = {
+        ...finished,
+        canvasWidth: canvas?.width ?? finished.canvasWidth,
+        canvasHeight: canvas?.height ?? finished.canvasHeight,
+      };
+
+      const nextMarks = [...marksRef.current, finishedWithSize];
+      marksRef.current = nextMarks;
+      setMarks(nextMarks);
+      onMarksChangeRef.current?.(nextMarks);
+      onEventRef.current?.(
+        createEvent("stroke", finishedWithSize.timecode, {
+          tool: finishedWithSize.tool,
+          pointCount: finishedWithSize.points.length,
+          color: finishedWithSize.color,
+        }),
+      );
+    }
+
+    if (canvasUnavailable) {
+      return (
+        <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-black/40 p-4 text-center">
+          <AlertTriangle className="h-8 w-8 text-muted-foreground" />
+          <p className="text-sm font-medium text-foreground">
+            Annotation drawing isn&rsquo;t available in this browser.
+          </p>
+          <p className="max-w-xs text-xs text-muted-foreground">
+            You can still record voice-over notes and review the swing video.
+          </p>
+        </div>
+      );
+    }
+
+    const canUndo = marks.length === 0 && !activeMark;
+
     return (
-      <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-black/40 p-4 text-center">
-        <AlertTriangle className="h-8 w-8 text-muted-foreground" />
-        <p className="text-sm font-medium text-foreground">
-          Annotation drawing isn&rsquo;t available in this browser.
-        </p>
-        <p className="max-w-xs text-xs text-muted-foreground">
-          You can still record voice-over notes and review the swing video.
-        </p>
-      </div>
+      <>
+        <canvas
+          ref={canvasRef}
+          className="h-full w-full cursor-crosshair touch-none"
+          style={{ pointerEvents: "auto" }}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={finishMark}
+          onPointerCancel={finishMark}
+          aria-label="Annotation drawing canvas"
+        />
+
+        {/* Desktop toolbar: overlaid on the video frame (sm+ only).
+            On mobile the toolbar is rendered below the video by the parent
+            (ReviewStudioClient) to avoid covering the swing. */}
+        <div className="pointer-events-auto absolute bottom-2 left-2 hidden max-w-[calc(100%-1rem)] flex-wrap items-center gap-2 rounded-lg border border-border bg-background/95 px-2 py-1.5 shadow-sm backdrop-blur sm:flex">
+          <AnnotationToolbar
+            tool={tool}
+            color={color}
+            onToolChange={changeTool}
+            onColorChange={changeColor}
+            onUndo={undo}
+            onClear={clearAll}
+            canUndo={canUndo}
+            marksCount={marks.length}
+          />
+        </div>
+      </>
     );
-  }
-
-  return (
-    <>
-      <canvas
-        ref={canvasRef}
-        className="h-full w-full cursor-crosshair touch-none"
-        style={{ pointerEvents: "auto" }}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={finishMark}
-        onPointerCancel={finishMark}
-        aria-label="Annotation drawing canvas"
-      />
-
-      <div className="pointer-events-auto absolute bottom-2 left-2 flex max-w-[calc(100%-1rem)] flex-wrap items-center gap-2 rounded-lg border border-border bg-background/95 px-2 py-1.5 shadow-sm backdrop-blur">
-        <div className="flex items-center gap-1">
-          {TOOLS.map((item) => (
-            <Button
-              key={item.id}
-              type="button"
-              variant={tool === item.id ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setTool(item.id)}
-              aria-label={item.label}
-              title={item.label}
-              className="h-10 w-10 px-0 sm:h-8 sm:w-8"
-            >
-              {item.icon}
-            </Button>
-          ))}
-        </div>
-        <span className="mx-1 h-5 w-px bg-border" />
-        <div className="flex items-center gap-1">
-          {COLORS.map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setColor(c)}
-              aria-label={`Select ${c}`}
-              title={c}
-              className={`h-8 w-8 rounded-full border-2 sm:h-6 sm:w-6 ${
-                color === c ? "border-foreground" : "border-background"
-              }`}
-              style={{ backgroundColor: c }}
-            />
-          ))}
-        </div>
-        <span className="mx-1 h-5 w-px bg-border" />
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={undo}
-          disabled={marks.length === 0 && !activeMark}
-          aria-label="Undo last annotation"
-          title="Undo"
-          className="h-10 gap-1 sm:h-8"
-        >
-          <RotateCcw className="h-4 w-4" />
-          <span className="hidden sm:inline">Undo</span>
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={clearAll}
-          disabled={marks.length === 0 && !activeMark}
-          aria-label="Clear annotations"
-          title="Clear"
-          className="h-10 gap-1 sm:h-8"
-        >
-          <Eraser className="h-4 w-4" />
-          <span className="hidden sm:inline">Clear</span>
-        </Button>
-        <span className="ml-1 hidden text-xs text-muted-foreground sm:inline">
-          {marks.length} mark{marks.length === 1 ? "" : "s"}
-        </span>
-      </div>
-    </>
-  );
-}
+  },
+);

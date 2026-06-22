@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Camera, CheckCircle2, FileVideo2, Mic, PlaySquare, RotateCcw, Trash2, X } from "lucide-react";
-import { AnnotationCanvas, type AnnotationMark } from "@/components/review/annotation-canvas";
+import { AnnotationCanvas, type AnnotationMark, type AnnotationCanvasHandle } from "@/components/review/annotation-canvas";
+import { AnnotationToolbar, type Tool, COLORS } from "@/components/review/annotation-toolbar";
 import { VideoPlayer } from "@/components/review/video-player";
 import { VoiceRecorder, type VoiceRecorderHandle } from "@/components/review/voice-recorder";
 import { Button } from "@/components/ui/button";
@@ -139,8 +140,11 @@ export function ReviewStudioClient({
   const [processError, setProcessError] = useState<string | null>(null);
   const [lessonUrl, setLessonUrl] = useState<string | null>(null);
   const [zoomedNoteId, setZoomedNoteId] = useState<string | null>(null);
+  const [annotationTool, setAnnotationTool] = useState<Tool>("arrow");
+  const [annotationColor, setAnnotationColor] = useState(COLORS[0]);
   const videoElementRef = useRef<HTMLVideoElement | null>(null);
   const voiceRecorderRef = useRef<VoiceRecorderHandle>(null);
+  const annotationRef = useRef<AnnotationCanvasHandle>(null);
 
   // Close the thumbnail lightbox when Escape is pressed.
   useEffect(() => {
@@ -326,12 +330,33 @@ export function ReviewStudioClient({
         onVideoElementReady={handleVideoElementReady}
         overlay={
           <AnnotationCanvas
+            ref={annotationRef}
             currentTime={currentTime}
+            tool={annotationTool}
+            color={annotationColor}
+            onToolChange={setAnnotationTool}
+            onColorChange={setAnnotationColor}
             onEvent={handleEvent}
             onMarksChange={setMarks}
           />
         }
       />
+
+      {/* Mobile annotation toolbar — stacked below the video so it does
+          NOT cover the swing frame. Hidden on sm+ where the overlay
+          toolbar (inside AnnotationCanvas) is used instead. */}
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card px-2 py-1.5 sm:hidden">
+        <AnnotationToolbar
+          tool={annotationTool}
+          color={annotationColor}
+          onToolChange={setAnnotationTool}
+          onColorChange={setAnnotationColor}
+          onUndo={() => annotationRef.current?.undo()}
+          onClear={() => annotationRef.current?.clearAll()}
+          canUndo={marks.length === 0}
+          marksCount={marks.length}
+        />
+      </div>
 
       <VoiceRecorder
         ref={voiceRecorderRef}
